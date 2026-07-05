@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin — Lucas Muindi Portfolio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/admin.css">
+  <meta name="robots" content="noindex, nofollow">
+</head>
+<body>
+
+  <!-- ══════════════════════ LOGIN SCREEN ══════════════════════ -->
+  <div id="loginScreen" class="login-screen">
+    <div class="login-card">
+      <div class="login-logo">Lucas Muindi<sup>®</sup></div>
+      <h1 class="login-title">Painel de Administração</h1>
+      <p class="login-sub">Acesso restrito ao gestor do portfolio.</p>
+      <form id="loginForm" class="login-form" novalidate>
+        <div class="form-group">
+          <label for="loginPassword">Senha</label>
+          <input type="password" id="loginPassword" placeholder="••••••••" autocomplete="current-password" required>
+        </div>
+        <div class="login-error" id="loginError">Senha incorreta. Tente novamente.</div>
+        <button type="submit" class="btn-admin-primary" id="loginBtn">Entrar</button>
+      </form>
+      <a href="index.html" class="login-back">← Voltar ao portfolio</a>
+    </div>
+  </div>
+
+  <!-- ══════════════════════ ADMIN PANEL ═══════════════════════ -->
+  <div id="adminPanel" class="admin-panel" style="display:none;">
+
+    <!-- SIDEBAR -->
+    <aside class="admin-sidebar">
+      <div class="sidebar-logo">
+        <span>Lucas Muindi<sup>®</sup></span>
+        <span class="sidebar-badge">Admin</span>
+      </div>
+
+      <nav class="sidebar-nav">
+        <button class="sidebar-link active" data-view="dashboard" id="navDashboard">
+          <span class="sidebar-icon">⊞</span>
+          Dashboard
+        </button>
+        <button class="sidebar-link" data-view="projects" id="navProjects">
+          <span class="sidebar-icon">◫</span>
+          Projetos
+        </button>
+        <button class="sidebar-link" data-view="add" id="navAdd">
+          <span class="sidebar-icon">＋</span>
+          Adicionar Projeto
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <a href="index.html" class="sidebar-link" target="_blank">
+          <span class="sidebar-icon">↗</span>
+          Ver Portfolio
+        </a>
+        <button class="sidebar-link danger" id="logoutBtn">
+          <span class="sidebar-icon">⏻</span>
+          Sair
+        </button>
+      </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="admin-main">
+
+      <!-- ── HEADER ── -->
+      <header class="admin-header">
+        <div class="admin-header-left">
+          <h2 class="admin-page-title" id="pageTitle">Dashboard</h2>
+        </div>
+        <div class="admin-header-right">
+          <button class="btn-admin-sm" id="exportBtn" title="Exportar dados">↓ Exportar</button>
+          <label class="btn-admin-sm" for="importFile" title="Importar dados" style="cursor:pointer;">↑ Importar</label>
+          <input type="file" id="importFile" accept=".json" style="display:none;">
+        </div>
+      </header>
+
+      <!-- ═══════ VIEW: DASHBOARD ═══════ -->
+      <div id="viewDashboard" class="admin-view">
+        <div class="stats-grid" id="statsGrid">
+          <!-- Injected by JS -->
+        </div>
+
+        <div class="dashboard-section">
+          <h3 class="dashboard-section-title">Projetos recentes</h3>
+          <div class="recent-list" id="recentList">
+            <!-- Injected by JS -->
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════ VIEW: PROJECTS ═══════ -->
+      <div id="viewProjects" class="admin-view" style="display:none;">
+        <div class="view-toolbar">
+          <div class="view-search">
+            <input type="text" id="projectSearch" placeholder="Pesquisar projetos..." class="search-input">
+          </div>
+          <select id="categoryFilter" class="select-input">
+            <option value="all">Todas as categorias</option>
+            <option value="identidade-visual">Identidade Visual</option>
+            <option value="social-media">Social Media</option>
+            <option value="motion">Motion</option>
+            <option value="editorial">Editorial</option>
+            <option value="web-design">Web Design</option>
+            <option value="embalagem">Embalagem</option>
+          </select>
+        </div>
+        <div class="projects-table-wrap">
+          <table class="projects-table" id="projectsTable">
+            <thead>
+              <tr>
+                <th>Ordem</th>
+                <th>Imagem</th>
+                <th>Título</th>
+                <th>Categoria</th>
+                <th>Cliente</th>
+                <th>Ano</th>
+                <th>Estado</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="projectsTableBody">
+              <!-- Injected by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ═══════ VIEW: ADD/EDIT PROJECT ═══════ -->
+      <div id="viewAdd" class="admin-view" style="display:none;">
+        <div class="form-card">
+          <h3 class="form-card-title" id="formTitle">Novo Projeto</h3>
+          <form id="projectForm" class="project-form" novalidate>
+            <input type="hidden" id="editId">
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="projTitle">Título do Projeto *</label>
+                <input type="text" id="projTitle" placeholder="Ex: Identidade Visual — Marca X" required>
+              </div>
+              <div class="form-group">
+                <label for="projCategory">Categoria *</label>
+                <select id="projCategory" required>
+                  <option value="">Selecionar categoria...</option>
+                  <option value="identidade-visual">Identidade Visual</option>
+                  <option value="social-media">Social Media</option>
+                  <option value="motion">Motion</option>
+                  <option value="editorial">Editorial</option>
+                  <option value="web-design">Web Design</option>
+                  <option value="embalagem">Embalagem</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="projClient">Cliente</label>
+                <input type="text" id="projClient" placeholder="Nome do cliente">
+              </div>
+              <div class="form-group">
+                <label for="projYear">Ano</label>
+                <input type="number" id="projYear" placeholder="2025" min="2000" max="2099">
+              </div>
+            </div>
+
+            <div class="form-group full">
+              <label for="projDesc">Descrição</label>
+              <textarea id="projDesc" rows="4" placeholder="Descreve o projeto, objetivos e processo criativo..."></textarea>
+            </div>
+
+            <!-- Images -->
+            <div class="form-group full">
+              <label>Imagens do Projeto</label>
+              <p class="form-hint">Adiciona URLs de imagens (uma por linha) ou faz upload de ficheiros.</p>
+              <div class="images-section">
+                <div class="image-sources">
+                  <div class="tab-bar">
+                    <button type="button" class="tab-btn active" id="tabUrls">URLs</button>
+                    <button type="button" class="tab-btn" id="tabUpload">Upload</button>
+                  </div>
+                  <!-- URL Inputs -->
+                  <div id="panelUrls">
+                    <div class="image-url-list" id="imageUrlList">
+                      <div class="image-url-row">
+                        <input type="url" class="image-url-input" placeholder="https://exemplo.com/imagem.jpg">
+                        <button type="button" class="btn-icon remove-url-btn">✕</button>
+                      </div>
+                    </div>
+                    <button type="button" class="btn-admin-ghost" id="addUrlBtn">+ Adicionar URL</button>
+                  </div>
+                  <!-- Upload -->
+                  <div id="panelUpload" style="display:none;">
+                    <label class="upload-drop-zone" for="fileUpload" id="dropZone">
+                      <span class="upload-icon">↑</span>
+                      <span>Clica ou arrasta imagens aqui</span>
+                      <span class="upload-hint">PNG, JPG, WEBP — máx. 5MB cada</span>
+                      <input type="file" id="fileUpload" multiple accept="image/*" style="display:none;">
+                    </label>
+                    <div class="upload-preview" id="uploadPreview"></div>
+                  </div>
+                </div>
+
+                <!-- Preview Grid -->
+                <div class="image-preview-grid" id="imagePreviewGrid">
+                  <div class="preview-empty">Nenhuma imagem adicionada</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group full">
+              <label class="checkbox-label">
+                <input type="checkbox" id="projVisible" checked>
+                <span class="checkbox-custom"></span>
+                Projeto visível no portfolio
+              </label>
+            </div>
+
+            <div class="form-actions">
+              <button type="button" class="btn-admin-ghost" id="cancelForm">Cancelar</button>
+              <button type="submit" class="btn-admin-primary" id="saveBtn">Guardar Projeto</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- ════════ DELETE CONFIRM DIALOG ════════ -->
+  <div class="dialog-overlay" id="confirmDialog" style="display:none;">
+    <div class="dialog">
+      <h3 class="dialog-title">Eliminar Projeto</h3>
+      <p class="dialog-msg">Tens a certeza que queres eliminar este projeto? Esta ação é irreversível.</p>
+      <div class="dialog-actions">
+        <button class="btn-admin-ghost" id="confirmCancel">Cancelar</button>
+        <button class="btn-admin-danger" id="confirmDelete">Eliminar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div class="toast" id="toast"></div>
+
+  <script src="js/data.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+</html>

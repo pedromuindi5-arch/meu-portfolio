@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="pt">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lucas Muindi — Designer Gráfico</title>
+  <meta name="description"
+    content="Portfolio de Lucas Muindi, Designer Gráfico especializado em Identidade Visual, Social Media, Motion, Editorial, Web Design e Embalagem.">
+  <meta name="author" content="Lucas Muindi">
+  <meta property="og:title" content="Lucas Muindi — Designer Gráfico">
+  <meta property="og:description" content="Criando narrativas visuais que falam ao coração das marcas.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+  <!-- ═══════════════════════════════════ NAV ═══════════════════════════════════ -->
+  <nav class="navbar" id="navbar">
+    <a href="#hero" class="nav-logo">Lucas Muindi<sup>®</sup></a>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="#about" class="nav-link">Sobre</a></li>
+      <li><a href="#works" class="nav-link">Trabalhos</a></li>
+      <li><a href="#contact" class="nav-link">Contacto</a></li>
+    </ul>
+    <button class="nav-menu-btn" id="menuBtn" aria-label="Abrir menu">
+      <span></span>
+      <span></span>
+    </button>
+  </nav>
+
+  <!-- MOBILE MENU OVERLAY -->
+  <div class="mobile-overlay" id="mobileOverlay">
+    <div class="mobile-menu" id="mobileMenu">
+      <button class="mobile-close" id="mobileClose" aria-label="Fechar menu">✕</button>
+      <nav class="mobile-nav">
+        <a href="#about" class="mobile-nav-link" data-mobile-link>Sobre</a>
+        <a href="#works" class="mobile-nav-link" data-mobile-link>Trabalhos</a>
+        <a href="#contact" class="mobile-nav-link" data-mobile-link>Contacto</a>
+      </nav>
+      <div class="mobile-footer">
+        <span>lucas@muindi.design</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════ HERO ════════════════════════════════════ -->
+  <section id="hero" class="hero">
+    <div class="hero-bg" id="heroBg" style="background-image: url('assets/hero.jpeg');"></div>
+    <div class="hero-overlay"></div>
+
+    <div class="hero-content">
+      <div class="hero-tagline reveal-left">
+        <p>Criando Narrativas<br>Visuais que Falam<br>ao Coração das Marcas</p>
+      </div>
+      <div class="hero-reg reveal-right">®</div>
+    </div>
+
+    <div class="hero-name reveal-up"> <img src="assets/bright_logo.svg" alt=""> </div>
+
+    <div class="scroll-indicator">
+      <div class="scroll-line"></div>
+      <span>scroll</span>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════ MARQUEE ══════════════════════════════════ -->
+  <div class="marquee-strip">
+    <div class="marquee-track">
+      <span>Identidade Visual</span>
+      <span>·</span>
+      <span>Social Media</span>
+      <span>·</span>
+      <span>Motion Design</span>
+      <span>·</span>
+      <span>Editorial</span>
+      <span>·</span>
+      <span>Web Design</span>
+      <span>·</span>
+      <span>Embalagem</span>
+      <span>·</span>
+      <span>Identidade Visual</span>
+      <span>·</span>
+      <span>Social Media</span>
+      <span>·</span>
+      <span>Motion Design</span>
+      <span>·</span>
+      <span>Editorial</span>
+      <span>·</span>
+      <span>Web Design</span>
+      <span>·</span>
+      <span>Embalagem</span>
+      <span>·</span>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════ ABOUT ════════════════════════════════════ -->
+  <section id="about" class="about">
+    <div class="container">
+      <div class="about-grid">
+        <div class="about-left">
+          <div class="section-label reveal-fade">— Sobre mim</div>
+          <h2 class="about-title reveal-up">Design é a língua<br>que falo<br><em>fluentemente.</em></h2>
+          <p class="about-text reveal-fade">Sou Lucas Muindi, Designer Gráfico com paixão por criar identidades visuais
+            que marcam, histórias que envolvem e experiências que ficam na memória.</p>
+          <p class="about-text reveal-fade">Trabalho com marcas que querem ser vistas, sentidas e lembradas — combinando
+            pensamento estratégico com sensibilidade estética para entregar design que vai além do visual: comunica,
+            conecta e converte.</p>
+          <a href="#contact" class="btn-primary reveal-fade">Vamos trabalhar juntos →</a>
+        </div>
+        <div class="about-right">
+          <div class="about-photo-wrap reveal-up">
+            <img src="assets/about.jpeg" alt="Lucas Muindi" class="about-photo" id="aboutPhoto"
+              onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
+            <div class="about-photo-placeholder">LM</div>
+          </div>
+          <div class="about-stats reveal-fade">
+            <div class="stat">
+              <span class="stat-num" data-target="3">0</span><span class="stat-suffix">+</span>
+              <span class="stat-label">Anos de experiência</span>
+            </div>
+            <div class="stat">
+              <span class="stat-num" data-target="120">0</span><span class="stat-suffix">+</span>
+              <span class="stat-label">Projetos entregues</span>
+            </div>
+            <div class="stat">
+              <span class="stat-num" data-target="40">0</span><span class="stat-suffix">+</span>
+              <span class="stat-label">Clientes satisfeitos</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════ WORKS ════════════════════════════════════ -->
+  <section id="works" class="works">
+    <div class="container">
+      <div class="works-header">
+        <div class="section-label reveal-fade">— Trabalhos</div>
+        <div class="works-title-row">
+          <h2 class="section-title reveal-up">Projetos de que<br><span>nos orgulhamos.</span></h2>
+          <p class="works-subtitle reveal-fade">Uma coleção selecionada de projetos que demonstram a minha abordagem ao
+            design — combinando criatividade com estratégia.</p>
+        </div>
+      </div>
+
+      <!-- Filter Bar -->
+      <div class="filter-bar reveal-fade">
+        <button class="filter-btn active" data-filter="all">Todos</button>
+        <button class="filter-btn" data-filter="identidade-visual">Identidade Visual</button>
+        <button class="filter-btn" data-filter="social-media">Social Media</button>
+        <button class="filter-btn" data-filter="motion">Motion</button>
+        <button class="filter-btn" data-filter="editorial">Editorial</button>
+        <button class="filter-btn" data-filter="web-design">Web Design</button>
+        <button class="filter-btn" data-filter="embalagem">Embalagem</button>
+      </div>
+
+      <!-- Projects Grid -->
+      <div class="projects-grid" id="projectsGrid"></div>
+
+      <!-- Empty State -->
+      <div class="empty-state" id="emptyState" style="display:none;">
+        <p>Nenhum projeto nesta categoria ainda.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════ CONTACT ══════════════════════════════════ -->
+  <section id="contact" class="contact">
+    <div class="container">
+      <div class="contact-inner">
+        <div class="section-label reveal-fade">— Contacto</div>
+        <h2 class="contact-title reveal-up">Vamos criar algo<br><em>extraordinário</em><br>juntos.</h2>
+        <a href="mailto:lucas@muindi.design" class="contact-email reveal-fade">lucas@muindi.design</a>
+        <div class="contact-socials reveal-fade">
+          <a href="#" class="social-link" target="_blank" rel="noopener">Instagram</a>
+          <span class="social-sep">·</span>
+          <a href="#" class="social-link" target="_blank" rel="noopener">Behance</a>
+          <span class="social-sep">·</span>
+          <a href="#" class="social-link" target="_blank" rel="noopener">LinkedIn</a>
+        </div>
+      </div>
+    </div>
+    <footer class="site-footer">
+      <span>© 2025 Lucas Muindi. Todos os direitos reservados.</span>
+      <a href="admin.html" class="admin-entry" title="Admin" tabindex="-1">⚙</a>
+    </footer>
+  </section>
+
+  <!-- ═══════════════════════════════════ MODAL ════════════════════════════════════ -->
+  <div class="modal-overlay" id="modalOverlay" aria-hidden="true">
+    <div class="modal" id="modal" role="dialog" aria-modal="true" aria-label="Detalhes do projeto">
+      <button class="modal-close" id="modalClose" aria-label="Fechar">✕</button>
+      <div class="modal-body" id="modalBody"></div>
+    </div>
+  </div>
+
+  <script src="js/data.js"></script>
+  <script src="js/main.js"></script>
+</body>
+
+</html>
