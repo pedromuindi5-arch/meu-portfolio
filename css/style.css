@@ -341,7 +341,7 @@ button {
   width: 50%;
   height: auto;
   position: relative;
-  top: -20px;
+  top: -40px;
   /* ajuste esse valor: quanto mais negativo, mais sobe */
   animation: float 3s ease-in-out infinite;
 }
@@ -429,7 +429,10 @@ button {
 ═══════════════════════════════════════════════════════ */
 .marquee-strip {
   overflow: hidden;
-  background: var(--text);
+  background-image: url('/assets/backgroundsession.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
   padding: 0.85rem 0;
   white-space: nowrap;
 }
@@ -445,9 +448,10 @@ button {
   font-weight: 500;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--bg);
+  color: #ffffff65;
   flex-shrink: 0;
 }
+
 
 @keyframes marquee {
   from {
@@ -548,7 +552,7 @@ button {
   position: relative;
   aspect-ratio: 4/5;
   overflow: hidden;
-  border-radius: 4px;
+  border-radius: 25px;
   background: var(--bg-3);
 }
 
@@ -664,6 +668,45 @@ button {
 }
 
 /* Para telas de celular */
+
+
+@media (max-width: 600px) {
+  .works-title-row {
+    flex-direction: column;
+    gap: 1rem;
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .works-subtitle {
+    max-width: 100%;
+    flex-shrink: 1;
+    padding-top: 0;
+    margin: 0 auto;
+
+    text-align: left;
+  }
+}
+
+
+@media (max-width: 600px) {
+  .about-photo {
+    object-position: center 20%;
+    /* ajuste esse valor: 0% mostra mais o topo (cabeça), 100% mostra mais a base (corpo) */
+  }
+}
+
+
+
+
+@media (max-width: 600px) {
+  .about {
+    background-image: linear-gradient(rgba(0, 0, 0, 0.049), rgba(0, 0, 0, 0)),
+      url('/assets/backgroundsession_vertical.png');
+
+  }
+}
+
 @media (max-width: 600px) {
   .works-subtitle {
     max-width: 90%;
