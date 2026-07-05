@@ -338,10 +338,24 @@ button {
 
 .hero-name img {
   margin: auto;
-
   width: 50%;
   height: auto;
+  position: relative;
+  top: -20px;
+  /* ajuste esse valor: quanto mais negativo, mais sobe */
+  animation: float 3s ease-in-out infinite;
+}
 
+@keyframes float {
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-12px);
+  }
 }
 
 
@@ -488,6 +502,12 @@ button {
    ABOUT
 ═══════════════════════════════════════════════════════ */
 .about {
+  background-image:
+    linear-gradient(rgba(0, 0, 0, 0.049), rgba(0, 0, 0, 0)),
+    url('/assets/backgroundsession.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
   padding: var(--gap) 0;
   padding-top: clamp(5rem, 10vw, 9rem);
   padding-bottom: clamp(5rem, 10vw, 9rem);
@@ -641,6 +661,18 @@ button {
   line-height: 1.75;
   padding-top: 0.4rem;
   flex-shrink: 0;
+}
+
+/* Para telas de celular */
+@media (max-width: 600px) {
+  .works-subtitle {
+    max-width: 90%;
+    margin: 0 auto;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    text-align: left;
+    /* ou "center" se preferir centralizado */
+  }
 }
 
 /* Filter Bar */
@@ -831,10 +863,30 @@ button {
 /* ═══════════════════════════════════════════════════════
    CONTACT
 ═══════════════════════════════════════════════════════ */
+
 .contact {
-  padding-top: clamp(5rem, 10vw, 9rem);
-  border-top: 1px solid var(--border);
+  background-image:
+    linear-gradient(rgba(0, 0, 0, 0.049), rgba(0, 0, 0, 0)),
+    url('/assets/backgroundsession.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  color: #ffffff;
+  /* garante que o texto fique branco por cima da imagem */
+  position: relative;
 }
+
+/* Ajuste para mobile */
+@media (max-width: 600px) {
+  .contact {
+    background-position: center center;
+    background-attachment: scroll;
+    /* evita bugs de "fixed" no mobile */
+  }
+}
+
+
+
 
 .contact-inner {
   max-width: 700px;
