@@ -48,6 +48,7 @@
   const projYear      = document.getElementById('projYear');
   const projDesc      = document.getElementById('projDesc');
   const projVisible   = document.getElementById('projVisible');
+  const projFeatured  = document.getElementById('projFeatured');
   const cancelForm    = document.getElementById('cancelForm');
   const imageUrlList  = document.getElementById('imageUrlList');
   const addUrlBtn     = document.getElementById('addUrlBtn');
@@ -349,6 +350,7 @@
     bindUrlRemoveBtn(imageUrlList.querySelector('.remove-url-btn'));
     updatePreviewGrid([]);
     projVisible.checked = true;
+    projFeatured.checked = true;
     // Reset to URL tab
     switchImageTab('urls');
     uploadPreview.innerHTML = '';
@@ -365,6 +367,7 @@
     projYear.value      = p.year || '';
     projDesc.value      = p.description || '';
     projVisible.checked = p.visible !== false;
+    projFeatured.checked = p.featured !== false;
 
     // Populate URL inputs
     const images = p.images || [];
@@ -391,6 +394,7 @@
       year:        projYear.value.trim(),
       description: projDesc.value.trim(),
       visible:     projVisible.checked,
+      featured:    projFeatured.checked,
       images,
     };
 

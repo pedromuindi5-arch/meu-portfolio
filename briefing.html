@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="pt">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Briefing Interativo — Lucas Muindi</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  
+  <style>
+    /* Estilos específicos para a página de Briefing */
+    body {
+      background-image: linear-gradient(rgba(0, 0, 0, 0.85), rgba(0, 0, 0, 0.85)), url('assets/backgroundsession.png');
+      background-attachment: fixed;
+      background-size: cover;
+      background-position: center;
+      color: var(--text);
+    }
+
+    .briefing-hero {
+      padding-top: calc(var(--nav-h) + 3rem);
+      padding-bottom: 2rem;
+      text-align: center;
+    }
+
+    .briefing-title {
+      font-family: var(--font-serif);
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      font-style: italic;
+      font-weight: 400;
+      line-height: 1.1;
+      margin-bottom: 0.5rem;
+    }
+
+    .briefing-desc {
+      color: var(--text-dim);
+      font-size: 0.95rem;
+      max-width: 50ch;
+      margin: 0 auto 2.5rem;
+    }
+
+    .briefing-tabs {
+      display: flex;
+      justify-content: center;
+      gap: 0.5rem;
+      margin-bottom: 3rem;
+      flex-wrap: wrap;
+    }
+
+    .briefing-tab {
+      padding: 0.65rem 1.5rem;
+      font-size: 0.8rem;
+      font-weight: 500;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+      border-radius: 30px;
+      transition: all var(--transition);
+      cursor: pointer;
+      background: transparent;
+    }
+
+    .briefing-tab:hover {
+      color: var(--text);
+      border-color: rgba(255, 255, 255, 0.25);
+    }
+
+    .briefing-tab.active {
+      color: var(--bg);
+      background: var(--text);
+      border-color: var(--text);
+    }
+
+    .briefing-container {
+      max-width: 800px;
+      margin: 0 auto 5rem;
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 8px;
+      padding: clamp(1.5rem, 4vw, 3rem);
+      backdrop-filter: blur(20px);
+    }
+
+    .briefing-form {
+      display: none;
+    }
+
+    .briefing-form.active {
+      display: block;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    @media(min-width: 600px) {
+      .form-grid.two-cols {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    .field-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .field-group.full {
+      grid-column: 1 / -1;
+    }
+
+    .field-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-dim);
+    }
+
+    .field-input, .field-select, .field-textarea {
+      background: rgba(9, 9, 9, 0.8);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.8rem 1rem;
+      color: var(--text);
+      font-size: 0.9rem;
+      font-family: var(--font-body);
+      transition: border-color var(--transition);
+      width: 100%;
+    }
+
+    .field-input:focus, .field-select:focus, .field-textarea:focus {
+      outline: none;
+      border-color: rgba(255, 255, 255, 0.3);
+    }
+
+    .field-textarea {
+      resize: vertical;
+      min-height: 100px;
+    }
+
+    .btn-submit {
+      width: 100%;
+      background: var(--text);
+      color: var(--bg);
+      padding: 1rem;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      transition: all var(--transition);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      cursor: pointer;
+      border: none;
+    }
+
+    .btn-submit:hover {
+      background: transparent;
+      color: var(--text);
+      border: 1px solid var(--text);
+    }
+
+    .form-section-title {
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text);
+      margin-top: 1.5rem;
+      margin-bottom: 1rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    /* Template oculto para geração do PDF estilo editorial */
+    #pdf-print-template {
+      display: none;
+    }
+
+    @media print {
+      #pdf-print-template {
+        display: block;
+      }
+    }
+
+    .success-message {
+      display: none;
+      padding: 1.5rem;
+      background: rgba(76, 175, 80, 0.1);
+      border: 1px solid rgba(76, 175, 80, 0.3);
+      border-radius: 6px;
+      color: #4caf50;
+      text-align: center;
+      margin-bottom: 2rem;
+      animation: slideDown 0.3s ease-out;
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- NAVBAR -->
+  <nav class="navbar scrolled" id="navbar">
+    <a href="index.html" class="nav-logo">Lucas Muindi<sup>®</sup></a>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="index.html#about" class="nav-link">Sobre</a></li>
+      <li><a href="index.html#works" class="nav-link">Trabalhos</a></li>
+      <li><a href="portfolio.html" class="nav-link">Portfólio</a></li>
+      <li><a href="briefing.html" class="nav-link active">Briefing</a></li>
+      <li><a href="index.html#contact" class="nav-link">Contacto</a></li>
+    </ul>
+    <button class="nav-menu-btn" id="menuBtn" aria-label="Abrir menu">
+      <span></span>
+      <span></span>
+    </button>
+  </nav>
+
+  <!-- MOBILE MENU OVERLAY -->
+  <div class="mobile-overlay" id="mobileOverlay">
+    <div class="mobile-menu" id="mobileMenu">
+      <button class="mobile-close" id="mobileClose" aria-label="Fechar menu">✕</button>
+      <nav class="mobile-nav">
+        <a href="index.html#about" class="mobile-nav-link" data-mobile-link>Sobre</a>
+        <a href="index.html#works" class="mobile-nav-link" data-mobile-link>Trabalhos</a>
+        <a href="portfolio.html" class="mobile-nav-link" data-mobile-link>Portfólio</a>
+        <a href="briefing.html" class="mobile-nav-link" data-mobile-link>Briefing</a>
+        <a href="index.html#contact" class="mobile-nav-link" data-mobile-link>Contacto</a>
+      </nav>
+      <div class="mobile-footer">
+        <span>lucas@muindi.design</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTAINER PRINCIPAL -->
+  <main class="container">
+    <section class="briefing-hero">
+      <h1 class="briefing-title">Alinhar a nossa visão.</h1>
+      <p class="briefing-desc">Escolha uma categoria e responda às perguntas para iniciarmos o processo criativo. Quanto mais detalhes, melhor compreendo a sua visão.</p>
+
+      <!-- SELETOR DE ABAS -->
+      <div class="briefing-tabs">
+        <button class="briefing-tab active" onclick="switchForm('branding', this)">Branding</button>
+        <button class="briefing-tab" onclick="switchForm('identidade-visual', this)">Identidade Visual</button>
+        <button class="briefing-tab" onclick="switchForm('social-media', this)">Social Media</button>
+        <button class="briefing-tab" onclick="switchForm('flyer', this)">Flyer</button>
+        <button class="briefing-tab" onclick="switchForm('evento', this)">Evento</button>
+        <button class="briefing-tab" onclick="switchForm('web', this)">Web Design</button>
+      </div>
+    </section>
+
+    <div class="briefing-container">
+
+      <!-- FORMULÁRIO 1: BRANDING (MARCA) -->
+      <form id="form-branding" class="briefing-form active" onsubmit="handleBriefingSubmit(event, 'Branding')">
+        <div class="form-grid two-cols">
+          <div class="field-group">
+            <label class="field-label" for="b-name">Nome do Cliente / Empresa *</label>
+            <input class="field-input" type="text" id="b-name" required placeholder="Ex: Sua Empresa Lda.">
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="b-contact">Contacto (E-mail ou Telefone) *</label>
+            <input class="field-input" type="text" id="b-contact" required placeholder="Ex: seu@email.com ou +244 923 224 383">
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="b-brand">Nome Proposto para a Marca *</label>
+            <input class="field-input" type="text" id="b-brand" required placeholder="Nome exato que será usado">
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="b-market">Diferencial / Produto Principal</label>
+            <input class="field-input" type="text" id="b-market" placeholder="O que a sua marca faz de exclusivo?">
+          </div>
+          <div class="field-group full">
+            <label class="field-label" for="b-values">Quais são os 3 principais valores da marca?</label>
+            <textarea class="field-textarea" id="b-values" placeholder="Ex: Inovação, Sustentabilidade, Proximidade"></textarea>
+          </div>
+          <div class="field-group full">
+            <label class="field-label" for="b-feel">Qual o sentimento que a marca deve transmitir?</label>
+            <textarea class="field-textarea" id="b-feel" placeholder="Ex: Sofisticação, Confiança, Força, Energia, Dinamismo"></textarea>
+          </div>
+          <div class="field-group full">
+            <label class="field-label" for="b-target">Quem é o público-alvo principal?</label>
+            <textarea class="field-textarea" id="b-target" placeholder="Descreva a idade, profissão, interesses e comportamento do seu público"></textarea>
+          </div>
+          <div class="field-group full">
+            <label class="field-label" for="b-competitors">Quem são os seus principais concorrentes?</label>
+            <textarea class="field-textarea" id="b-competitors" placeholder="Cite algumas marcas ou empresas concorrentes e o que as diferencia"></textarea>
+          </div>
+          <div class="field-group full">
+            <label class="field-label" for="b-colors">Preferência de Cores (Cores a usar ou evitar)</label>
+            <textarea class="field-textarea" id="b-colors" placeholder="Ex: Tons terra, azul corporativo, evitar o vermelho"></textarea>
+          </div>
+          <div class="field-group full">
+            <label class="field-label" for="b-style">Estilo Visual Preferido</label>
+            <textarea class="field-textarea" id="b-style" placeholder="Ex: Minimalista, Clássico, Moderno, Orgânico, Geométrico"></textarea>
+          </div>
+        </div>
+        <button type="submit" class="btn-submit">Gerar Briefing & Enviar para WhatsApp →</button>
+      </form>
+
+      <!-- FORMULÁRIO 2: IDENTIDADE VISUAL -->
+      <form id="form-identidade-visual" class="briefing-form" onsubmit="handleBriefingSubmit(event, 'Identidade Visual')">
+        <div class="form-grid two-cols">
+          <div class="field-group">
+            <label class="field-label" for="iv-name">Nome do Cliente / Empresa *</label>
+            <input class="field-input" type="text" id="iv-name" required placeholder="Ex: Sua Empresa Lda.">
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="iv-contact">Contacto (E-mail ou Telefone) *</label>
+            <input class="field-input" type="text" id="iv-contact" required placeholder="Ex: seu@email.com ou +244 923 224 383">
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="iv-text">Texto Principal no Logótipo *</label>
+            <input class="field-input" type="text" id="iv-text" required placeholder="Nome no logótipo">
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="iv-slogan">Existe Slogan no Logótipo?</label>
+            <input class="field-input" type="text" id="iv-slogan" placeholder="Ex: O seu sucesso em destaque">
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="iv-style">Estilo Visual Preferido</label>
+            <select class="field-select" id="iv-style">
+              <option value="">Selecione uma opção</option>
+              <option value="Minimalista & Elegante">Minimalista & Elegante</option>
+              <option value="Moderno & Arrojado">Moderno & Arrojado</option>
+              <option value="Clássico & Tradicional">Clássico & Tradicional</option>
+              <option value="Divertido & Orgânico">Divertido & Orgânico</option>
+              <option value="Geométrico & Abstrato">Geométrico & Abstrato</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="iv-colors">Preferência de Cores (Cores a usar ou evitar)</label>
+            <input class="field-input" type="text" id="iv-colors" placeholder="Ex: Tons terra, evitar o vermelho">
+          </div>
+          <div class="field-group full">
+            <label class="field-label" for="iv-apps">Onde a identidade será mais utilizada?</label>
+            <textarea class="field-textarea" id="iv-apps" placeholder="Ex: Redes sociais, fardas, sacolas, cartões de visita, website, etc."></textarea>
+          </div>
+          <div class="field-group full">
+            <label class="field-label" for="iv-inspiration">Referências ou Inspirações</label>
+            <textarea class="field-textarea" id="iv-inspiration" placeholder="Descreva estilos, marcas ou elementos que o inspiram"></textarea>
+          </div>
+        </div>
+        <button type="submit" class="btn-submit">Gerar Briefing & Enviar para WhatsApp →</button>
+      </form>
+
+      <!-- FORMULÁRIO 3: SOCIAL MEDIA -->
+      <form id="form-social-media" class="briefing-form" onsubmit="handleBriefingSubmit(event, 'Social Media')">
+        <div class="form-grid two-cols">
+          <div class="field-group">
+            <label class="field-label" for="sm-name">Nome do Cliente / Empresa *</label>
+            <input class="field-input" type="text" id="sm-name" required placeholder="Ex: Sua Empresa Lda.">
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="sm-contact">Contacto (E-mail ou Telefone) *</label>
+            <input class="field-input" type="text" id="sm-contact" required placeholder="Ex: seu@email.com ou +244 923 224 383">
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="sm-platforms">Redes Sociais a Trabalhar *</label>
+            <input class="field-input" type="text" id="sm-platforms" required placeholder="Ex: Instagram, TikTok, Facebook, LinkedIn">
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="sm-frequency">Frequência de Publicação Desejada</label>
+            <select class="field-select" id="sm-frequency">
+              <option value="">Selecione uma opção</option>
+              <option value="Diária">Diária</option>
+              <option value="3-4 vezes por semana">3-4 vezes por semana</option>
+              <option value="2 vezes por semana">2 vezes por semana</option>
+              <option value="Semanal">Semanal</option>
+            </select>
+          </div>
+          <div class="field-group full">
+            <label class="field-label" for="sm-goals">Objetivos Principais (Seguidores, Vendas, Engagement, etc.)</label>
+            <textarea class="field-textarea" id="sm-goals" placeholder="Descreva os seus objetivos com as redes sociais"></textarea>
+          </div>
+          <div class="field-group full">
+            <label class="field-label" for="sm-content">Tipo de Conteúdo Preferido</label>
+            <textarea class="field-textarea" id="sm-content" placeholder="Ex: Educativo, Inspiracional, Promocional, Behind-the-scenes, Testimoniais"></textarea>
+          </div>
+          <div class="field-group full">
+            <label class="field-label" for="sm-audience">Descreva o Seu Público-Alvo</label>
+            <textarea class="field-textarea" id="sm-audience" placeholder="Idade, profissão, interesses, comportamento online"></textarea>
+          </div>
+          <div class="field-group full">
+            <label class="field-label" for="sm-tone">Tom de Comunicação Desejado</label>
+            <textarea class="field-textarea" id="sm-tone" placeholder="Ex: Profissional, Descontraído, Inspirador, Educativo, Divertido"></textarea>
+          </div>
+        </div>
+        <button type="submit" class="btn-submit">Gerar Briefing & Enviar para WhatsApp →</button>
+      </form>
+
+      <!-- FORMULÁRIO 4: FLYER -->
+      <form id="form-flyer" class="briefing-form" onsubmit="handleBriefingSubmit(event, 'Flyer')">
+        <div class="form-grid two-cols">
+          <div class="field-group">
+            <label class="field-label" for="fl-name">Nome do Cliente / Empresa *</label>
+            <input class="field-input" type="text" id="fl-name" required placeholder="Ex: Sua Empresa Lda.">
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="fl-contact">Contacto (E-mail ou Telefone) *</label>
+            <input class="field-input" type="text" id="fl-contact" required placeholder="Ex: seu@email.com ou +244 923 224 383">
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="fl-title">Título Principal do Flyer *</label>
+            <input class="field-input" type="text" id="fl-title" required placeholder="Ex: Grande Promoção de Verão">
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="fl-format">Formato Preferido</label>
+            <select class="field-select" id="fl-format">
+              <option value="">Selecione uma opção</option>
+              <option value="A4 Vertical">A4 Vertical</option>
+              <option value="A4 Horizontal">A4 Horizontal</option>
+              <option value="A5">A5</option>
+              <option value="Personalizado">Personalizado</option>
+            </select>
+          </div>
+          <div class="field-group full">
+            <label class="field-label" for="fl-message">Mensagem Principal / Call-to-Action *</label>
+            <textarea class="field-textarea" id="fl-message" required placeholder="Ex: Aproveite 50% de desconto em todos os produtos até 31 de Agosto!"></textarea>
+          </div>
+          <div class="field-group full">
+            <label class="field-label" for="fl-details">Detalhes Importantes (Data, Local, Horário, Contacto)</label>
+            <textarea class="field-textarea" id="fl-details" placeholder="Todas as informações que devem aparecer no flyer"></textarea>
+          </div>
+          <div class="field-group full">
+            <label class="field-label" for="fl-style">Estilo Visual Desejado</label>
+            <textarea class="field-textarea" id="fl-style" placeholder="Ex: Moderno, Clássico, Divertido, Corporativo, Elegante"></textarea>
+          </div>
+          <div class="field-group full">
+            <label class="field-label" for="fl-colors">Paleta de Cores Preferida</label>
+            <textarea class="field-textarea" id="fl-colors" placeholder="Ex: Cores vibrantes, tons pastéis, monocromático"></textarea>
+          </div>
+        </div>
+        <button type="submit" class="btn-submit">Gerar Briefing & Enviar para WhatsApp →</button>
+      </form>
+
+      <!-- FORMULÁRIO 5: EVENTO -->
+      <form id="form-evento" class="briefing-form" onsubmit="handleBriefingSubmit(event, 'Identidade Visual para Evento')">
+        <div class="form-grid two-cols">
+          <div class="field-group">
+            <label class="field-label" for="ev-name">Nome do Cliente / Organização *</label>
+            <input class="field-input" type="text" id="ev-name" required placeholder="Ex: Sua Organização">
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="ev-contact">Contacto (E-mail ou Telefone) *</label>
+            <input class="field-input" type="text" id="ev-contact" required placeholder="Ex: seu@email.com ou +244 923 224 383">
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="ev-title">Nome do Evento *</label>
+            <input class="field-input" type="text" id="ev-title" required placeholder="Ex: Conexão Design 2025">
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="ev-type">Tipo de Evento</label>
+            <select class="field-select" id="ev-type">
+              <option value="">Selecione uma opção</option>
+              <option value="Corporativo / Palestras">Corporativo / Palestras</option>
+              <option value="Cultural / Concerto">Cultural / Concerto</option>
+              <option value="Festival / Feira">Festival / Feira</option>
+              <option value="Privado / Gala">Privado / Gala</option>
+              <option value="Workshop / Formação">Workshop / Formação</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="ev-date">Data e Local do Evento *</label>
+            <input class="field-input" type="text" id="ev-date" required placeholder="Ex: 15 de Novembro no Centro Cultural">
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="ev-concept">Tema ou Conceito do Evento</label>
+            <input class="field-input" type="text" id="ev-concept" placeholder="Ex: O futuro da criatividade">
+          </div>
+          <div class="field-group full">
+            <label class="field-label" for="ev-materials">Materiais de Design Necessários *</label>
+            <textarea class="field-textarea" id="ev-materials" required placeholder="Ex: Lonas de fundo, credenciais, posts digitais, rollups, flyers, convites, etc."></textarea>
+          </div>
+          <div class="field-group full">
+            <label class="field-label" for="ev-audience">Público-Alvo do Evento</label>
+            <textarea class="field-textarea" id="ev-audience" placeholder="Descreva quem vai participar do evento"></textarea>
+          </div>
+          <div class="field-group full">
+            <label class="field-label" for="ev-vibe">Vibe / Atmosfera Desejada</label>
+            <textarea class="field-textarea" id="ev-vibe" placeholder="Ex: Profissional mas acessível, Inovador e dinâmico, Elegante e sofisticado"></textarea>
+          </div>
+        </div>
+        <button type="submit" class="btn-submit">Gerar Briefing & Enviar para WhatsApp →</button>
+      </form>
+
+      <!-- FORMULÁRIO 6: WEB DESIGN -->
+      <form id="form-web" class="briefing-form" onsubmit="handleBriefingSubmit(event, 'Web Design')">
+        <div class="form-grid two-cols">
+          <div class="field-group">
+            <label class="field-label" for="web-name">Nome do Cliente / Empresa *</label>
+            <input class="field-input" type="text" id="web-name" required placeholder="Ex: Sua Empresa Lda.">
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="web-contact">Contacto (E-mail ou Telefone) *</label>
+            <input class="field-input" type="text" id="web-contact" required placeholder="Ex: seu@email.com ou +244 923 224 383">
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="web-domain">Domínio / URL Desejado</label>
+            <input class="field-input" type="text" id="web-domain" placeholder="Ex: www.suaempresa.com">
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="web-type">Tipo de Website</label>
+            <select class="field-select" id="web-type">
+              <option value="">Selecione uma opção</option>
+              <option value="Portfólio / Currículo">Portfólio / Currículo</option>
+              <option value="E-commerce">E-commerce</option>
+              <option value="Blog / Notícias">Blog / Notícias</option>
+              <option value="Corporativo">Corporativo</option>
+              <option value="Landing Page">Landing Page</option>
+            </select>
+          </div>
+          <div class="field-group full">
+            <label class="field-label" for="web-purpose">Objetivo Principal do Website *</label>
+            <textarea class="field-textarea" id="web-purpose" required placeholder="Ex: Vender produtos, Gerar leads, Mostrar portfólio, Informar sobre serviços"></textarea>
+          </div>
+          <div class="field-group full">
+            <label class="field-label" for="web-features">Funcionalidades Necessárias</label>
+            <textarea class="field-textarea" id="web-features" placeholder="Ex: Formulário de contacto, Carrinho de compras, Blog, Galeria, Sistema de agendamento"></textarea>
+          </div>
+          <div class="field-group full">
+            <label class="field-label" for="web-audience">Público-Alvo</label>
+            <textarea class="field-textarea" id="web-audience" placeholder="Descreva quem vai visitar o seu website"></textarea>
+          </div>
+          <div class="field-group full">
+            <label class="field-label" for="web-inspiration">Referências ou Websites que Admira</label>
+            <textarea class="field-textarea" id="web-inspiration" placeholder="Descreva elementos de design que gosta em outros websites"></textarea>
+          </div>
+          <div class="field-group full">
+            <label class="field-label" for="web-tone">Tom e Estilo Visual Desejado</label>
+            <textarea class="field-textarea" id="web-tone" placeholder="Ex: Profissional, Moderno, Criativo, Minimalista, Corporativo"></textarea>
+          </div>
+        </div>
+        <button type="submit" class="btn-submit">Gerar Briefing & Enviar para WhatsApp →</button>
+      </form>
+
+    </div>
+  </main>
+
+  <!-- TEMPLATE EDITORIAL EXCLUSIVO DO PDF GERADO -->
+  <div id="pdf-template-wrapper" style="position: absolute; left: -9999px; top: -9999px;">
+    <div id="pdf-template" style="width: 800px; padding: 0; font-family: 'Inter', sans-serif; color: #333; background: #ffffff; position: relative;">
+      <!-- Header Estilo Currículo -->
+      <div style="display: flex; background: #000; padding: 40px; color: #fff; position: relative; overflow: hidden;">
+        <div style="position: absolute; right: 0; top: 0; bottom: 0; width: 60%; background-image: url('assets/backgroundsession.png'); background-size: cover; background-position: center; opacity: 0.8;"></div>
+        <div style="position: relative; z-index: 1; flex: 1;">
+          <h1 style="font-size: 3.5rem; margin: 0; font-weight: 400; font-family: 'Inter', sans-serif;">Lucas Muindi</h1>
+          <p style="text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.2em; color: #ccc; margin: 10px 0 30px;">DESIGNER GRÁFICO | SOCIAL MEDIA | BRAND DESIGNER</p>
+          <div style="display: flex; gap: 40px; font-size: 0.75rem; color: #eee;">
+            <span>Angola — Namibe — Moçâmedes<br>+244 923 224 383</span>
+            <span>pedromuidi5@gmail.com</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="padding: 60px;">
+        <!-- Título do Briefing -->
+        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 40px;">
+          <span style="color: #000; font-size: 1.5rem;">◆</span>
+          <h2 style="font-size: 1.5rem; text-transform: uppercase; letter-spacing: 0.1em; margin: 0; font-weight: 700;" id="pdf-type-title">BRIEFING</h2>
+          <span style="flex: 1; height: 1px; background: #eee; margin-left: 10px;"></span>
+          <span id="pdf-date" style="font-size: 0.8rem; color: #888;"></span>
+        </div>
+
+        <!-- Respostas do Questionário -->
+        <div id="pdf-answers" style="margin-bottom: 50px; display: grid; grid-template-columns: 1fr; gap: 30px;">
+          <!-- Injetado Dinamicamente -->
+        </div>
+
+        <!-- Rodapé -->
+        <div style="border-top: 2px solid #000; padding-top: 20px; margin-top: 60px; display: flex; justify-content: space-between; align-items: center;">
+          <p style="margin: 0; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em;">Design que comunica, conecta e converte.</p>
+          <p style="margin: 0; font-size: 0.7rem; color: #888;">lucasmuindi.vercel.app</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DEPENDÊNCIAS: GERAÇÃO DE PDF E EMAILJS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+  <script type="text/javascript">
+    (function() {
+      // Nota: O usuário precisará configurar sua Public Key do EmailJS aqui
+      emailjs.init("YOUR_PUBLIC_KEY"); 
+    })();
+  </script>
+
+  <script>
+    'use strict';
+
+    /* ─── DOM REFS ─────────────────────────────────────── */
+    const navbar = document.getElementById('navbar');
+    const menuBtn = document.getElementById('menuBtn');
+    const mobileOverlay = document.getElementById('mobileOverlay');
+    const mobileClose = document.getElementById('mobileClose');
+    const mobileLinks = document.querySelectorAll('[data-mobile-link]');
+
+    /* ─── NAVBAR SCROLL ────────────────────────────────── */
+    const onScroll = () => {
+      if (window.scrollY > 60) {
+        navbar.classList.add('scrolled');
+      } else {
+        navbar.classList.remove('scrolled');
+      }
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+
+    /* ─── MOBILE MENU ──────────────────────────────────── */
+    const openMenu = () => {
+      mobileOverlay.classList.add('open');
+      menuBtn.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    };
+    const closeMenu = () => {
+      mobileOverlay.classList.remove('open');
+      menuBtn.classList.remove('open');
+      document.body.style.overflow = '';
+    };
+
+    menuBtn.addEventListener('click', () => {
+      if (mobileOverlay.classList.contains('open')) closeMenu();
+      else openMenu();
+    });
+    mobileClose.addEventListener('click', closeMenu);
+    mobileOverlay.addEventListener('click', (e) => {
+      if (e.target === mobileOverlay) closeMenu();
+    });
+    mobileLinks.forEach(link => link.addEventListener('click', closeMenu));
+
+    /* ─── GERENCIADOR DE ALTERNÂNCIA DE ABAS ─────────── */
+    function switchForm(type, button) {
+      document.querySelectorAll('.briefing-form').forEach(form => form.classList.remove('active'));
+      document.querySelectorAll('.briefing-tab').forEach(tab => tab.classList.remove('active'));
+      
+      document.getElementById(`form-${type}`).classList.add('active');
+      button.classList.add('active');
+    }
+
+    /* ─── PROCESSAMENTO DE DADOS, PDF E REDIRECIONAMENTO DE WHATSAPP ─── */
+    function handleBriefingSubmit(event, typeName) {
+      event.preventDefault();
+      
+      const dateString = new Date().toLocaleDateString('pt-PT');
+      document.getElementById('pdf-date').textContent = dateString;
+      document.getElementById('pdf-type-title').textContent = `BRIEFING — ${typeName.toUpperCase()}`;
+
+      let answersHTML = '';
+      let whatsappMessage = `Olá Lucas!\n\nAcabei de preencher o briefing de *${typeName}*:\n\n`;
+
+      // Captura todos os inputs dentro do formulário ativo
+      const activeForm = event.target;
+      const inputs = activeForm.querySelectorAll('.field-input, .field-select, .field-textarea');
+      
+      let clientName = '';
+      let clientContact = '';
+
+      inputs.forEach(input => {
+        const label = input.previousElementSibling.textContent.replace(' *', '');
+        const value = input.value.trim() || 'Não especificado';
+
+        // Armazenar nome e contacto principais para a mensagem de abertura do WA
+        if (label.toLowerCase().includes('cliente')) clientName = value;
+        if (label.toLowerCase().includes('contacto')) clientContact = value;
+
+        // Formatação das respostas no PDF Minimalista
+        answersHTML += `
+          <div style="page-break-inside: avoid; border-bottom: 1px solid #f0f0f0; padding-bottom: 15px;">
+            <p style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; color: #000; font-weight: 700; margin: 0 0 10px; display: flex; align-items: center; gap: 8px;">
+              <span style="color: #000; font-size: 0.6rem;">◆</span> ${label}
+            </p>
+            <p style="font-size: 0.95rem; line-height: 1.6; color: #444; margin: 0; padding-left: 18px;">${value}</p>
+          </div>
+        `;
+
+        // Montagem do resumo estético para o WhatsApp
+        whatsappMessage += `*${label}:* ${value}\n`;
+      });
+
+      document.getElementById('pdf-answers').innerHTML = answersHTML;
+      
+      // Definições de compilação de alta fidelidade para o html2pdf
+      const element = document.getElementById('pdf-template');
+      const opt = {
+        margin: 0,
+        filename: `Briefing_${typeName.replace(/\s+/g, '_')}_${clientName.replace(/\s+/g, '_')}.pdf`,
+        image: { type: 'jpeg', quality: 1 },
+        html2canvas: { 
+          scale: 2, 
+          useCORS: true, 
+          letterRendering: true,
+          backgroundColor: '#ffffff',
+          logging: false
+        },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      };
+
+      // O wrapper já está posicionado fora da tela, não precisa de display: block
+      
+      // Enviar por Email via EmailJS
+      const emailParams = {
+        to_email: 'pedromuidi5@gmail.com',
+        from_name: clientName,
+        from_contact: clientContact,
+        subject: `Novo Briefing: ${typeName} - ${clientName}`,
+        message: whatsappMessage
+      };
+
+      // Tenta enviar o email (o usuário precisa configurar o Service ID e Template ID)
+      emailjs.send("YOUR_SERVICE_ID", "YOUR_TEMPLATE_ID", emailParams)
+        .then(() => {
+          console.log("Email enviado com sucesso!");
+        }, (error) => {
+          console.log("Erro ao enviar email:", error);
+        });
+
+      // Executa a compilação local do PDF e redirecionamento de WA
+      html2pdf().from(element).set(opt).toPdf().get('pdf').then(function (pdf) {
+        // Salva o PDF
+        pdf.save(opt.filename);
+      }).then(() => {
+        whatsappMessage += `\n📌 _O ficheiro PDF editorial do briefing foi descarregado automaticamente. Estou a enviá-lo em anexo._\n\nAguardo o seu feedback!`;
+        
+        // Redireciona o utilizador para o WhatsApp oficial de contacto
+        const whatsappUrl = `https://wa.me/244923224383?text=${encodeURIComponent(whatsappMessage)}`;
+        window.open(whatsappUrl, '_blank');
+      });
+    }
+  </script>
+</body>
+
+</html>
