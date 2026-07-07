@@ -7,35 +7,35 @@
   'use strict';
 
   /* ─── DOM REFS ─────────────────────────────────────── */
-  const navbar      = document.getElementById('navbar');
-  const menuBtn     = document.getElementById('menuBtn');
+  const navbar = document.getElementById('navbar');
+  const menuBtn = document.getElementById('menuBtn');
   const mobileOverlay = document.getElementById('mobileOverlay');
   const mobileClose = document.getElementById('mobileClose');
   const mobileLinks = document.querySelectorAll('[data-mobile-link]');
-  const heroBg      = document.getElementById('heroBg');
-  const filterBtns  = document.querySelectorAll('.filter-btn');
+  const heroBg = document.getElementById('heroBg');
+  const filterBtns = document.querySelectorAll('.filter-btn');
   const projectsGrid = document.getElementById('projectsGrid');
-  const emptyState  = document.getElementById('emptyState');
+  const emptyState = document.getElementById('emptyState');
   const modalOverlay = document.getElementById('modalOverlay');
-  const modal       = document.getElementById('modal');
-  const modalClose  = document.getElementById('modalClose');
-  const modalBody   = document.getElementById('modalBody');
-  const statNums    = document.querySelectorAll('.stat-num');
-  const aboutPhoto  = document.getElementById('aboutPhoto');
+  const modal = document.getElementById('modal');
+  const modalClose = document.getElementById('modalClose');
+  const modalBody = document.getElementById('modalBody');
+  const statNums = document.querySelectorAll('.stat-num');
+  const aboutPhoto = document.getElementById('aboutPhoto');
 
   let currentFilter = 'all';
-  let galleryIndex  = 0;
+  let galleryIndex = 0;
   let galleryImages = [];
 
   /* ─── HERO SCROLL PARALLAX (Norell style) ──────────── */
-  const heroEl      = document.getElementById('hero');
+  const heroEl = document.getElementById('hero');
   const heroContent = heroEl.querySelector('.hero-content');
-  const heroName    = heroEl.querySelector('.hero-name');
+  const heroName = heroEl.querySelector('.hero-name');
   const heroOverlay = heroEl.querySelector('.hero-overlay');
 
   function updateHeroParallax() {
     const scrollY = window.scrollY;
-    const heroH   = heroEl.offsetHeight;
+    const heroH = heroEl.offsetHeight;
 
     if (scrollY > heroH) return; // past hero — stop calculating
 
@@ -49,8 +49,8 @@
     heroOverlay.style.background = `linear-gradient(
       to bottom,
       rgba(9,9,9,${0.35 + extraDark}) 0%,
-      rgba(9,9,9,${0.1  + extraDark}) 30%,
-      rgba(9,9,9,${0.2  + extraDark}) 60%,
+      rgba(9,9,9,${0.1 + extraDark}) 30%,
+      rgba(9,9,9,${0.2 + extraDark}) 60%,
       rgba(9,9,9,${0.85 + extraDark * 0.15}) 100%
     )`;
 
@@ -229,6 +229,18 @@
     });
   });
 
+  /* ─── Abre uma imagem (URL normal ou base64) numa nova aba ─── */
+  function openImageInNewTab(imgUrl) {
+    if (imgUrl.startsWith('data:')) {
+      // Para imagens em base64 (upload local), abrimos numa nova aba de forma compatível
+      const newTab = window.open();
+      newTab.document.body.innerHTML = `<img src="${imgUrl}" style="max-width:100%; height:auto;">`;
+      newTab.document.title = 'Visualização de Imagem';
+    } else {
+      window.open(imgUrl, '_blank');
+    }
+  }
+
   /* ─── MODAL ────────────────────────────────────────── */
   function openModal(project) {
     galleryImages = project.images || [];
@@ -244,8 +256,8 @@
       ).join('');
       const dots = galleryImages.length > 1
         ? `<div class="modal-gallery-dots">${galleryImages.map((_, i) =>
-            `<span class="modal-gallery-dot ${i === 0 ? 'active' : ''}" data-idx="${i}"></span>`
-          ).join('')}</div>`
+          `<span class="modal-gallery-dot ${i === 0 ? 'active' : ''}" data-idx="${i}"></span>`
+        ).join('')}</div>`
         : '';
       const navBtns = galleryImages.length > 1
         ? `<button class="modal-gallery-nav prev" id="galPrev">‹</button>
@@ -256,7 +268,7 @@
           <div class="modal-gallery-track" id="galTrack">${slides}</div>
           ${navBtns}
           ${dots}
-          <div class="modal-fullscreen-btn" onclick="window.open('${galleryImages[galleryIndex]}', '_blank')" id="fullViewBtn">Ver em tamanho real ↗</div>
+          <div class="modal-fullscreen-btn" id="fullViewBtn">Ver em tamanho real ↗</div>
         </div>
       `;
     }
@@ -284,32 +296,27 @@
       </div>
     `;
 
+    // Botão "ver em tamanho real" — já aponta para a imagem inicial da galeria
+    const fullViewBtn = document.getElementById('fullViewBtn');
+    if (fullViewBtn && galleryImages.length > 0) {
+      fullViewBtn.onclick = () => openImageInNewTab(galleryImages[galleryIndex]);
+    }
+
     // Gallery navigation
     if (galleryImages.length > 1) {
       const track = document.getElementById('galTrack');
-      const prev  = document.getElementById('galPrev');
-      const next  = document.getElementById('galNext');
-      const dots  = document.querySelectorAll('.modal-gallery-dot');
+      const prev = document.getElementById('galPrev');
+      const next = document.getElementById('galNext');
+      const dots = document.querySelectorAll('.modal-gallery-dot');
 
       const goTo = (idx) => {
         galleryIndex = Math.max(0, Math.min(idx, galleryImages.length - 1));
         track.style.transform = `translateX(-${galleryIndex * 100}%)`;
         dots.forEach((d, i) => d.classList.toggle('active', i === galleryIndex));
-        
-        // Atualizar link do botão de tamanho real
-        const fullViewBtn = document.getElementById('fullViewBtn');
+
+        // Atualiza o link do botão de tamanho real para a imagem atual da galeria
         if (fullViewBtn) {
-          fullViewBtn.onclick = () => {
-            const imgUrl = galleryImages[galleryIndex];
-            if (imgUrl.startsWith('data:')) {
-              // Para imagens em base64 (upload local), abrimos em uma nova aba de forma compatível
-              const newTab = window.open();
-              newTab.document.body.innerHTML = `<img src="${imgUrl}" style="max-width:100%; height:auto;">`;
-              newTab.document.title = "Visualização de Imagem";
-            } else {
-              window.open(imgUrl, '_blank');
-            }
-          };
+          fullViewBtn.onclick = () => openImageInNewTab(galleryImages[galleryIndex]);
         }
       };
 

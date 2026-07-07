@@ -8,9 +8,11 @@
   <meta name="description" content="Portfólio completo de projetos de Lucas Muindi, Designer Gráfico.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap"
+    rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
-  
+
   <style>
     /* Estilos específicos para a página de portfólio */
     body {
@@ -355,8 +357,8 @@
         ).join('');
         const dots = galleryImages.length > 1
           ? `<div class="modal-gallery-dots">${galleryImages.map((_, i) =>
-              `<span class="modal-gallery-dot ${i === 0 ? 'active' : ''}" data-idx="${i}"></span>`
-            ).join('')}</div>`
+            `<span class="modal-gallery-dot ${i === 0 ? 'active' : ''}" data-idx="${i}"></span>`
+          ).join('')}</div>`
           : '';
         const navBtns = galleryImages.length > 1
           ? `<button class="modal-gallery-nav prev" id="galPrev">‹</button>
@@ -406,10 +408,11 @@
           galleryIndex = Math.max(0, Math.min(idx, galleryImages.length - 1));
           track.style.transform = `translateX(-${galleryIndex * 100}%)`;
           dots.forEach((d, i) => d.classList.toggle('active', i === galleryIndex));
-          
+
           // Atualizar link do botão de tamanho real
           const fullViewBtn = document.getElementById('fullViewBtn');
           if (fullViewBtn) {
+            HEAD
             fullViewBtn.onclick = () => {
               const imgUrl = galleryImages[galleryIndex];
               if (imgUrl.startsWith('data:')) {
@@ -420,6 +423,9 @@
                 window.open(imgUrl, '_blank');
               }
             };
+
+            fullViewBtn.onclick = () => window.open(galleryImages[galleryIndex], '_blank');
+
           }
         };
 
