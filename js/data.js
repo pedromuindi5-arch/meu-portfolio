@@ -196,6 +196,7 @@ function addProject(data) {
   const newProject = {
     id: 'proj-' + Date.now(),
     visible: true,
+    featured: true,
     order: projects.length,
     ...data
   };

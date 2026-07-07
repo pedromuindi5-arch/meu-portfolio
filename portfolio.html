@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="pt">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portfólio — Lucas Muindi</title>
+  <meta name="description" content="Portfólio completo de projetos de Lucas Muindi, Designer Gráfico.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  
+  <style>
+    /* Estilos específicos para a página de portfólio */
+    body {
+      background-image: linear-gradient(rgba(0, 0, 0, 0.85), rgba(0, 0, 0, 0.85)), url('assets/backgroundsession.png');
+      background-attachment: fixed;
+      background-size: cover;
+      background-position: center;
+      color: var(--text);
+    }
+
+    .portfolio-hero {
+      padding-top: calc(var(--nav-h) + 3rem);
+      padding-bottom: 3rem;
+      text-align: center;
+    }
+
+    .portfolio-title {
+      font-family: var(--font-serif);
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      font-style: italic;
+      font-weight: 400;
+      line-height: 1.1;
+      margin-bottom: 0.5rem;
+    }
+
+    .portfolio-desc {
+      color: var(--text-dim);
+      font-size: 0.95rem;
+      max-width: 60ch;
+      margin: 0 auto 2.5rem;
+    }
+
+    .portfolio-filters {
+      display: flex;
+      justify-content: center;
+      gap: 0.5rem;
+      margin-bottom: 3rem;
+      flex-wrap: wrap;
+    }
+
+    .portfolio-filter {
+      padding: 0.65rem 1.5rem;
+      font-size: 0.8rem;
+      font-weight: 500;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+      border-radius: 30px;
+      transition: all var(--transition);
+      cursor: pointer;
+      background: transparent;
+    }
+
+    .portfolio-filter:hover {
+      color: var(--text);
+      border-color: rgba(255, 255, 255, 0.25);
+    }
+
+    .portfolio-filter.active {
+      color: var(--bg);
+      background: var(--text);
+      border-color: var(--text);
+    }
+
+    .portfolio-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 2rem;
+      margin-bottom: 5rem;
+    }
+
+    .portfolio-card {
+      position: relative;
+      overflow: hidden;
+      border-radius: 8px;
+      cursor: pointer;
+      aspect-ratio: 1;
+      background: #0d0d0d;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      transition: all var(--transition);
+    }
+
+    .portfolio-card:hover {
+      border-color: rgba(255, 255, 255, 0.15);
+      transform: translateY(-4px);
+    }
+
+    .portfolio-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .portfolio-card-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0.8) 100%);
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 1.5rem;
+      opacity: 0;
+      transition: opacity var(--transition);
+    }
+
+    .portfolio-card:hover .portfolio-card-overlay {
+      opacity: 1;
+    }
+
+    .portfolio-card-cat {
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: rgba(255, 255, 255, 0.6);
+      margin-bottom: 0.5rem;
+    }
+
+    .portfolio-card-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--text);
+      line-height: 1.2;
+    }
+
+    .portfolio-empty {
+      text-align: center;
+      padding: 3rem;
+      color: var(--text-muted);
+    }
+
+    .portfolio-empty p {
+      font-size: 0.95rem;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- NAVBAR -->
+  <nav class="navbar" id="navbar">
+    <a href="index.html" class="nav-logo">Lucas Muindi<sup>®</sup></a>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="index.html#about" class="nav-link">Sobre</a></li>
+      <li><a href="index.html#works" class="nav-link">Trabalhos</a></li>
+      <li><a href="portfolio.html" class="nav-link active">Portfólio</a></li>
+      <li><a href="briefing.html" class="nav-link">Briefing</a></li>
+      <li><a href="index.html#contact" class="nav-link">Contacto</a></li>
+    </ul>
+    <button class="nav-menu-btn" id="menuBtn" aria-label="Abrir menu">
+      <span></span>
+      <span></span>
+    </button>
+  </nav>
+
+  <!-- MOBILE MENU OVERLAY -->
+  <div class="mobile-overlay" id="mobileOverlay">
+    <div class="mobile-menu" id="mobileMenu">
+      <button class="mobile-close" id="mobileClose" aria-label="Fechar menu">✕</button>
+      <nav class="mobile-nav">
+        <a href="index.html#about" class="mobile-nav-link" data-mobile-link>Sobre</a>
+        <a href="index.html#works" class="mobile-nav-link" data-mobile-link>Trabalhos</a>
+        <a href="portfolio.html" class="mobile-nav-link" data-mobile-link>Portfólio</a>
+        <a href="briefing.html" class="mobile-nav-link" data-mobile-link>Briefing</a>
+        <a href="index.html#contact" class="mobile-nav-link" data-mobile-link>Contacto</a>
+      </nav>
+      <div class="mobile-footer">
+        <span>lucas@muindi.design</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTAINER PRINCIPAL -->
+  <main class="container">
+    <section class="portfolio-hero">
+      <h1 class="portfolio-title">Portfólio Completo</h1>
+      <p class="portfolio-desc">Explorar todos os projetos realizados, organizados por categoria e tipo de design.</p>
+
+      <!-- FILTROS -->
+      <div class="portfolio-filters">
+        <button class="portfolio-filter active" data-filter="all">Todos</button>
+        <button class="portfolio-filter" data-filter="identidade-visual">Identidade Visual</button>
+        <button class="portfolio-filter" data-filter="social-media">Social Media</button>
+        <button class="portfolio-filter" data-filter="motion">Motion</button>
+        <button class="portfolio-filter" data-filter="editorial">Editorial</button>
+        <button class="portfolio-filter" data-filter="web-design">Web Design</button>
+        <button class="portfolio-filter" data-filter="embalagem">Embalagem</button>
+      </div>
+    </section>
+
+    <!-- GRID DE PROJETOS -->
+    <div class="portfolio-grid" id="portfolioGrid"></div>
+
+    <!-- ESTADO VAZIO -->
+    <div class="portfolio-empty" id="emptyState" style="display:none;">
+      <p>Nenhum projeto nesta categoria ainda.</p>
+    </div>
+  </main>
+
+  <!-- MODAL (Reutilizado do index.html) -->
+  <div class="modal-overlay" id="modalOverlay" aria-hidden="true">
+    <div class="modal" id="modal" role="dialog" aria-modal="true" aria-label="Detalhes do projeto">
+      <button class="modal-close" id="modalClose" aria-label="Fechar">✕</button>
+      <div class="modal-body" id="modalBody"></div>
+    </div>
+  </div>
+
+  <script src="js/data.js"></script>
+  <script>
+    'use strict';
+
+    /* ─── DOM REFS ─────────────────────────────────────── */
+    const navbar = document.getElementById('navbar');
+    const menuBtn = document.getElementById('menuBtn');
+    const mobileOverlay = document.getElementById('mobileOverlay');
+    const mobileClose = document.getElementById('mobileClose');
+    const mobileLinks = document.querySelectorAll('[data-mobile-link]');
+    const filterBtns = document.querySelectorAll('.portfolio-filter');
+    const portfolioGrid = document.getElementById('portfolioGrid');
+    const emptyState = document.getElementById('emptyState');
+    const modalOverlay = document.getElementById('modalOverlay');
+    const modal = document.getElementById('modal');
+    const modalClose = document.getElementById('modalClose');
+    const modalBody = document.getElementById('modalBody');
+
+    let currentFilter = 'all';
+    let galleryIndex = 0;
+    let galleryImages = [];
+
+    /* ─── NAVBAR SCROLL ────────────────────────────────── */
+    const onScroll = () => {
+      if (window.scrollY > 60) {
+        navbar.classList.add('scrolled');
+      } else {
+        navbar.classList.remove('scrolled');
+      }
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+
+    /* ─── MOBILE MENU ──────────────────────────────────── */
+    const openMenu = () => {
+      mobileOverlay.classList.add('open');
+      menuBtn.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    };
+    const closeMenu = () => {
+      mobileOverlay.classList.remove('open');
+      menuBtn.classList.remove('open');
+      document.body.style.overflow = '';
+    };
+
+    menuBtn.addEventListener('click', () => {
+      if (mobileOverlay.classList.contains('open')) closeMenu();
+      else openMenu();
+    });
+    mobileClose.addEventListener('click', closeMenu);
+    mobileOverlay.addEventListener('click', (e) => {
+      if (e.target === mobileOverlay) closeMenu();
+    });
+    mobileLinks.forEach(link => link.addEventListener('click', closeMenu));
+
+    /* ─── SMOOTH SCROLL ────────────────────────────────── */
+    document.querySelectorAll('a[href^="#"]').forEach(a => {
+      a.addEventListener('click', (e) => {
+        const target = document.querySelector(a.getAttribute('href'));
+        if (target) {
+          e.preventDefault();
+          target.scrollIntoView({ behavior: 'smooth' });
+        }
+      });
+    });
+
+    /* ─── PROJETOS RENDERING ───────────────────────────── */
+    function renderProjects(filter) {
+      // No portfolio.html mostramos todos os projetos visíveis, independentemente de estarem em destaque na Home
+      const projects = getProjectsByCategory(filter);
+      portfolioGrid.innerHTML = '';
+
+      if (projects.length === 0) {
+        emptyState.style.display = 'block';
+        return;
+      }
+      emptyState.style.display = 'none';
+
+      projects.forEach((p, idx) => {
+        const card = createCard(p, idx);
+        portfolioGrid.appendChild(card);
+      });
+    }
+
+    function createCard(project, idx) {
+      const card = document.createElement('div');
+      card.className = 'portfolio-card';
+      card.style.animationDelay = `${idx * 0.06}s`;
+      card.setAttribute('tabindex', '0');
+      card.setAttribute('role', 'button');
+      card.setAttribute('aria-label', `Ver projecto: ${project.title}`);
+
+      const imgSrc = project.images && project.images[0] ? project.images[0] : '';
+      const catLabel = getCategoryLabel(project.category);
+
+      card.innerHTML = `
+        ${imgSrc
+          ? `<img src="${imgSrc}" alt="${project.title}" loading="lazy">`
+          : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#1a1a1a;font-size:0.8rem;color:var(--text-muted)">SEM IMAGEM</div>`
+        }
+        <div class="portfolio-card-overlay">
+          <span class="portfolio-card-cat">${catLabel}</span>
+          <span class="portfolio-card-title">${project.title}</span>
+        </div>
+      `;
+
+      const open = () => openModal(project);
+      card.addEventListener('click', open);
+      card.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') open(); });
+
+      return card;
+    }
+
+    /* ─── FILTER ───────────────────────────────────────── */
+    filterBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        filterBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentFilter = btn.dataset.filter;
+        renderProjects(currentFilter);
+      });
+    });
+
+    /* ─── MODAL ────────────────────────────────────────── */
+    function openModal(project) {
+      galleryImages = project.images || [];
+      galleryIndex = 0;
+
+      const catLabel = getCategoryLabel(project.category);
+
+      // Build gallery HTML
+      let galleryHTML = '';
+      if (galleryImages.length > 0) {
+        const slides = galleryImages.map(img =>
+          `<div class="modal-gallery-slide"><img src="${img}" alt="${project.title}" loading="lazy" onclick="window.open('${img}', '_blank')"></div>`
+        ).join('');
+        const dots = galleryImages.length > 1
+          ? `<div class="modal-gallery-dots">${galleryImages.map((_, i) =>
+              `<span class="modal-gallery-dot ${i === 0 ? 'active' : ''}" data-idx="${i}"></span>`
+            ).join('')}</div>`
+          : '';
+        const navBtns = galleryImages.length > 1
+          ? `<button class="modal-gallery-nav prev" id="galPrev">‹</button>
+             <button class="modal-gallery-nav next" id="galNext">›</button>`
+          : '';
+        galleryHTML = `
+          <div class="modal-gallery">
+            <div class="modal-gallery-track" id="galTrack">${slides}</div>
+            ${navBtns}
+            ${dots}
+            <div class="modal-fullscreen-btn" onclick="window.open('${galleryImages[galleryIndex]}', '_blank')" id="fullViewBtn">Ver em tamanho real ↗</div>
+          </div>
+        `;
+      }
+
+      modalBody.innerHTML = `
+        ${galleryHTML}
+        <div class="modal-info">
+          <div class="modal-cat">${catLabel}</div>
+          <h2 class="modal-title">${project.title}</h2>
+          <p class="modal-desc">${project.description}</p>
+          <div class="modal-meta">
+            ${project.client ? `<div class="modal-meta-item">
+              <span class="modal-meta-label">Cliente</span>
+              <span class="modal-meta-value">${project.client}</span>
+            </div>` : ''}
+            ${project.year ? `<div class="modal-meta-item">
+              <span class="modal-meta-label">Ano</span>
+              <span class="modal-meta-value">${project.year}</span>
+            </div>` : ''}
+            <div class="modal-meta-item">
+              <span class="modal-meta-label">Categoria</span>
+              <span class="modal-meta-value">${catLabel}</span>
+            </div>
+          </div>
+        </div>
+      `;
+
+      // Gallery navigation
+      if (galleryImages.length > 1) {
+        const track = document.getElementById('galTrack');
+        const prev = document.getElementById('galPrev');
+        const next = document.getElementById('galNext');
+        const dots = document.querySelectorAll('.modal-gallery-dot');
+
+        const goTo = (idx) => {
+          galleryIndex = Math.max(0, Math.min(idx, galleryImages.length - 1));
+          track.style.transform = `translateX(-${galleryIndex * 100}%)`;
+          dots.forEach((d, i) => d.classList.toggle('active', i === galleryIndex));
+          
+          // Atualizar link do botão de tamanho real
+          const fullViewBtn = document.getElementById('fullViewBtn');
+          if (fullViewBtn) {
+            fullViewBtn.onclick = () => window.open(galleryImages[galleryIndex], '_blank');
+          }
+        };
+
+        prev.addEventListener('click', () => goTo(galleryIndex - 1));
+        next.addEventListener('click', () => goTo(galleryIndex + 1));
+        dots.forEach(dot => {
+          dot.addEventListener('click', () => goTo(parseInt(dot.dataset.idx, 10)));
+        });
+      }
+
+      modalOverlay.classList.add('open');
+      modalOverlay.setAttribute('aria-hidden', 'false');
+      document.body.style.overflow = 'hidden';
+    }
+
+    const closeModal = () => {
+      modalOverlay.classList.remove('open');
+      modalOverlay.setAttribute('aria-hidden', 'true');
+      document.body.style.overflow = '';
+    };
+
+    modalClose.addEventListener('click', closeModal);
+    modalOverlay.addEventListener('click', (e) => {
+      if (e.target === modalOverlay) closeModal();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        closeModal();
+        closeMenu();
+      }
+      if (e.key === 'ArrowLeft' && modalOverlay.classList.contains('open')) {
+        const prev = document.getElementById('galPrev');
+        if (prev) prev.click();
+      }
+      if (e.key === 'ArrowRight' && modalOverlay.classList.contains('open')) {
+        const next = document.getElementById('galNext');
+        if (next) next.click();
+      }
+    });
+
+    /* ─── INIT ─────────────────────────────────────────── */
+    renderProjects('all');
+  </script>
+</body>
+
+</html>

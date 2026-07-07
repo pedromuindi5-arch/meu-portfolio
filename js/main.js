@@ -173,7 +173,8 @@
 
   /* ─── PROJECTS RENDERING ───────────────────────────── */
   function renderProjects(filter) {
-    const projects = getProjectsByCategory(filter);
+    // Na Home (main.js), filtramos apenas os projetos que estão em destaque (featured)
+    const projects = getProjectsByCategory(filter).filter(p => p.featured !== false);
     projectsGrid.innerHTML = '';
 
     if (projects.length === 0) {
@@ -239,7 +240,7 @@
     let galleryHTML = '';
     if (galleryImages.length > 0) {
       const slides = galleryImages.map(img =>
-        `<div class="modal-gallery-slide"><img src="${img}" alt="${project.title}" loading="lazy"></div>`
+        `<div class="modal-gallery-slide"><img src="${img}" alt="${project.title}" loading="lazy" onclick="window.open('${img}', '_blank')"></div>`
       ).join('');
       const dots = galleryImages.length > 1
         ? `<div class="modal-gallery-dots">${galleryImages.map((_, i) =>
@@ -255,6 +256,7 @@
           <div class="modal-gallery-track" id="galTrack">${slides}</div>
           ${navBtns}
           ${dots}
+          <div class="modal-fullscreen-btn" onclick="window.open('${galleryImages[galleryIndex]}', '_blank')" id="fullViewBtn">Ver em tamanho real ↗</div>
         </div>
       `;
     }
@@ -293,6 +295,12 @@
         galleryIndex = Math.max(0, Math.min(idx, galleryImages.length - 1));
         track.style.transform = `translateX(-${galleryIndex * 100}%)`;
         dots.forEach((d, i) => d.classList.toggle('active', i === galleryIndex));
+        
+        // Atualizar link do botão de tamanho real
+        const fullViewBtn = document.getElementById('fullViewBtn');
+        if (fullViewBtn) {
+          fullViewBtn.onclick = () => window.open(galleryImages[galleryIndex], '_blank');
+        }
       };
 
       prev.addEventListener('click', () => goTo(galleryIndex - 1));

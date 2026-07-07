@@ -1056,16 +1056,25 @@ button {
 .modal {
   position: relative;
   width: 100%;
-  max-width: 900px;
-  max-height: 90vh;
+  max-width: 1200px;
+  max-height: 95vh;
   background: var(--bg-2);
   border: 1px solid var(--border);
-  border-radius: 6px;
-  overflow: hidden;
+  border-radius: 12px;
+  overflow-y: auto;
   transform: translateY(30px) scale(0.97);
   transition: transform 0.45s var(--ease-out);
   display: flex;
   flex-direction: column;
+}
+
+.modal::-webkit-scrollbar {
+  width: 6px;
+}
+
+.modal::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
 }
 
 .modal-overlay.open .modal {
@@ -1105,6 +1114,11 @@ button {
   position: relative;
   background: #000;
   overflow: hidden;
+  width: 100%;
+  min-height: 50vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .modal-gallery-track {
@@ -1118,10 +1132,12 @@ button {
 }
 
 .modal-gallery-slide img {
-  width: 100%;
-  max-height: 500px;
-  object-fit: cover;
+  max-width: 100%;
+  height: auto;
+  max-height: 85vh;
+  object-fit: contain;
   display: block;
+  margin: 0 auto;
 }
 
 .modal-gallery-nav {
@@ -1149,6 +1165,28 @@ button {
 
 .modal-gallery-nav.prev {
   left: 1rem;
+}
+
+.modal-fullscreen-btn {
+  position: absolute;
+  bottom: 1rem;
+  right: 1rem;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(5px);
+  border: 1px solid var(--border);
+  color: #fff;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition);
+  z-index: 10;
+}
+
+.modal-fullscreen-btn:hover {
+  background: #fff;
+  color: #000;
 }
 
 .modal-gallery-nav.next {
