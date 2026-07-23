@@ -10,12 +10,16 @@ const DB_KEY = 'lucas_muindi_portfolio';
    CATEGORY DEFINITIONS
 ═══════════════════════════ */
 const CATEGORIES = [
-  { slug: 'identidade-visual', label: 'Identidade Visual' },
-  { slug: 'social-media',      label: 'Social Media' },
-  { slug: 'motion',            label: 'Motion' },
-  { slug: 'editorial',         label: 'Editorial' },
-  { slug: 'web-design',        label: 'Web Design' },
-  { slug: 'embalagem',         label: 'Embalagem' },
+  { slug: 'identidade-visual',    label: 'Identidade Visual' },
+  { slug: 'social-media',         label: 'Social Media' },
+  { slug: 'motion',               label: 'Motion' },
+  { slug: 'editorial',            label: 'Editorial' },
+  { slug: 'web-design',           label: 'Web Design' },
+  { slug: 'embalagem',            label: 'Embalagem' },
+  /* Novas categorias — páginas de serviço dedicadas (não alteram os filtros da home) */
+  { slug: 'design-publicitario',  label: 'Design Publicitário' },
+  { slug: 'design-eventos',       label: 'Design para Eventos' },
+  { slug: 'materiais-graficos',   label: 'Materiais Gráficos' },
 ];
 
 /* ═══════════════════════════

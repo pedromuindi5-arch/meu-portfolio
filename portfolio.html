@@ -412,7 +412,6 @@
           // Atualizar link do botão de tamanho real
           const fullViewBtn = document.getElementById('fullViewBtn');
           if (fullViewBtn) {
-            HEAD
             fullViewBtn.onclick = () => {
               const imgUrl = galleryImages[galleryIndex];
               if (imgUrl.startsWith('data:')) {
@@ -423,9 +422,6 @@
                 window.open(imgUrl, '_blank');
               }
             };
-
-            fullViewBtn.onclick = () => window.open(galleryImages[galleryIndex], '_blank');
-
           }
         };
 
