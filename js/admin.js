@@ -80,13 +80,22 @@
   /* ══════════════════════════════════════════════════════
      AUTH (Supabase Auth)
   ══════════════════════════════════════════════════════ */
+  let isPanelOpen = false;
+
   function authorize() {
     loginScreen.style.display = 'none';
     adminPanel.style.display  = 'flex';
-    showView('dashboard');
+    if (!isPanelOpen) {
+      // Só reinicia para o Dashboard na transição real de "sem sessão" para "com sessão"
+      // (login inicial). Reconfirmações de sessão (troca de aba, refresh de token,
+      // voltar de um seletor de ficheiros) NÃO devem reiniciar a vista atual.
+      isPanelOpen = true;
+      showView('dashboard');
+    }
   }
 
   function deauthorize() {
+    isPanelOpen = false;
     loginScreen.style.display = 'flex';
     adminPanel.style.display  = 'none';
     loginPassword.value = '';
