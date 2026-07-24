@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="pt">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Projeto — Lucas Muindi</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+  <!-- NAVBAR -->
+  <nav class="navbar" id="navbar">
+    <a href="index.html" class="nav-logo">Lucas Muindi<sup>®</sup></a>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="index.html#about" class="nav-link">Sobre</a></li>
+      <li><a href="index.html#works" class="nav-link">Trabalhos</a></li>
+      <li><a href="portfolio.html" class="nav-link">Portfólio</a></li>
+      <li><a href="briefing.html" class="nav-link">Briefing</a></li>
+      <li><a href="index.html#contact" class="nav-link">Contacto</a></li>
+    </ul>
+    <button class="nav-menu-btn" id="menuBtn" aria-label="Abrir menu">
+      <span></span>
+      <span></span>
+    </button>
+  </nav>
+
+  <!-- MOBILE MENU OVERLAY -->
+  <div class="mobile-overlay" id="mobileOverlay">
+    <div class="mobile-menu" id="mobileMenu">
+      <button class="mobile-close" id="mobileClose" aria-label="Fechar menu">✕</button>
+      <nav class="mobile-nav">
+        <a href="index.html#about" class="mobile-nav-link" data-mobile-link>Sobre</a>
+        <a href="index.html#works" class="mobile-nav-link" data-mobile-link>Trabalhos</a>
+        <a href="portfolio.html" class="mobile-nav-link" data-mobile-link>Portfólio</a>
+        <a href="briefing.html" class="mobile-nav-link" data-mobile-link>Briefing</a>
+        <a href="index.html#contact" class="mobile-nav-link" data-mobile-link>Contacto</a>
+      </nav>
+      <div class="mobile-footer">
+        <span>lucas@muindi.design</span>
+      </div>
+    </div>
+  </div>
+
+  <main>
+    <div class="project-loading" id="projectLoading">
+      <p>A carregar projeto...</p>
+    </div>
+
+    <div id="projectContent" style="display:none;">
+
+      <!-- HERO -->
+      <section class="project-hero">
+        <span class="project-hero-cat" id="projectHeroCat"></span>
+        <h1 class="project-hero-title" id="projectHeroTitle"></h1>
+        <p class="project-hero-desc" id="projectHeroDesc" style="display:none;"></p>
+        <div class="project-hero-meta" id="projectHeroTags" style="display:none;"></div>
+        <div class="project-hero-info" id="projectHeroInfo" style="display:none;"></div>
+      </section>
+
+      <!-- BLOCOS DE CONTEÚDO -->
+      <section class="project-blocks" id="projectBlocks"></section>
+
+      <!-- VOLTAR -->
+      <section class="project-footer-nav">
+        <a href="portfolio.html" class="btn-bright">Ver mais projetos</a>
+      </section>
+
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase-client.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/project-view.js"></script>
+</body>
+
+</html>

@@ -52,6 +52,13 @@
   const imageUrlList  = document.getElementById('imageUrlList');
   const addUrlBtn     = document.getElementById('addUrlBtn');
   const imagePreviewGrid = document.getElementById('imagePreviewGrid');
+  const projTags      = document.getElementById('projTags');
+  const tagsPreview   = document.getElementById('tagsPreview');
+  const addImageBlockBtn = document.getElementById('addImageBlockBtn');
+  const addTextBlockBtn  = document.getElementById('addTextBlockBtn');
+  const addCarouselBlockBtn = document.getElementById('addCarouselBlockBtn');
+  const blocksList    = document.getElementById('blocksList');
+  const blocksEmpty   = document.getElementById('blocksEmpty');
 
   // Service Documents
   const documentsGrid     = document.getElementById('documentsGrid');
@@ -101,6 +108,8 @@
   let pendingDeleteId = null;
   let uploadedImages  = [];   // URLs públicos já enviados para o Supabase Storage
   let uploadsInFlight = 0;    // uploads a decorrer (bloqueia submit do formulário)
+  let blocksState     = [];   // blocos de conteúdo do projeto em edição
+  let blockIdCounter  = 0;
 
   /* ══════════════════════════════════════════════════════
      AUTH (Supabase Auth)
@@ -398,6 +407,11 @@
     // Reset to URL tab
     switchImageTab('urls');
     uploadPreview.innerHTML = '';
+    // Tags & blocks
+    projTags.value = '';
+    updateTagsPreview();
+    blocksState = [];
+    renderBlocksList();
   }
 
   function openEditForm(p) {
@@ -424,6 +438,12 @@
     updatePreviewGrid(images);
     uploadedImages = [];
     uploadPreview.innerHTML = '';
+
+    // Tags & blocks
+    projTags.value = (p.tags || []).join(', ');
+    updateTagsPreview();
+    blocksState = JSON.parse(JSON.stringify(p.blocks || []));
+    renderBlocksList();
   }
 
   projectForm.addEventListener('submit', async (e) => {
@@ -449,6 +469,8 @@
         visible:     projVisible.checked,
         featured:    projFeatured.checked,
         images,
+        tags:        parseTagsInput(),
+        blocks:      blocksState,
       };
 
       const id = editIdInput.value;
@@ -642,6 +664,254 @@
         updatePreviewGrid([...newUrls, ...uploadedImages]);
       });
       imagePreviewGrid.appendChild(wrap);
+    });
+  }
+
+  /* ══════════════════════════════════════════════════════
+     TAGS
+  ══════════════════════════════════════════════════════ */
+  function parseTagsInput() {
+    return projTags.value.split(',').map(t => t.trim()).filter(Boolean);
+  }
+
+  function updateTagsPreview() {
+    const tags = parseTagsInput();
+    tagsPreview.innerHTML = tags.map(t => `<span class="project-tag" style="color:var(--text-dim);border:1px solid var(--border);border-radius:30px;padding:0.25rem 0.75rem;font-size:0.72rem;">${t}</span>`).join('');
+  }
+
+  projTags.addEventListener('input', updateTagsPreview);
+
+  /* ══════════════════════════════════════════════════════
+     BLOCOS DE CONTEÚDO (editor estilo Behance)
+  ══════════════════════════════════════════════════════ */
+  function newBlockId() {
+    blockIdCounter++;
+    return `block-${Date.now()}-${blockIdCounter}`;
+  }
+
+  addImageBlockBtn.addEventListener('click', () => {
+    blocksState.push({ id: newBlockId(), type: 'image', url: '', caption: '' });
+    renderBlocksList();
+  });
+
+  addTextBlockBtn.addEventListener('click', () => {
+    blocksState.push({ id: newBlockId(), type: 'text', content: '' });
+    renderBlocksList();
+  });
+
+  addCarouselBlockBtn.addEventListener('click', () => {
+    blocksState.push({ id: newBlockId(), type: 'carousel', images: [] });
+    renderBlocksList();
+  });
+
+  function renderBlocksList() {
+    blocksList.innerHTML = '';
+    blocksEmpty.style.display = blocksState.length === 0 ? 'block' : 'none';
+
+    blocksState.forEach((block, index) => {
+      const item = document.createElement('div');
+      item.className = 'block-item';
+      item.draggable = true;
+      item.dataset.index = index;
+
+      const typeLabels = { image: 'Imagem', text: 'Texto', carousel: 'Carrossel' };
+
+      const body = document.createElement('div');
+      body.className = 'block-body';
+
+      const header = document.createElement('div');
+      header.className = 'block-type-label';
+      header.innerHTML = `<span>${typeLabels[block.type]}</span>`;
+      const removeBtn = document.createElement('button');
+      removeBtn.type = 'button';
+      removeBtn.className = 'block-remove-btn';
+      removeBtn.textContent = '✕ remover';
+      removeBtn.addEventListener('click', () => {
+        blocksState.splice(index, 1);
+        renderBlocksList();
+      });
+      header.appendChild(removeBtn);
+      body.appendChild(header);
+
+      if (block.type === 'image') {
+        body.appendChild(buildImageBlockEditor(block));
+      } else if (block.type === 'text') {
+        body.appendChild(buildTextBlockEditor(block));
+      } else if (block.type === 'carousel') {
+        body.appendChild(buildCarouselBlockEditor(block));
+      }
+
+      const handle = document.createElement('span');
+      handle.className = 'block-drag-handle';
+      handle.textContent = '⠿';
+
+      item.appendChild(handle);
+      item.appendChild(body);
+      blocksList.appendChild(item);
+
+      bindBlockDragEvents(item);
+    });
+  }
+
+  function buildImageBlockEditor(block) {
+    const wrap = document.createElement('div');
+    wrap.style.cssText = 'display:flex;flex-direction:column;gap:0.5rem;';
+
+    const preview = document.createElement('img');
+    preview.className = 'block-image-preview';
+    preview.style.display = block.url ? 'block' : 'none';
+    if (block.url) preview.src = block.url;
+
+    const urlInput = document.createElement('input');
+    urlInput.type = 'url';
+    urlInput.placeholder = 'URL da imagem, ou usa o botão de upload';
+    urlInput.value = block.url || '';
+    urlInput.addEventListener('input', () => {
+      block.url = urlInput.value.trim();
+      preview.src = block.url;
+      preview.style.display = block.url ? 'block' : 'none';
+    });
+
+    const uploadBtn = document.createElement('button');
+    uploadBtn.type = 'button';
+    uploadBtn.className = 'btn-admin-ghost';
+    uploadBtn.textContent = 'Upload de imagem';
+    uploadBtn.style.marginTop = '0.35rem';
+    uploadBtn.addEventListener('click', () => {
+      triggerFileUpload(async (file) => {
+        try {
+          const url = await uploadProjectImage(file);
+          block.url = url;
+          urlInput.value = url;
+          preview.src = url;
+          preview.style.display = 'block';
+        } catch {
+          showToast('Erro ao enviar imagem.', true);
+        }
+      });
+    });
+
+    const captionInput = document.createElement('input');
+    captionInput.type = 'text';
+    captionInput.placeholder = 'Legenda (opcional)';
+    captionInput.value = block.caption || '';
+    captionInput.style.marginTop = '0.5rem';
+    captionInput.addEventListener('input', () => { block.caption = captionInput.value; });
+
+    wrap.appendChild(preview);
+    wrap.appendChild(urlInput);
+    wrap.appendChild(uploadBtn);
+    wrap.appendChild(captionInput);
+    return wrap;
+  }
+
+  function buildTextBlockEditor(block) {
+    const textarea = document.createElement('textarea');
+    textarea.rows = 4;
+    textarea.placeholder = 'Escreve o texto deste bloco...';
+    textarea.value = block.content || '';
+    textarea.addEventListener('input', () => { block.content = textarea.value; });
+    return textarea;
+  }
+
+  function buildCarouselBlockEditor(block) {
+    const wrap = document.createElement('div');
+
+    const itemsWrap = document.createElement('div');
+    itemsWrap.className = 'block-carousel-items';
+
+    function renderCarouselItems() {
+      itemsWrap.innerHTML = '';
+      block.images.forEach((url, i) => {
+        const thumb = document.createElement('div');
+        thumb.className = 'block-carousel-item';
+        thumb.innerHTML = `<img src="${url}"><button type="button">✕</button>`;
+        thumb.querySelector('button').addEventListener('click', () => {
+          block.images.splice(i, 1);
+          renderCarouselItems();
+        });
+        itemsWrap.appendChild(thumb);
+      });
+    }
+    renderCarouselItems();
+
+    const urlInput = document.createElement('input');
+    urlInput.type = 'url';
+    urlInput.placeholder = 'URL da imagem — Enter para adicionar ao carrossel';
+    urlInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && urlInput.value.trim()) {
+        e.preventDefault();
+        block.images.push(urlInput.value.trim());
+        urlInput.value = '';
+        renderCarouselItems();
+      }
+    });
+
+    const uploadBtn = document.createElement('button');
+    uploadBtn.type = 'button';
+    uploadBtn.className = 'btn-admin-ghost';
+    uploadBtn.textContent = 'Upload de imagem(ns)';
+    uploadBtn.style.marginTop = '0.35rem';
+    uploadBtn.addEventListener('click', () => {
+      triggerFileUpload(async (file) => {
+        try {
+          const url = await uploadProjectImage(file);
+          block.images.push(url);
+          renderCarouselItems();
+        } catch {
+          showToast('Erro ao enviar imagem.', true);
+        }
+      }, true);
+    });
+
+    wrap.appendChild(itemsWrap);
+    wrap.appendChild(urlInput);
+    wrap.appendChild(uploadBtn);
+    return wrap;
+  }
+
+  /**
+   * Abre um seletor de ficheiros nativo e chama onFile(file) para cada ficheiro escolhido.
+   */
+  function triggerFileUpload(onFile, multiple = false) {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.multiple = multiple;
+    input.style.display = 'none';
+    input.addEventListener('change', () => {
+      Array.from(input.files).forEach(onFile);
+      input.remove();
+    });
+    document.body.appendChild(input);
+    input.click();
+  }
+
+  /* ─── DRAG & DROP DE BLOCOS ─────────────────────────── */
+  function bindBlockDragEvents(item) {
+    item.addEventListener('dragstart', () => {
+      item.classList.add('dragging');
+    });
+    item.addEventListener('dragend', () => {
+      item.classList.remove('dragging');
+      document.querySelectorAll('.block-item.drag-over').forEach(el => el.classList.remove('drag-over'));
+    });
+    item.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      item.classList.add('drag-over');
+    });
+    item.addEventListener('dragleave', () => {
+      item.classList.remove('drag-over');
+    });
+    item.addEventListener('drop', (e) => {
+      e.preventDefault();
+      item.classList.remove('drag-over');
+      const fromIndex = parseInt(document.querySelector('.block-item.dragging')?.dataset.index, 10);
+      const toIndex = parseInt(item.dataset.index, 10);
+      if (isNaN(fromIndex) || isNaN(toIndex) || fromIndex === toIndex) return;
+      const [moved] = blocksState.splice(fromIndex, 1);
+      blocksState.splice(toIndex, 0, moved);
+      renderBlocksList();
     });
   }
 

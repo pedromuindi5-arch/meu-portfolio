@@ -71,7 +71,7 @@
     card.setAttribute('role', 'button');
     card.setAttribute('aria-label', `Ver projecto: ${project.title}`);
 
-    const imgSrc = project.images && project.images[0] ? project.images[0] : '';
+    const imgSrc = project.cover_image || (project.images && project.images[0]) || '';
     const catLabel = getCategoryLabel(project.category);
 
     card.innerHTML = `
@@ -85,7 +85,7 @@
       </div>
     `;
 
-    const open = () => openModal(project);
+    const open = () => { window.location.href = `projeto.html?id=${project.id}`; };
     card.addEventListener('click', open);
     card.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') open(); });
 
