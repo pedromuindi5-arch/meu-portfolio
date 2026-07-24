@@ -11,15 +11,11 @@
 ═══════════════════════════ */
 const CATEGORIES = [
   { slug: 'identidade-visual',    label: 'Identidade Visual' },
-  { slug: 'social-media',         label: 'Social Media' },
-  { slug: 'motion',               label: 'Motion' },
-  { slug: 'editorial',            label: 'Editorial' },
-  { slug: 'web-design',           label: 'Web Design' },
-  { slug: 'embalagem',            label: 'Embalagem' },
-  /* Novas categorias — páginas de serviço dedicadas (não alteram os filtros da home) */
   { slug: 'design-publicitario',  label: 'Design Publicitário' },
+  { slug: 'social-media',         label: 'Social Media' },
   { slug: 'design-eventos',       label: 'Design para Eventos' },
   { slug: 'materiais-graficos',   label: 'Materiais Gráficos' },
+  { slug: 'web-design',           label: 'Web Design' },
 ];
 
 /**
@@ -200,6 +196,97 @@ async function getCategoryCounts() {
     counts[cat.slug] = projects.filter(p => p.category === cat.slug).length;
   });
   return counts;
+}
+
+/* ═══════════════════════════
+   BRIEFINGS (leads recebidos via briefing.html)
+═══════════════════════════ */
+
+/**
+ * Devolve todos os briefings, mais recentes primeiro.
+ */
+async function getBriefings() {
+  const { data, error } = await supabaseClient
+    .from('briefings')
+    .select('*')
+    .order('created_at', { ascending: false });
+  if (error) {
+    console.error('Erro ao carregar briefings:', error);
+    return [];
+  }
+  return data;
+}
+
+/**
+ * Atualiza o estado de um briefing (novo / em_andamento / concluido).
+ */
+async function updateBriefingStatus(id, status) {
+  const { error } = await supabaseClient
+    .from('briefings')
+    .update({ status })
+    .eq('id', id);
+  if (error) {
+    console.error('Erro ao atualizar estado do briefing:', error);
+    throw error;
+  }
+}
+
+/* ═══════════════════════════
+   SERVICE DOCUMENTS (conteúdo dos PDFs de boas-vindas)
+═══════════════════════════ */
+
+/**
+ * Devolve todos os documentos de serviço.
+ */
+async function getServiceDocuments() {
+  const { data, error } = await supabaseClient
+    .from('service_documents')
+    .select('*')
+    .order('service_type', { ascending: true });
+  if (error) {
+    console.error('Erro ao carregar documentos de serviço:', error);
+    return [];
+  }
+  return data;
+}
+
+/**
+ * Devolve um documento de serviço específico.
+ */
+async function getServiceDocument(serviceType) {
+  const { data, error } = await supabaseClient
+    .from('service_documents')
+    .select('*')
+    .eq('service_type', serviceType)
+    .single();
+  if (error) {
+    console.error('Erro ao carregar documento de serviço:', error);
+    return null;
+  }
+  return data;
+}
+
+/**
+ * Atualiza um documento de serviço.
+ */
+async function updateServiceDocument(serviceType, data) {
+  const payload = {
+    title: data.title,
+    welcome_message: data.welcome_message,
+    includes: data.includes || [],
+    delivery_time: data.delivery_time || null,
+    revisions: data.revisions || null,
+    payment_method: data.payment_method || null,
+    next_steps: data.next_steps || [],
+  };
+  const { error } = await supabaseClient
+    .from('service_documents')
+    .update(payload)
+    .eq('service_type', serviceType);
+  if (error) {
+    console.error('Erro ao atualizar documento de serviço:', error);
+    throw error;
+  }
 }
 
 /* ═══════════════════════════

@@ -221,12 +221,36 @@
   }
 
   /* ─── FILTER ───────────────────────────────────────── */
+  const worksMoreLink = document.getElementById('worksMoreLink');
+  const worksMoreLinkAnchor = document.getElementById('worksMoreLinkAnchor');
+
+  const CATEGORY_PAGES = {
+    'identidade-visual':   'branding.html',
+    'design-publicitario': 'campanhas.html',
+    'social-media':        'social-media-design.html',
+    'design-eventos':      'eventos.html',
+    'materiais-graficos':  'materiais-graficos.html',
+    'web-design':          'web-design.html',
+  };
+
+  function updateWorksMoreLink(filter) {
+    if (!worksMoreLink) return;
+    const page = CATEGORY_PAGES[filter];
+    if (filter === 'all' || !page) {
+      worksMoreLink.style.display = 'none';
+      return;
+    }
+    worksMoreLinkAnchor.href = page;
+    worksMoreLink.style.display = 'block';
+  }
+
   filterBtns.forEach(btn => {
     btn.addEventListener('click', () => {
       filterBtns.forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       currentFilter = btn.dataset.filter;
       renderProjects(currentFilter);
+      updateWorksMoreLink(currentFilter);
     });
   });
 

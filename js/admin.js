@@ -24,6 +24,8 @@
     dashboard: document.getElementById('viewDashboard'),
     projects:  document.getElementById('viewProjects'),
     add:       document.getElementById('viewAdd'),
+    documents: document.getElementById('viewDocuments'),
+    briefings: document.getElementById('viewBriefings'),
   };
 
   // Dashboard
@@ -50,6 +52,29 @@
   const imageUrlList  = document.getElementById('imageUrlList');
   const addUrlBtn     = document.getElementById('addUrlBtn');
   const imagePreviewGrid = document.getElementById('imagePreviewGrid');
+
+  // Service Documents
+  const documentsGrid     = document.getElementById('documentsGrid');
+  const documentFormWrap  = document.getElementById('documentFormWrap');
+  const documentForm      = document.getElementById('documentForm');
+  const documentFormTitle = document.getElementById('documentFormTitle');
+  const docServiceType    = document.getElementById('docServiceType');
+  const docTitle          = document.getElementById('docTitle');
+  const docWelcome        = document.getElementById('docWelcome');
+  const docIncludes       = document.getElementById('docIncludes');
+  const docDeliveryTime   = document.getElementById('docDeliveryTime');
+  const docRevisions      = document.getElementById('docRevisions');
+  const docPayment        = document.getElementById('docPayment');
+  const docNextSteps      = document.getElementById('docNextSteps');
+  const cancelDocumentForm = document.getElementById('cancelDocumentForm');
+
+  // Briefings
+  const briefingStatusFilter = document.getElementById('briefingStatusFilter');
+  const briefingsTableBody   = document.getElementById('briefingsTableBody');
+  const briefingDetailsDialog = document.getElementById('briefingDetailsDialog');
+  const briefingDetailsTitle  = document.getElementById('briefingDetailsTitle');
+  const briefingDetailsBody   = document.getElementById('briefingDetailsBody');
+  const briefingDetailsClose  = document.getElementById('briefingDetailsClose');
 
   // Image tabs
   const tabUrls    = document.getElementById('tabUrls');
@@ -147,6 +172,8 @@
     dashboard: 'Dashboard',
     projects:  'Todos os Projetos',
     add:       'Novo Projeto',
+    documents: 'Documentos de Serviço',
+    briefings: 'Briefings',
   };
 
   async function showView(viewName) {
@@ -162,6 +189,13 @@
     if (viewName === 'projects')  await renderProjectsTable();
     if (viewName === 'add') {
       resetForm();
+    }
+    if (viewName === 'documents') {
+      documentFormWrap.style.display = 'none';
+      await renderDocumentsGrid();
+    }
+    if (viewName === 'briefings') {
+      await renderBriefingsTable();
     }
   }
 
@@ -609,6 +643,166 @@
       });
       imagePreviewGrid.appendChild(wrap);
     });
+  }
+
+  /* ══════════════════════════════════════════════════════
+     DOCUMENTOS DE SERVIÇO
+  ══════════════════════════════════════════════════════ */
+  async function renderDocumentsGrid() {
+    const docs = await getServiceDocuments();
+    documentsGrid.innerHTML = '';
+
+    docs.forEach(doc => {
+      const card = document.createElement('div');
+      card.className = 'stat-card';
+      card.style.cursor = 'pointer';
+      card.style.textAlign = 'left';
+      const missing = !doc.delivery_time || !doc.revisions || !doc.payment_method;
+      card.innerHTML = `
+        <div class="stat-card-label" style="margin-bottom:0.5rem;">${doc.title}</div>
+        <div style="font-size:0.78rem;color:var(--text-muted);line-height:1.5;margin-bottom:1rem;">
+          <div><strong>Prazo:</strong> ${doc.delivery_time || '— por preencher —'}</div>
+          <div><strong>Alterações:</strong> ${doc.revisions || '— por preencher —'}</div>
+          <div><strong>Pagamento:</strong> ${doc.payment_method || '— por preencher —'}</div>
+        </div>
+        ${missing ? '<span class="recent-item-status status-hidden" style="margin-bottom:0.75rem;display:inline-block;">Dados em falta</span><br>' : ''}
+        <button type="button" class="btn-admin-ghost" style="width:100%;">Editar</button>
+      `;
+      card.querySelector('button').addEventListener('click', () => openDocumentEditForm(doc));
+      documentsGrid.appendChild(card);
+    });
+  }
+
+  function openDocumentEditForm(doc) {
+    documentFormWrap.style.display = 'block';
+    documentFormTitle.textContent = `Editar — ${doc.title}`;
+    docServiceType.value  = doc.service_type;
+    docTitle.value        = doc.title || '';
+    docWelcome.value      = doc.welcome_message || '';
+    docIncludes.value     = (doc.includes || []).join('\n');
+    docDeliveryTime.value = doc.delivery_time || '';
+    docRevisions.value    = doc.revisions || '';
+    docPayment.value      = doc.payment_method || '';
+    docNextSteps.value    = (doc.next_steps || []).join('\n');
+    documentFormWrap.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  cancelDocumentForm.addEventListener('click', () => {
+    documentFormWrap.style.display = 'none';
+  });
+
+  documentForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const submitBtn = documentForm.querySelector('button[type="submit"]');
+    submitBtn.disabled = true;
+    try {
+      const data = {
+        title: docTitle.value.trim(),
+        welcome_message: docWelcome.value.trim(),
+        includes: docIncludes.value.split('\n').map(s => s.trim()).filter(Boolean),
+        delivery_time: docDeliveryTime.value.trim(),
+        revisions: docRevisions.value.trim(),
+        payment_method: docPayment.value.trim(),
+        next_steps: docNextSteps.value.split('\n').map(s => s.trim()).filter(Boolean),
+      };
+      await updateServiceDocument(docServiceType.value, data);
+      showToast('Documento de serviço atualizado!');
+      documentFormWrap.style.display = 'none';
+      await renderDocumentsGrid();
+    } catch (err) {
+      console.error(err);
+      showToast('Erro ao guardar documento.', true);
+    } finally {
+      submitBtn.disabled = false;
+    }
+  });
+
+  /* ══════════════════════════════════════════════════════
+     BRIEFINGS
+  ══════════════════════════════════════════════════════ */
+  let briefingsCache = [];
+  let briefingFilterStatus = 'all';
+
+  const STATUS_LABELS = {
+    novo: 'Novo',
+    em_andamento: 'Em andamento',
+    concluido: 'Concluído',
+  };
+
+  async function renderBriefingsTable() {
+    briefingsCache = await getBriefings();
+    let list = briefingsCache;
+    if (briefingFilterStatus !== 'all') {
+      list = list.filter(b => b.status === briefingFilterStatus);
+    }
+
+    briefingsTableBody.innerHTML = '';
+    if (list.length === 0) {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td colspan="7" style="text-align:center;color:var(--text-muted);padding:2rem;">Nenhum briefing encontrado.</td>`;
+      briefingsTableBody.appendChild(tr);
+      return;
+    }
+
+    list.forEach(b => {
+      const tr = document.createElement('tr');
+      const date = new Date(b.created_at).toLocaleDateString('pt-PT', { day: '2-digit', month: '2-digit', year: 'numeric' });
+      tr.innerHTML = `
+        <td>${date}</td>
+        <td><span class="table-title">${escapeHtmlAdmin(b.client_name)}</span></td>
+        <td>${escapeHtmlAdmin(b.client_contact)}</td>
+        <td>${getCategoryLabel(b.service_type)}</td>
+        <td>${b.pdf_sent ? '✅' : (b.contact_is_email ? '⏳' : '—')}</td>
+        <td>
+          <select class="select-input briefing-status-select" data-id="${b.id}" style="font-size:0.75rem;padding:0.3rem 0.5rem;">
+            <option value="novo" ${b.status === 'novo' ? 'selected' : ''}>Novo</option>
+            <option value="em_andamento" ${b.status === 'em_andamento' ? 'selected' : ''}>Em andamento</option>
+            <option value="concluido" ${b.status === 'concluido' ? 'selected' : ''}>Concluído</option>
+          </select>
+        </td>
+        <td>
+          <button type="button" class="btn-icon" title="Ver detalhes" data-id="${b.id}">👁</button>
+        </td>
+      `;
+      tr.querySelector('.briefing-status-select').addEventListener('change', async (e) => {
+        try {
+          await updateBriefingStatus(b.id, e.target.value);
+          showToast('Estado atualizado.');
+        } catch {
+          showToast('Erro ao atualizar estado.', true);
+        }
+      });
+      tr.querySelector('button[title="Ver detalhes"]').addEventListener('click', () => openBriefingDetails(b));
+      briefingsTableBody.appendChild(tr);
+    });
+  }
+
+  briefingStatusFilter.addEventListener('change', (e) => {
+    briefingFilterStatus = e.target.value;
+    renderBriefingsTable();
+  });
+
+  function openBriefingDetails(b) {
+    briefingDetailsTitle.textContent = `${b.client_name} — ${getCategoryLabel(b.service_type)}`;
+    const entries = Object.entries(b.form_data || {});
+    briefingDetailsBody.innerHTML = entries.map(([label, value]) => `
+      <div style="margin-bottom:0.85rem;">
+        <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);margin-bottom:0.2rem;">${escapeHtmlAdmin(label)}</div>
+        <div>${escapeHtmlAdmin(value)}</div>
+      </div>
+    `).join('') || '<p style="color:var(--text-muted);">Sem respostas registadas.</p>';
+    briefingDetailsDialog.style.display = 'flex';
+  }
+
+  briefingDetailsClose.addEventListener('click', () => {
+    briefingDetailsDialog.style.display = 'none';
+  });
+
+  function escapeHtmlAdmin(str) {
+    return String(str ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
   }
 
   /* ══════════════════════════════════════════════════════

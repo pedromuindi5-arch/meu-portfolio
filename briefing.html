@@ -276,6 +276,8 @@
         <button type="button" class="briefing-tab" onclick="switchForm('flyer', this)">Flyer</button>
         <button type="button" class="briefing-tab" onclick="switchForm('evento', this)">Evento</button>
         <button type="button" class="briefing-tab" onclick="switchForm('web', this)">Web Design</button>
+        <button type="button" class="briefing-tab" onclick="switchForm('materiais-graficos', this)">Materiais
+          Gráficos</button>
       </div>
     </section>
 
@@ -603,6 +605,62 @@
         <button type="submit" class="btn-submit">Gerar Briefing &amp; Enviar para WhatsApp →</button>
       </form>
 
+      <!-- FORMULÁRIO 7: MATERIAIS GRÁFICOS & IMPRESSOS -->
+      <form id="form-materiais-graficos" class="briefing-form"
+        onsubmit="handleBriefingSubmit(event, 'Materiais Gráficos')">
+        <div class="form-grid two-cols">
+          <div class="field-group">
+            <label class="field-label" for="mg-name">Nome do Cliente / Empresa *</label>
+            <input class="field-input" type="text" id="mg-name" required placeholder="Ex: Sua Empresa Lda.">
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="mg-contact">Contacto (E-mail ou Telefone) *</label>
+            <input class="field-input" type="text" id="mg-contact" required
+              placeholder="Ex: seu@email.com ou +244 923 224 383">
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="mg-type">Tipo de Material *</label>
+            <select class="field-select" id="mg-type" required>
+              <option value="">Selecione uma opção</option>
+              <option value="Menu">Menu</option>
+              <option value="Catálogo">Catálogo</option>
+              <option value="Apresentação">Apresentação</option>
+              <option value="Cartão de visita">Cartão de visita</option>
+              <option value="Brochura">Brochura</option>
+              <option value="Embalagem">Embalagem</option>
+              <option value="Lona">Lona</option>
+              <option value="Roll-up">Roll-up</option>
+              <option value="Decoração de viatura">Decoração de viatura</option>
+              <option value="Outro">Outro</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="mg-quantity">Quantidade Pretendida</label>
+            <input class="field-input" type="text" id="mg-quantity" placeholder="Ex: 500 unidades, 1 viatura">
+          </div>
+          <div class="field-group full">
+            <label class="field-label" for="mg-dimensions">Dimensões / Tamanho</label>
+            <input class="field-input" type="text" id="mg-dimensions" placeholder="Ex: A5, 90x50mm, 3x1.5m">
+          </div>
+          <div class="field-group full">
+            <label class="field-label" for="mg-content">Conteúdo a Incluir *</label>
+            <textarea class="field-textarea" id="mg-content" required
+              placeholder="Texto, imagens, logotipo, informações de contacto — tudo o que deve constar no material"></textarea>
+          </div>
+          <div class="field-group full">
+            <label class="field-label" for="mg-style">Estilo Visual Desejado</label>
+            <textarea class="field-textarea" id="mg-style"
+              placeholder="Ex: Moderno, Clássico, Minimalista, Corporativo"></textarea>
+          </div>
+          <div class="field-group full">
+            <label class="field-label" for="mg-colors">Paleta de Cores Preferida</label>
+            <textarea class="field-textarea" id="mg-colors"
+              placeholder="Ex: Cores da marca, tons pastéis, monocromático"></textarea>
+          </div>
+        </div>
+        <button type="submit" class="btn-submit">Gerar Briefing &amp; Enviar para WhatsApp →</button>
+      </form>
+
     </div>
   </main>
 
@@ -721,14 +779,26 @@
       button.classList.add('active');
     }
 
+    // Abre automaticamente o separador certo quando se chega a partir de uma página de serviço
+    // (ex: briefing.html?tipo=evento)
+    (function openTabFromQuery() {
+      const params = new URLSearchParams(window.location.search);
+      const tipo = params.get('tipo');
+      if (!tipo) return;
+      const btn = Array.from(document.querySelectorAll('.briefing-tab'))
+        .find(b => b.getAttribute('onclick') && b.getAttribute('onclick').includes(`'${tipo}'`));
+      if (btn) switchForm(tipo, btn);
+    })();
+
     /* ─── MAPEIA O NOME DO TIPO DE SERVIÇO PARA O SLUG USADO NA BASE DE DADOS ─── */
     const SERVICE_TYPE_SLUGS = {
-      'Branding': 'branding',
+      'Branding': 'identidade-visual',
       'Identidade Visual': 'identidade-visual',
       'Social Media': 'social-media',
-      'Flyer': 'flyer',
-      'Identidade Visual para Evento': 'evento',
-      'Web Design': 'web',
+      'Flyer': 'design-publicitario',
+      'Identidade Visual para Evento': 'design-eventos',
+      'Web Design': 'web-design',
+      'Materiais Gráficos': 'materiais-graficos',
     };
 
     function looksLikeEmail(value) {

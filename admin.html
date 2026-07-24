@@ -57,6 +57,14 @@
           <span class="sidebar-icon">＋</span>
           Adicionar Projeto
         </button>
+        <button class="sidebar-link" data-view="documents" id="navDocuments">
+          <span class="sidebar-icon">▤</span>
+          Documentos de Serviço
+        </button>
+        <button class="sidebar-link" data-view="briefings" id="navBriefings">
+          <span class="sidebar-icon">✉</span>
+          Briefings
+        </button>
       </nav>
 
       <div class="sidebar-footer">
@@ -109,14 +117,11 @@
           <select id="categoryFilter" class="select-input">
             <option value="all">Todas as categorias</option>
             <option value="identidade-visual">Identidade Visual</option>
-            <option value="social-media">Social Media</option>
-            <option value="motion">Motion</option>
-            <option value="editorial">Editorial</option>
-            <option value="web-design">Web Design</option>
-            <option value="embalagem">Embalagem</option>
             <option value="design-publicitario">Design Publicitário</option>
+            <option value="social-media">Social Media</option>
             <option value="design-eventos">Design para Eventos</option>
             <option value="materiais-graficos">Materiais Gráficos</option>
+            <option value="web-design">Web Design</option>
           </select>
         </div>
         <div class="projects-table-wrap">
@@ -157,14 +162,11 @@
                 <select id="projCategory" required>
                   <option value="">Selecionar categoria...</option>
                   <option value="identidade-visual">Identidade Visual</option>
-                  <option value="social-media">Social Media</option>
-                  <option value="motion">Motion</option>
-                  <option value="editorial">Editorial</option>
-                  <option value="web-design">Web Design</option>
-                  <option value="embalagem">Embalagem</option>
                   <option value="design-publicitario">Design Publicitário</option>
+                  <option value="social-media">Social Media</option>
                   <option value="design-eventos">Design para Eventos</option>
                   <option value="materiais-graficos">Materiais Gráficos</option>
+                  <option value="web-design">Web Design</option>
                 </select>
               </div>
             </div>
@@ -248,6 +250,97 @@
         </div>
       </div>
 
+      <!-- ═══════ VIEW: DOCUMENTOS DE SERVIÇO ═══════ -->
+      <div id="viewDocuments" class="admin-view" style="display:none;">
+
+        <!-- Lista de serviços -->
+        <div id="documentsListWrap">
+          <div class="stats-grid" id="documentsGrid" style="grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));"></div>
+        </div>
+
+        <!-- Formulário de edição (escondido até se clicar em "Editar") -->
+        <div class="form-card" id="documentFormWrap" style="display:none; margin-top:1.5rem;">
+          <h3 class="form-card-title" id="documentFormTitle">Editar Documento de Serviço</h3>
+          <form id="documentForm" class="project-form" novalidate>
+            <input type="hidden" id="docServiceType">
+
+            <div class="form-group">
+              <label for="docTitle">Título do Serviço *</label>
+              <input type="text" id="docTitle" required placeholder="Ex: Identidade Visual">
+            </div>
+
+            <div class="form-group">
+              <label for="docWelcome">Mensagem de Boas-Vindas *</label>
+              <textarea id="docWelcome" rows="3" required
+                placeholder="Ex: Estou grato por teres confiado este serviço à mim..."></textarea>
+            </div>
+
+            <div class="form-group">
+              <label for="docIncludes">O Que Está Incluído (uma linha por item)</label>
+              <textarea id="docIncludes" rows="5"
+                placeholder="Cores e paleta cromática&#10;Tipografia&#10;Elementos de apoio gráfico"></textarea>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="docDeliveryTime">Prazo de Entrega</label>
+                <input type="text" id="docDeliveryTime" placeholder="Ex: 2 semanas a 1 mês e meio">
+              </div>
+              <div class="form-group">
+                <label for="docRevisions">Alterações Incluídas</label>
+                <input type="text" id="docRevisions" placeholder="Ex: 2 rondas de revisão incluídas">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="docPayment">Forma de Pagamento</label>
+              <input type="text" id="docPayment" placeholder="Ex: 50% adiantado, 50% na entrega">
+            </div>
+
+            <div class="form-group">
+              <label for="docNextSteps">Próximos Passos (um por linha)</label>
+              <textarea id="docNextSteps" rows="4"
+                placeholder="Confirmação do pagamento inicial&#10;Reunião de alinhamento&#10;Primeira apresentação de conceitos"></textarea>
+            </div>
+
+            <div class="form-actions">
+              <button type="button" class="btn-admin-ghost" id="cancelDocumentForm">Cancelar</button>
+              <button type="submit" class="btn-admin-primary">Guardar Documento</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- ═══════ VIEW: BRIEFINGS ═══════ -->
+      <div id="viewBriefings" class="admin-view" style="display:none;">
+        <div class="view-toolbar">
+          <select id="briefingStatusFilter" class="select-input">
+            <option value="all">Todos os estados</option>
+            <option value="novo">Novo</option>
+            <option value="em_andamento">Em andamento</option>
+            <option value="concluido">Concluído</option>
+          </select>
+        </div>
+        <div class="projects-table-wrap">
+          <table class="projects-table" id="briefingsTable">
+            <thead>
+              <tr>
+                <th>Data</th>
+                <th>Cliente</th>
+                <th>Contacto</th>
+                <th>Serviço</th>
+                <th>PDF</th>
+                <th>Estado</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="briefingsTableBody">
+              <!-- Injected by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
     </main>
   </div>
 
@@ -259,6 +352,17 @@
       <div class="dialog-actions">
         <button class="btn-admin-ghost" id="confirmCancel">Cancelar</button>
         <button class="btn-admin-danger" id="confirmDelete">Eliminar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════ BRIEFING DETAILS DIALOG ════════ -->
+  <div class="dialog-overlay" id="briefingDetailsDialog" style="display:none;">
+    <div class="dialog" style="max-width:560px; max-height:80vh; overflow-y:auto;">
+      <h3 class="dialog-title" id="briefingDetailsTitle">Detalhes do Briefing</h3>
+      <div id="briefingDetailsBody" style="text-align:left; font-size:0.85rem; line-height:1.6;"></div>
+      <div class="dialog-actions">
+        <button class="btn-admin-ghost" id="briefingDetailsClose">Fechar</button>
       </div>
     </div>
   </div>
