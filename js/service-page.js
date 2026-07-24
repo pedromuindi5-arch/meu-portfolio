@@ -48,10 +48,10 @@
   mobileLinks.forEach(link => link.addEventListener('click', closeMenu));
 
   /* ─── GALLERY RENDER ───────────────────────────────── */
-  function renderGallery() {
+  async function renderGallery() {
     if (!grid) return;
     const categorySlug = grid.dataset.category;
-    const projects = getProjectsByCategory(categorySlug);
+    const projects = await getProjectsByCategory(categorySlug);
     grid.innerHTML = '';
 
     if (!projects.length) {

@@ -20,10 +20,14 @@
       <p class="login-sub">Acesso restrito ao gestor do portfolio.</p>
       <form id="loginForm" class="login-form" novalidate>
         <div class="form-group">
+          <label for="loginEmail">Email</label>
+          <input type="email" id="loginEmail" placeholder="teu@email.com" autocomplete="username" required>
+        </div>
+        <div class="form-group">
           <label for="loginPassword">Senha</label>
           <input type="password" id="loginPassword" placeholder="••••••••" autocomplete="current-password" required>
         </div>
-        <div class="login-error" id="loginError">Senha incorreta. Tente novamente.</div>
+        <div class="login-error" id="loginError">Email ou senha incorretos. Tente novamente.</div>
         <button type="submit" class="btn-admin-primary" id="loginBtn">Entrar</button>
       </form>
       <a href="index.html" class="login-back">← Voltar ao portfolio</a>
@@ -110,6 +114,9 @@
             <option value="editorial">Editorial</option>
             <option value="web-design">Web Design</option>
             <option value="embalagem">Embalagem</option>
+            <option value="design-publicitario">Design Publicitário</option>
+            <option value="design-eventos">Design para Eventos</option>
+            <option value="materiais-graficos">Materiais Gráficos</option>
           </select>
         </div>
         <div class="projects-table-wrap">
@@ -155,6 +162,9 @@
                   <option value="editorial">Editorial</option>
                   <option value="web-design">Web Design</option>
                   <option value="embalagem">Embalagem</option>
+                  <option value="design-publicitario">Design Publicitário</option>
+                  <option value="design-eventos">Design para Eventos</option>
+                  <option value="materiais-graficos">Materiais Gráficos</option>
                 </select>
               </div>
             </div>
@@ -256,6 +266,8 @@
   <!-- Toast Notification -->
   <div class="toast" id="toast"></div>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase-client.js"></script>
   <script src="js/data.js"></script>
   <script src="js/admin.js"></script>
 </body>

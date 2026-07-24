@@ -1,23 +1,20 @@
 /**
  * admin.js — Admin Panel Logic
  * Lucas Muindi Portfolio
- * Password: admin2025 (change in ADMIN_PASS constant)
+ * Autenticação real via Supabase Auth (Authentication → Users no dashboard).
  */
 
 (function () {
   'use strict';
 
-  /* ─── CONFIG ──────────────────────────────────────────── */
-  const ADMIN_PASS    = 'admin2025';
-  const SESSION_KEY   = 'lm_admin_session';
-  const SESSION_VALUE = 'authenticated';
-
   /* ─── DOM ─────────────────────────────────────────────── */
   const loginScreen   = document.getElementById('loginScreen');
   const adminPanel    = document.getElementById('adminPanel');
   const loginForm     = document.getElementById('loginForm');
+  const loginEmail    = document.getElementById('loginEmail');
   const loginPassword = document.getElementById('loginPassword');
   const loginError    = document.getElementById('loginError');
+  const loginBtn      = document.getElementById('loginBtn');
   const logoutBtn     = document.getElementById('logoutBtn');
   const pageTitle     = document.getElementById('pageTitle');
 
@@ -77,15 +74,12 @@
 
   // State
   let pendingDeleteId = null;
-  let uploadedImages  = [];   // base64 data URLs from upload
+  let uploadedImages  = [];   // URLs públicos já enviados para o Supabase Storage
+  let uploadsInFlight = 0;    // uploads a decorrer (bloqueia submit do formulário)
 
   /* ══════════════════════════════════════════════════════
-     AUTH
+     AUTH (Supabase Auth)
   ══════════════════════════════════════════════════════ */
-  function isAuthenticated() {
-    return sessionStorage.getItem(SESSION_KEY) === SESSION_VALUE;
-  }
-
   function authorize() {
     loginScreen.style.display = 'none';
     adminPanel.style.display  = 'flex';
@@ -93,33 +87,48 @@
   }
 
   function deauthorize() {
-    sessionStorage.removeItem(SESSION_KEY);
     loginScreen.style.display = 'flex';
     adminPanel.style.display  = 'none';
     loginPassword.value = '';
   }
 
-  // Check session on load
-  if (isAuthenticated()) {
-    authorize();
-  }
+  // Verifica sessão existente ao carregar a página
+  supabaseClient.auth.getSession().then(({ data: { session } }) => {
+    if (session) authorize();
+    else deauthorize();
+  });
 
-  loginForm.addEventListener('submit', (e) => {
+  // Mantém o estado sincronizado se a sessão expirar ou for renovada noutro separador
+  supabaseClient.auth.onAuthStateChange((_event, session) => {
+    if (session) authorize();
+    else deauthorize();
+  });
+
+  loginForm.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const val = loginPassword.value.trim();
-    if (val === ADMIN_PASS) {
-      sessionStorage.setItem(SESSION_KEY, SESSION_VALUE);
-      loginError.classList.remove('show');
-      authorize();
-    } else {
+    loginBtn.disabled = true;
+    loginBtn.textContent = 'A entrar...';
+    const { error } = await supabaseClient.auth.signInWithPassword({
+      email: loginEmail.value.trim(),
+      password: loginPassword.value,
+    });
+    loginBtn.disabled = false;
+    loginBtn.textContent = 'Entrar';
+    if (error) {
       loginError.classList.add('show');
       loginPassword.value = '';
       loginPassword.focus();
+    } else {
+      loginError.classList.remove('show');
+      authorize();
     }
   });
 
-  logoutBtn.addEventListener('click', () => {
-    if (confirm('Tens a certeza que queres sair?')) deauthorize();
+  logoutBtn.addEventListener('click', async () => {
+    if (confirm('Tens a certeza que queres sair?')) {
+      await supabaseClient.auth.signOut();
+      deauthorize();
+    }
   });
 
   /* ══════════════════════════════════════════════════════
@@ -131,7 +140,7 @@
     add:       'Novo Projeto',
   };
 
-  function showView(viewName) {
+  async function showView(viewName) {
     Object.entries(views).forEach(([name, el]) => {
       el.style.display = name === viewName ? 'block' : 'none';
     });
@@ -140,8 +149,8 @@
     });
     pageTitle.textContent = viewTitles[viewName] || viewName;
 
-    if (viewName === 'dashboard') renderDashboard();
-    if (viewName === 'projects')  renderProjectsTable();
+    if (viewName === 'dashboard') await renderDashboard();
+    if (viewName === 'projects')  await renderProjectsTable();
     if (viewName === 'add') {
       resetForm();
     }
@@ -154,17 +163,8 @@
   /* ══════════════════════════════════════════════════════
      DASHBOARD
   ══════════════════════════════════════════════════════ */
-  function renderDashboard() {
-    const counts = getCategoryCounts();
-    const labels = {
-      all: 'Total de Projetos',
-      'identidade-visual': 'Identidade Visual',
-      'social-media': 'Social Media',
-      'motion': 'Motion',
-      'editorial': 'Editorial',
-      'web-design': 'Web Design',
-      'embalagem': 'Embalagem',
-    };
+  async function renderDashboard() {
+    const counts = await getCategoryCounts();
 
     statsGrid.innerHTML = '';
 
@@ -179,7 +179,8 @@
     });
 
     // Recent Projects
-    const projects = getProjects().sort((a, b) => b.order - a.order).slice(0, 6);
+    const allProjects = await getProjects();
+    const projects = allProjects.sort((a, b) => b.order - a.order).slice(0, 6);
     recentList.innerHTML = '';
     if (projects.length === 0) {
       recentList.innerHTML = '<p style="color:var(--text-muted);font-size:0.82rem;">Nenhum projeto ainda.</p>';
@@ -222,8 +223,8 @@
   let tableFilterCat   = 'all';
   let tableSearchQuery = '';
 
-  function renderProjectsTable() {
-    let projects = getProjects().sort((a, b) => a.order - b.order);
+  async function renderProjectsTable() {
+    let projects = (await getProjects()).sort((a, b) => a.order - b.order);
 
     if (tableFilterCat !== 'all') {
       projects = projects.filter(p => p.category === tableFilterCat);
@@ -295,19 +296,19 @@
   /* ══════════════════════════════════════════════════════
      PROJECT ACTIONS (global scope for inline onclick)
   ══════════════════════════════════════════════════════ */
-  window.handleMove = (id, dir) => {
-    moveProject(id, dir);
-    renderProjectsTable();
+  window.handleMove = async (id, dir) => {
+    await moveProject(id, dir);
+    await renderProjectsTable();
   };
 
-  window.handleToggle = (id) => {
-    toggleProjectVisibility(id);
-    renderProjectsTable();
+  window.handleToggle = async (id) => {
+    await toggleProjectVisibility(id);
+    await renderProjectsTable();
     showToast('Visibilidade atualizada.');
   };
 
-  window.handleEdit = (id) => {
-    const p = getProjectById(id);
+  window.handleEdit = async (id) => {
+    const p = await getProjectById(id);
     if (!p) return;
     openEditForm(p);
   };
@@ -322,13 +323,13 @@
     confirmDialog.style.display = 'none';
   });
 
-  confirmDelete.addEventListener('click', () => {
+  confirmDelete.addEventListener('click', async () => {
     if (pendingDeleteId) {
-      deleteProject(pendingDeleteId);
+      await deleteProject(pendingDeleteId);
       pendingDeleteId = null;
       confirmDialog.style.display = 'none';
-      renderProjectsTable();
-      renderDashboard();
+      await renderProjectsTable();
+      await renderDashboard();
       showToast('Projeto eliminado.');
     }
   });
@@ -382,32 +383,47 @@
     uploadPreview.innerHTML = '';
   }
 
-  projectForm.addEventListener('submit', (e) => {
+  projectForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     if (!validateForm()) return;
 
-    const images = collectImages();
-    const data = {
-      title:       projTitle.value.trim(),
-      category:    projCategory.value,
-      client:      projClient.value.trim(),
-      year:        projYear.value.trim(),
-      description: projDesc.value.trim(),
-      visible:     projVisible.checked,
-      featured:    projFeatured.checked,
-      images,
-    };
-
-    const id = editIdInput.value;
-    if (id) {
-      updateProject(id, data);
-      showToast('Projeto atualizado com sucesso!');
-    } else {
-      addProject(data);
-      showToast('Projeto adicionado com sucesso!');
+    if (uploadsInFlight > 0) {
+      showToast('Aguarda o fim do upload das imagens...', true);
+      return;
     }
 
-    showView('projects');
+    const submitBtn = projectForm.querySelector('button[type="submit"]');
+    if (submitBtn) { submitBtn.disabled = true; }
+
+    try {
+      const images = collectImages();
+      const data = {
+        title:       projTitle.value.trim(),
+        category:    projCategory.value,
+        client:      projClient.value.trim(),
+        year:        projYear.value.trim(),
+        description: projDesc.value.trim(),
+        visible:     projVisible.checked,
+        featured:    projFeatured.checked,
+        images,
+      };
+
+      const id = editIdInput.value;
+      if (id) {
+        await updateProject(id, data);
+        showToast('Projeto atualizado com sucesso!');
+      } else {
+        await addProject(data);
+        showToast('Projeto adicionado com sucesso!');
+      }
+
+      await showView('projects');
+    } catch (err) {
+      console.error(err);
+      showToast('Erro ao guardar projeto. Tenta novamente.', true);
+    } finally {
+      if (submitBtn) { submitBtn.disabled = false; }
+    }
   });
 
   function validateForm() {
@@ -486,7 +502,7 @@
     }
   }
 
-  /* ─── FILE UPLOAD ───────────────────────────────────────── */
+  /* ─── FILE UPLOAD (envia diretamente para o Supabase Storage) ─── */
   fileUpload.addEventListener('change', handleFileInput);
   dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('drag-over'); });
   dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
@@ -501,25 +517,33 @@
   }
 
   function handleFiles(files) {
-    files.filter(f => f.type.startsWith('image/')).forEach(file => {
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        const dataUrl = ev.target.result;
-        uploadedImages.push(dataUrl);
-        addUploadThumb(dataUrl);
+    files.filter(f => f.type.startsWith('image/')).forEach(async (file) => {
+      uploadsInFlight++;
+      const localPreviewUrl = URL.createObjectURL(file);
+      const thumbWrap = addUploadThumb(localPreviewUrl, true);
+      try {
+        const publicUrl = await uploadProjectImage(file);
+        uploadedImages.push(publicUrl);
+        thumbWrap.classList.remove('uploading');
         const urls = Array.from(imageUrlList.querySelectorAll('.image-url-input'))
           .map(i => i.value.trim()).filter(Boolean);
         updatePreviewGrid([...urls, ...uploadedImages]);
-      };
-      reader.readAsDataURL(file);
+      } catch (err) {
+        showToast('Erro ao enviar imagem: ' + file.name, true);
+        thumbWrap.remove();
+      } finally {
+        uploadsInFlight--;
+      }
     });
   }
 
-  function addUploadThumb(src) {
+  function addUploadThumb(src, uploading = false) {
     const wrap = document.createElement('div');
+    wrap.className = uploading ? 'uploading' : '';
     wrap.style.cssText = 'position:relative;width:60px;height:45px;border-radius:4px;overflow:hidden;';
     wrap.innerHTML = `
       <img src="${src}" style="width:100%;height:100%;object-fit:cover;">
+      ${uploading ? `<div style="position:absolute;inset:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;font-size:0.55rem;color:#fff;">...</div>` : ''}
       <button type="button" style="position:absolute;top:2px;right:2px;width:16px;height:16px;background:rgba(0,0,0,0.7);border:none;border-radius:50%;color:#fff;font-size:0.55rem;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
     `;
     wrap.querySelector('button').addEventListener('click', () => {
@@ -531,6 +555,7 @@
       updatePreviewGrid([...urls, ...uploadedImages]);
     });
     uploadPreview.appendChild(wrap);
+    return wrap;
   }
 
   /* ─── PREVIEW GRID ──────────────────────────────────────── */
@@ -580,8 +605,8 @@
   /* ══════════════════════════════════════════════════════
      EXPORT / IMPORT
   ══════════════════════════════════════════════════════ */
-  exportBtn.addEventListener('click', () => {
-    const json = exportData();
+  exportBtn.addEventListener('click', async () => {
+    const json = await exportData();
     const blob = new Blob([json], { type: 'application/json' });
     const url  = URL.createObjectURL(blob);
     const a    = document.createElement('a');
@@ -596,12 +621,12 @@
     const file = e.target.files[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = (ev) => {
+    reader.onload = async (ev) => {
       try {
-        importData(ev.target.result);
+        await importData(ev.target.result);
         showToast('Dados importados com sucesso!');
-        renderDashboard();
-        if (views.projects.style.display !== 'none') renderProjectsTable();
+        await renderDashboard();
+        if (views.projects.style.display !== 'none') await renderProjectsTable();
       } catch {
         showToast('Erro ao importar ficheiro JSON.', true);
       }

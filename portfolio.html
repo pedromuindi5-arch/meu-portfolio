@@ -220,6 +220,8 @@
     </div>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase-client.js"></script>
   <script src="js/data.js"></script>
   <script>
     'use strict';
@@ -286,9 +288,9 @@
     });
 
     /* ─── PROJETOS RENDERING ───────────────────────────── */
-    function renderProjects(filter) {
+    async function renderProjects(filter) {
       // No portfolio.html mostramos todos os projetos visíveis, independentemente de estarem em destaque na Home
-      const projects = getProjectsByCategory(filter);
+      const projects = await getProjectsByCategory(filter);
       portfolioGrid.innerHTML = '';
 
       if (projects.length === 0) {

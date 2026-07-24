@@ -172,9 +172,10 @@
   }
 
   /* ─── PROJECTS RENDERING ───────────────────────────── */
-  function renderProjects(filter) {
+  async function renderProjects(filter) {
     // Na Home (main.js), filtramos apenas os projetos que estão em destaque (featured)
-    const projects = getProjectsByCategory(filter).filter(p => p.featured !== false);
+    const all = await getProjectsByCategory(filter);
+    const projects = all.filter(p => p.featured !== false);
     projectsGrid.innerHTML = '';
 
     if (projects.length === 0) {
