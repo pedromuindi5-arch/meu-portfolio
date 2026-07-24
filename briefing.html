@@ -656,6 +656,8 @@
   <!-- DEPENDÊNCIAS: GERAÇÃO DE PDF E EMAILJS -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase-client.js"></script>
   <script type="text/javascript">
     (function () {
       // Nota: substitua pela sua Public Key do EmailJS (Account > API Keys em emailjs.com)
@@ -719,6 +721,20 @@
       button.classList.add('active');
     }
 
+    /* ─── MAPEIA O NOME DO TIPO DE SERVIÇO PARA O SLUG USADO NA BASE DE DADOS ─── */
+    const SERVICE_TYPE_SLUGS = {
+      'Branding': 'branding',
+      'Identidade Visual': 'identidade-visual',
+      'Social Media': 'social-media',
+      'Flyer': 'flyer',
+      'Identidade Visual para Evento': 'evento',
+      'Web Design': 'web',
+    };
+
+    function looksLikeEmail(value) {
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test((value || '').trim());
+    }
+
     /* ─── PROCESSAMENTO DE DADOS, PDF, E-MAIL E REDIRECIONAMENTO DE WHATSAPP ─── */
     function handleBriefingSubmit(event, typeName) {
       event.preventDefault();
@@ -734,6 +750,7 @@
 
       let answersHTML = '';
       let whatsappMessage = `Olá Lucas!\n\nAcabei de preencher o briefing de *${typeName}*:\n\n`;
+      const formData = {};
 
       // Captura todos os inputs dentro do formulário ativo
       const activeForm = event.target;
@@ -745,6 +762,8 @@
       inputs.forEach(input => {
         const label = input.previousElementSibling.textContent.replace(' *', '');
         const value = input.value.trim() || 'Não especificado';
+
+        formData[label] = value;
 
         // Armazenar nome e contacto principais para a mensagem de abertura do WhatsApp
         if (label.toLowerCase().includes('cliente') || label.toLowerCase().includes('organização')) {
@@ -767,6 +786,37 @@
       });
 
       document.getElementById('pdf-answers').innerHTML = answersHTML;
+
+      // ─── Grava o briefing na base de dados (Supabase) ───
+      // Não bloqueia o resto do fluxo (PDF/WhatsApp) se falhar.
+      const contactIsEmail = looksLikeEmail(clientContact);
+      const serviceType = SERVICE_TYPE_SLUGS[typeName] || 'branding';
+
+      supabaseClient.from('briefings').insert({
+        service_type: serviceType,
+        client_name: clientName || 'Não especificado',
+        client_contact: clientContact || 'Não especificado',
+        contact_is_email: contactIsEmail,
+        form_data: formData,
+        status: 'novo',
+      }).select().single().then(({ data: briefingRow, error }) => {
+        if (error) {
+          console.error('Erro ao gravar briefing na base de dados:', error);
+          return;
+        }
+        // Se o contacto for um e-mail válido, tenta disparar o envio automático do PDF.
+        // Isto não interrompe o fluxo do utilizador se a função ainda não estiver
+        // implantada ou falhar — o WhatsApp/PDF local continuam a funcionar na mesma.
+        if (contactIsEmail && briefingRow) {
+          supabaseClient.functions.invoke('send-welcome-pdf', {
+            body: { briefing_id: briefingRow.id }
+          }).catch(err => {
+            console.log('Aviso: envio automático do PDF não disponível ainda.', err);
+          });
+        }
+      }).catch(err => {
+        console.error('Erro ao gravar briefing na base de dados:', err);
+      });
 
       // Definições de compilação de alta fidelidade para o html2pdf
       const element = document.getElementById('pdf-template');
