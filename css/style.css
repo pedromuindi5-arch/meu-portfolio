@@ -1957,3 +1957,27 @@ button {
     font-size: 0.95rem;
   }
 }
+
+/* ─── GRID DE FOTOS (imagens lado a lado, sem cortes) ─── */
+.project-block-grid {
+  display: grid;
+  gap: clamp(0.75rem, 2vw, 1.5rem);
+}
+
+.project-block-grid.grid-cols-2 { grid-template-columns: repeat(2, 1fr); }
+.project-block-grid.grid-cols-3 { grid-template-columns: repeat(3, 1fr); }
+.project-block-grid.grid-cols-4 { grid-template-columns: repeat(4, 1fr); }
+
+.project-block-grid img {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 4px;
+}
+
+@media (max-width: 640px) {
+  .project-block-grid.grid-cols-3,
+  .project-block-grid.grid-cols-4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

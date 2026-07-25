@@ -146,17 +146,72 @@
       </div>
 
       <!-- ═══════ VIEW: ADD/EDIT PROJECT ═══════ -->
-      <div id="viewAdd" class="admin-view" style="display:none;">
-        <div class="form-card">
-          <h3 class="form-card-title" id="formTitle">Novo Projeto</h3>
-          <form id="projectForm" class="project-form" novalidate>
-            <input type="hidden" id="editId">
+      <div id="viewAdd" class="admin-view behance-editor" style="display:none;">
+        <div class="editor-topbar">
+          <button type="button" class="btn-admin-ghost" id="cancelForm">← Voltar</button>
+          <h3 class="editor-topbar-title" id="formTitle">Novo Projeto</h3>
+          <div class="editor-topbar-actions">
+            <button type="button" class="btn-admin-ghost" id="saveDraftBtn">Guardar como rascunho</button>
+            <button type="button" class="btn-admin-primary" id="publishBtn">Publicar</button>
+          </div>
+        </div>
 
-            <div class="form-row">
+        <form id="projectForm" class="editor-layout" novalidate>
+          <input type="hidden" id="editId">
+          <input type="checkbox" id="projVisible" checked style="display:none;">
+
+          <!-- ═══════ CANVAS ═══════ -->
+          <div class="editor-canvas">
+            <div class="editor-canvas-empty" id="blocksEmpty">
+              <p>Comece a criar o seu projeto:</p>
+              <div class="editor-canvas-icons">
+                <button type="button" class="editor-canvas-icon" data-add="addImageBlockBtn">
+                  <span class="editor-canvas-icon-glyph">🖼</span>Imagem
+                </button>
+                <button type="button" class="editor-canvas-icon" data-add="addTextBlockBtn">
+                  <span class="editor-canvas-icon-glyph">📝</span>Texto
+                </button>
+                <button type="button" class="editor-canvas-icon" data-add="addGridBlockBtn">
+                  <span class="editor-canvas-icon-glyph">▦</span>Grade de fotos
+                </button>
+                <button type="button" class="editor-canvas-icon" data-add="addCarouselBlockBtn">
+                  <span class="editor-canvas-icon-glyph">🎠</span>Carrossel
+                </button>
+              </div>
+            </div>
+            <div id="blocksList" class="blocks-list"></div>
+          </div>
+
+          <!-- ═══════ SIDEBAR ═══════ -->
+          <aside class="editor-sidebar">
+
+            <div class="editor-sidebar-section">
+              <h4 class="editor-sidebar-title">Adicionar conteúdo</h4>
+              <div class="editor-content-grid">
+                <button type="button" class="editor-content-btn" id="addImageBlockBtn">
+                  <span class="editor-content-icon">🖼</span>Imagem
+                </button>
+                <button type="button" class="editor-content-btn" id="addTextBlockBtn">
+                  <span class="editor-content-icon">📝</span>Texto
+                </button>
+                <button type="button" class="editor-content-btn" id="addGridBlockBtn">
+                  <span class="editor-content-icon">▦</span>Grade de fotos
+                </button>
+                <button type="button" class="editor-content-btn" id="addCarouselBlockBtn">
+                  <span class="editor-content-icon">🎠</span>Carrossel
+                </button>
+              </div>
+              <p class="form-hint">Arrasta pelo ⠿ no canvas para reordenar os blocos.</p>
+            </div>
+
+            <div class="editor-sidebar-section">
+              <h4 class="editor-sidebar-title">Detalhes do projeto</h4>
+
               <div class="form-group">
-                <label for="projTitle">Título do Projeto *</label>
+                <label for="projTitle">Título *</label>
                 <input type="text" id="projTitle" placeholder="Ex: Identidade Visual — Marca X" required>
               </div>
+
               <div class="form-group">
                 <label for="projCategory">Categoria *</label>
                 <select id="projCategory" required>
@@ -169,34 +224,38 @@
                   <option value="web-design">Web Design</option>
                 </select>
               </div>
-            </div>
 
-            <div class="form-row">
               <div class="form-group">
                 <label for="projClient">Cliente</label>
                 <input type="text" id="projClient" placeholder="Nome do cliente">
               </div>
+
               <div class="form-group">
                 <label for="projYear">Ano</label>
                 <input type="number" id="projYear" placeholder="2025" min="2000" max="2099">
               </div>
+
+              <div class="form-group">
+                <label for="projDesc">Descrição</label>
+                <textarea id="projDesc" rows="3" placeholder="Descreve o projeto, objetivos e processo criativo..."></textarea>
+              </div>
+
+              <div class="form-group">
+                <label for="projTags">Tags</label>
+                <input type="text" id="projTags" placeholder="Ex: branding, minimalista, luxo (separadas por vírgula)">
+                <div class="image-preview-grid" id="tagsPreview" style="display:flex;flex-wrap:wrap;gap:0.4rem;margin-top:0.5rem;"></div>
+              </div>
+
+              <label class="checkbox-label">
+                <input type="checkbox" id="projFeatured" checked>
+                <span class="checkbox-custom"></span>
+                Exibir na seção "Trabalhos" da Home
+              </label>
             </div>
 
-            <div class="form-group full">
-              <label for="projDesc">Descrição</label>
-              <textarea id="projDesc" rows="4" placeholder="Descreve o projeto, objetivos e processo criativo..."></textarea>
-            </div>
-
-            <div class="form-group full">
-              <label for="projTags">Tags</label>
-              <input type="text" id="projTags" placeholder="Ex: branding, minimalista, luxo (separadas por vírgula)">
-              <div class="image-preview-grid" id="tagsPreview" style="display:flex;flex-wrap:wrap;gap:0.4rem;margin-top:0.5rem;"></div>
-            </div>
-
-            <!-- Images -->
-            <div class="form-group full">
-              <label>Imagem de Capa</label>
-              <p class="form-hint">Esta imagem aparece nas grelhas do site (Home, Portfólio, páginas de serviço). Adiciona por URL ou faz upload.</p>
+            <div class="editor-sidebar-section">
+              <h4 class="editor-sidebar-title">Imagem de Capa</h4>
+              <p class="form-hint">Aparece nas grelhas do site (Home, Portfólio, páginas de serviço).</p>
               <div class="images-section">
                 <div class="image-sources">
                   <div class="tab-bar">
@@ -232,44 +291,8 @@
               </div>
             </div>
 
-            <!-- Blocks Editor -->
-            <div class="form-group full">
-              <label>Conteúdo do Projeto</label>
-              <p class="form-hint">Adiciona quantos blocos quiseres. Arrasta pelo ⠿ para reordenar — é assim que o
-                visitante vai ver o projeto, de cima para baixo.</p>
-
-              <div class="block-toolbar">
-                <button type="button" class="btn-admin-ghost" id="addImageBlockBtn">+ Imagem</button>
-                <button type="button" class="btn-admin-ghost" id="addTextBlockBtn">+ Texto</button>
-                <button type="button" class="btn-admin-ghost" id="addCarouselBlockBtn">+ Carrossel</button>
-              </div>
-
-              <div id="blocksList" class="blocks-list"></div>
-              <div class="preview-empty" id="blocksEmpty">Nenhum bloco adicionado ainda.</div>
-            </div>
-
-            <div class="form-group full">
-              <label class="checkbox-label">
-                <input type="checkbox" id="projVisible" checked>
-                <span class="checkbox-custom"></span>
-                Projeto visível no portfolio
-              </label>
-            </div>
-
-            <div class="form-group full">
-              <label class="checkbox-label">
-                <input type="checkbox" id="projFeatured" checked>
-                <span class="checkbox-custom"></span>
-                Exibir na seção "Trabalhos" da Home
-              </label>
-            </div>
-
-            <div class="form-actions">
-              <button type="button" class="btn-admin-ghost" id="cancelForm">Cancelar</button>
-              <button type="submit" class="btn-admin-primary" id="saveBtn">Guardar Projeto</button>
-            </div>
-          </form>
-        </div>
+          </aside>
+        </form>
       </div>
 
       <!-- ═══════ VIEW: DOCUMENTOS DE SERVIÇO ═══════ -->

@@ -108,9 +108,19 @@
         el = buildTextBlock(block);
       } else if (block.type === 'carousel' && block.images && block.images.length > 0) {
         el = buildCarouselBlock(block);
+      } else if (block.type === 'grid' && block.images && block.images.length > 0) {
+        el = buildGridBlock(block);
       }
       if (el) blocksWrap.appendChild(el);
     });
+  }
+
+  function buildGridBlock(block) {
+    const cols = block.columns || 2;
+    const wrap = document.createElement('div');
+    wrap.className = `project-block-grid grid-cols-${cols}`;
+    wrap.innerHTML = block.images.map(url => `<img src="${url}" alt="" loading="lazy">`).join('');
+    return wrap;
   }
 
   function buildImageBlock(block) {

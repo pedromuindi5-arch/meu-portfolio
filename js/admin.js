@@ -49,6 +49,8 @@
   const projVisible   = document.getElementById('projVisible');
   const projFeatured  = document.getElementById('projFeatured');
   const cancelForm    = document.getElementById('cancelForm');
+  const saveDraftBtn  = document.getElementById('saveDraftBtn');
+  const publishBtn    = document.getElementById('publishBtn');
   const imageUrlList  = document.getElementById('imageUrlList');
   const addUrlBtn     = document.getElementById('addUrlBtn');
   const imagePreviewGrid = document.getElementById('imagePreviewGrid');
@@ -57,6 +59,7 @@
   const addImageBlockBtn = document.getElementById('addImageBlockBtn');
   const addTextBlockBtn  = document.getElementById('addTextBlockBtn');
   const addCarouselBlockBtn = document.getElementById('addCarouselBlockBtn');
+  const addGridBlockBtn = document.getElementById('addGridBlockBtn');
   const blocksList    = document.getElementById('blocksList');
   const blocksEmpty   = document.getElementById('blocksEmpty');
 
@@ -455,8 +458,8 @@
       return;
     }
 
-    const submitBtn = projectForm.querySelector('button[type="submit"]');
-    if (submitBtn) { submitBtn.disabled = true; }
+    saveDraftBtn.disabled = true;
+    publishBtn.disabled = true;
 
     try {
       const images = collectImages();
@@ -487,7 +490,8 @@
       console.error(err);
       showToast('Erro ao guardar projeto. Tenta novamente.', true);
     } finally {
-      if (submitBtn) { submitBtn.disabled = false; }
+      saveDraftBtn.disabled = false;
+      publishBtn.disabled = false;
     }
   });
 
@@ -513,6 +517,25 @@
   }
 
   cancelForm.addEventListener('click', () => showView('projects'));
+
+  saveDraftBtn.addEventListener('click', () => {
+    projVisible.checked = false;
+    projectForm.requestSubmit();
+  });
+
+  publishBtn.addEventListener('click', () => {
+    projVisible.checked = true;
+    projectForm.requestSubmit();
+  });
+
+  // Os ícones do canvas vazio ("Comece a criar o seu projeto") disparam os mesmos
+  // botões reais da sidebar, para não duplicar lógica.
+  document.querySelectorAll('.editor-canvas-icon[data-add]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const target = document.getElementById(btn.dataset.add);
+      if (target) target.click();
+    });
+  });
 
   /* ─── URL ROWS ──────────────────────────────────────────── */
   function addUrlRow(value = '') {
@@ -704,6 +727,11 @@
     renderBlocksList();
   });
 
+  addGridBlockBtn.addEventListener('click', () => {
+    blocksState.push({ id: newBlockId(), type: 'grid', columns: 2, images: [] });
+    renderBlocksList();
+  });
+
   function renderBlocksList() {
     blocksList.innerHTML = '';
     blocksEmpty.style.display = blocksState.length === 0 ? 'block' : 'none';
@@ -714,7 +742,7 @@
       item.draggable = true;
       item.dataset.index = index;
 
-      const typeLabels = { image: 'Imagem', text: 'Texto', carousel: 'Carrossel' };
+      const typeLabels = { image: 'Imagem', text: 'Texto', carousel: 'Carrossel', grid: 'Grade de Fotos' };
 
       const body = document.createElement('div');
       body.className = 'block-body';
@@ -739,6 +767,8 @@
         body.appendChild(buildTextBlockEditor(block));
       } else if (block.type === 'carousel') {
         body.appendChild(buildCarouselBlockEditor(block));
+      } else if (block.type === 'grid') {
+        body.appendChild(buildGridBlockEditor(block));
       }
 
       const handle = document.createElement('span');
@@ -864,6 +894,81 @@
       }, true);
     });
 
+    wrap.appendChild(itemsWrap);
+    wrap.appendChild(urlInput);
+    wrap.appendChild(uploadBtn);
+    return wrap;
+  }
+
+  function buildGridBlockEditor(block) {
+    const wrap = document.createElement('div');
+
+    const colsRow = document.createElement('div');
+    colsRow.style.cssText = 'margin-bottom:0.6rem;display:flex;align-items:center;gap:0.5rem;';
+    const colsLabel = document.createElement('span');
+    colsLabel.textContent = 'Colunas:';
+    colsLabel.style.cssText = 'font-size:0.8rem;color:var(--text-dim,#999);';
+    const colsSelect = document.createElement('select');
+    colsSelect.style.cssText = 'width:auto;padding:0.4rem 0.6rem;background:#0d0d0d;border:1px solid var(--border);border-radius:4px;color:#fff;font-size:0.85rem;';
+    [2, 3, 4].forEach(n => {
+      const opt = document.createElement('option');
+      opt.value = n;
+      opt.textContent = `${n} colunas`;
+      if ((block.columns || 2) === n) opt.selected = true;
+      colsSelect.appendChild(opt);
+    });
+    colsSelect.addEventListener('change', () => { block.columns = parseInt(colsSelect.value, 10); });
+    colsRow.appendChild(colsLabel);
+    colsRow.appendChild(colsSelect);
+
+    const itemsWrap = document.createElement('div');
+    itemsWrap.className = 'block-carousel-items';
+
+    function renderGridItems() {
+      itemsWrap.innerHTML = '';
+      block.images.forEach((url, i) => {
+        const thumb = document.createElement('div');
+        thumb.className = 'block-carousel-item';
+        thumb.innerHTML = `<img src="${url}"><button type="button">✕</button>`;
+        thumb.querySelector('button').addEventListener('click', () => {
+          block.images.splice(i, 1);
+          renderGridItems();
+        });
+        itemsWrap.appendChild(thumb);
+      });
+    }
+    renderGridItems();
+
+    const urlInput = document.createElement('input');
+    urlInput.type = 'url';
+    urlInput.placeholder = 'URL da imagem — Enter para adicionar à grelha';
+    urlInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && urlInput.value.trim()) {
+        e.preventDefault();
+        block.images.push(urlInput.value.trim());
+        urlInput.value = '';
+        renderGridItems();
+      }
+    });
+
+    const uploadBtn = document.createElement('button');
+    uploadBtn.type = 'button';
+    uploadBtn.className = 'btn-admin-ghost';
+    uploadBtn.textContent = 'Upload de imagem(ns)';
+    uploadBtn.style.marginTop = '0.35rem';
+    uploadBtn.addEventListener('click', () => {
+      triggerFileUpload(async (file) => {
+        try {
+          const url = await uploadProjectImage(file);
+          block.images.push(url);
+          renderGridItems();
+        } catch {
+          showToast('Erro ao enviar imagem.', true);
+        }
+      }, true);
+    });
+
+    wrap.appendChild(colsRow);
     wrap.appendChild(itemsWrap);
     wrap.appendChild(urlInput);
     wrap.appendChild(uploadBtn);
