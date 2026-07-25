@@ -194,9 +194,12 @@
 
     /* Template oculto para geração do PDF estilo editorial */
     #pdf-template-wrapper {
-      position: absolute;
-      left: -9999px;
-      top: -9999px;
+      position: fixed;
+      top: 0;
+      left: 0;
+      opacity: 0;
+      pointer-events: none;
+      z-index: -1;
     }
 
     .success-message {
@@ -284,7 +287,8 @@
     <div class="briefing-container">
 
       <div class="success-message" id="successMessage">
-        PDF gerado com sucesso! A abrir o WhatsApp para lhe enviar o resumo do briefing.
+        Briefing enviado com sucesso! Uma cópia em PDF foi descarregada para o teu dispositivo, e o Lucas já foi
+        notificado.
       </div>
 
       <!-- FORMULÁRIO 1: BRANDING (MARCA) -->
@@ -711,21 +715,10 @@
     </div>
   </div>
 
-  <!-- DEPENDÊNCIAS: GERAÇÃO DE PDF E EMAILJS -->
+  <!-- DEPENDÊNCIAS: GERAÇÃO DE PDF -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/supabase-client.js"></script>
-  <script type="text/javascript">
-    (function () {
-      // Nota: substitua pela sua Public Key do EmailJS (Account > API Keys em emailjs.com)
-      // Se deixar o valor de exemplo, o envio de e-mail simplesmente falha em silêncio
-      // e o resto do fluxo (PDF + WhatsApp) continua a funcionar normalmente.
-      if (window.emailjs) {
-        emailjs.init("lTk8CBOBLgH8XkTy");
-      }
-    })();
-  </script>
 
   <script>
     'use strict';
@@ -819,7 +812,6 @@
       document.getElementById('pdf-type-title').textContent = `Briefing de Projeto — ${typeName}`;
 
       let answersHTML = '';
-      let whatsappMessage = `Olá Lucas!\n\nAcabei de preencher o briefing de *${typeName}*:\n\n`;
       const formData = {};
 
       // Captura todos os inputs dentro do formulário ativo
@@ -851,14 +843,13 @@
           </div>
         `;
 
-        // Montagem do resumo para o WhatsApp
-        whatsappMessage += `*${label}:* ${value}\n`;
+        // Montagem das respostas concluída acima (answersHTML + formData)
       });
 
       document.getElementById('pdf-answers').innerHTML = answersHTML;
 
       // ─── Grava o briefing na base de dados (Supabase) ───
-      // Não bloqueia o resto do fluxo (PDF/WhatsApp) se falhar.
+      // Não bloqueia o resto do fluxo (PDF) se falhar.
       const contactIsEmail = looksLikeEmail(clientContact);
       const serviceType = SERVICE_TYPE_SLUGS[typeName] || 'branding';
 
@@ -874,9 +865,15 @@
           console.error('Erro ao gravar briefing na base de dados:', error);
           return;
         }
-        // Se o contacto for um e-mail válido, tenta disparar o envio automático do PDF.
-        // Isto não interrompe o fluxo do utilizador se a função ainda não estiver
-        // implantada ou falhar — o WhatsApp/PDF local continuam a funcionar na mesma.
+
+        // Notifica sempre o admin por e-mail — independentemente do tipo de contacto do cliente.
+        supabaseClient.functions.invoke('notify-admin-briefing', {
+          body: { briefing_id: briefingRow.id }
+        }).catch(err => {
+          console.log('Aviso: notificação por e-mail ao admin não disponível ainda.', err);
+        });
+
+        // Se o contacto for um e-mail válido, tenta também enviar o PDF de boas-vindas ao cliente.
         if (contactIsEmail && briefingRow) {
           supabaseClient.functions.invoke('send-welcome-pdf', {
             body: { briefing_id: briefingRow.id }
@@ -905,40 +902,15 @@
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
       };
 
-      // Executa a compilação local do PDF
+      // Executa a compilação local do PDF (fica com uma cópia local do briefing)
       html2pdf().from(element).set(opt).toPdf().get('pdf').then(function (pdf) {
         pdf.save(opt.filename);
       }).then(() => {
-
-        // Tenta enviar o e-mail com o resumo (não bloqueia o fluxo se falhar)
-        if (window.emailjs) {
-          const emailParams = {
-            to_email: 'pedromuidi5@gmail.com',
-            from_name: clientName,
-            from_contact: clientContact,
-            subject: `Novo Briefing: ${typeName} - ${clientName}`,
-            message: whatsappMessage
-          };
-
-          emailjs.send("service_na00zlb", "template_3vw391k", emailParams)
-            .then(() => {
-              console.log('Email enviado com sucesso!');
-            })
-            .catch((error) => {
-              console.log('Aviso: envio de e-mail não configurado ou falhou.', error);
-            });
-        }
-
-        whatsappMessage += `\n📌 _O ficheiro PDF do briefing foi descarregado automaticamente. Estou a enviá-lo em anexo._\n\nAguardo o seu feedback!`;
 
         // Mostra mensagem de sucesso
         const successEl = document.getElementById('successMessage');
         successEl.style.display = 'block';
         successEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-
-        // Redireciona o utilizador para o WhatsApp oficial de contacto
-        const whatsappUrl = `https://wa.me/244923224383?text=${encodeURIComponent(whatsappMessage)}`;
-        window.open(whatsappUrl, '_blank');
 
         submitBtn.disabled = false;
         submitBtn.textContent = originalBtnText;
