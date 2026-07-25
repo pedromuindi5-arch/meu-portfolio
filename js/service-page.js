@@ -1,11 +1,12 @@
 /**
  * service-page.js
  * Script partilhado pelas páginas de serviço dedicadas
- * (branding, campanhas, social-media-design, eventos, materiais-graficos).
+ * (branding, campanhas, social-media-design, eventos, materiais-graficos, web-design).
  *
  * Cada página define, no grid da galeria, o atributo:
  *   data-category="slug-da-categoria"
- * e este script trata do resto: nav, menu mobile, render da galeria e modal.
+ * e este script trata do resto: nav, menu mobile e render da galeria.
+ * Clicar num projeto leva à página dedicada projeto.html?id=...
  */
 (function () {
   'use strict';
@@ -18,13 +19,6 @@
 
   const grid = document.getElementById('serviceGrid');
   const emptyState = document.getElementById('emptyState');
-  const modalOverlay = document.getElementById('modalOverlay');
-  const modal = document.getElementById('modal');
-  const modalClose = document.getElementById('modalClose');
-  const modalBody = document.getElementById('modalBody');
-
-  let galleryIndex = 0;
-  let galleryImages = [];
 
   /* ─── NAVBAR SCROLL ────────────────────────────────── */
   window.addEventListener('scroll', () => {
@@ -46,6 +40,7 @@
   if (menuBtn) menuBtn.addEventListener('click', openMenu);
   if (mobileClose) mobileClose.addEventListener('click', closeMenu);
   mobileLinks.forEach(link => link.addEventListener('click', closeMenu));
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeMenu(); });
 
   /* ─── GALLERY RENDER ───────────────────────────────── */
   async function renderGallery() {
@@ -91,122 +86,6 @@
 
     return card;
   }
-
-  /* ─── MODAL ────────────────────────────────────────── */
-  function openImageInNewTab(imgUrl) {
-    if (imgUrl.startsWith('data:')) {
-      const newTab = window.open();
-      newTab.document.body.innerHTML = `<img src="${imgUrl}" style="max-width:100%; height:auto;">`;
-      newTab.document.title = 'Visualização de Imagem';
-    } else {
-      window.open(imgUrl, '_blank');
-    }
-  }
-
-  function openModal(project) {
-    galleryImages = project.images || [];
-    galleryIndex = 0;
-
-    const catLabel = getCategoryLabel(project.category);
-
-    let galleryHTML = '';
-    if (galleryImages.length > 0) {
-      const slides = galleryImages.map(img =>
-        `<div class="modal-gallery-slide"><img src="${img}" alt="${project.title}" loading="lazy" onclick="window.open('${img}', '_blank')"></div>`
-      ).join('');
-      const dots = galleryImages.length > 1
-        ? `<div class="modal-gallery-dots">${galleryImages.map((_, i) =>
-          `<span class="modal-gallery-dot ${i === 0 ? 'active' : ''}" data-idx="${i}"></span>`
-        ).join('')}</div>`
-        : '';
-      const navBtns = galleryImages.length > 1
-        ? `<button class="modal-gallery-nav prev" id="galPrev">‹</button>
-           <button class="modal-gallery-nav next" id="galNext">›</button>`
-        : '';
-      galleryHTML = `
-        <div class="modal-gallery">
-          <div class="modal-gallery-track" id="galTrack">${slides}</div>
-          ${navBtns}
-          ${dots}
-          <div class="modal-fullscreen-btn" id="fullViewBtn">Ver em tamanho real ↗</div>
-        </div>
-      `;
-    }
-
-    modalBody.innerHTML = `
-      ${galleryHTML}
-      <div class="modal-info">
-        <div class="modal-cat">${catLabel}</div>
-        <h2 class="modal-title">${project.title}</h2>
-        <p class="modal-desc">${project.description}</p>
-        <div class="modal-meta">
-          ${project.client ? `<div class="modal-meta-item">
-            <span class="modal-meta-label">Cliente</span>
-            <span class="modal-meta-value">${project.client}</span>
-          </div>` : ''}
-          ${project.year ? `<div class="modal-meta-item">
-            <span class="modal-meta-label">Ano</span>
-            <span class="modal-meta-value">${project.year}</span>
-          </div>` : ''}
-          <div class="modal-meta-item">
-            <span class="modal-meta-label">Categoria</span>
-            <span class="modal-meta-value">${catLabel}</span>
-          </div>
-        </div>
-      </div>
-    `;
-
-    const fullViewBtn = document.getElementById('fullViewBtn');
-    if (fullViewBtn && galleryImages[0]) {
-      fullViewBtn.onclick = () => openImageInNewTab(galleryImages[galleryIndex]);
-    }
-
-    if (galleryImages.length > 1) {
-      const track = document.getElementById('galTrack');
-      const prevBtn = document.getElementById('galPrev');
-      const nextBtn = document.getElementById('galNext');
-      const dots = document.querySelectorAll('.modal-gallery-dot');
-
-      const goTo = (idx) => {
-        galleryIndex = Math.max(0, Math.min(idx, galleryImages.length - 1));
-        track.style.transform = `translateX(-${galleryIndex * 100}%)`;
-        dots.forEach((d, i) => d.classList.toggle('active', i === galleryIndex));
-        if (fullViewBtn) fullViewBtn.onclick = () => openImageInNewTab(galleryImages[galleryIndex]);
-      };
-
-      prevBtn.addEventListener('click', () => goTo(galleryIndex - 1));
-      nextBtn.addEventListener('click', () => goTo(galleryIndex + 1));
-      dots.forEach(dot => dot.addEventListener('click', () => goTo(parseInt(dot.dataset.idx, 10))));
-    }
-
-    modalOverlay.classList.add('open');
-    modalOverlay.setAttribute('aria-hidden', 'false');
-    document.body.style.overflow = 'hidden';
-  }
-
-  const closeModal = () => {
-    modalOverlay.classList.remove('open');
-    modalOverlay.setAttribute('aria-hidden', 'true');
-    document.body.style.overflow = '';
-  };
-
-  if (modalClose) modalClose.addEventListener('click', closeModal);
-  if (modalOverlay) {
-    modalOverlay.addEventListener('click', (e) => {
-      if (e.target === modalOverlay) closeModal();
-    });
-  }
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') { closeModal(); closeMenu(); }
-    if (e.key === 'ArrowLeft' && modalOverlay.classList.contains('open')) {
-      const prev = document.getElementById('galPrev');
-      if (prev) prev.click();
-    }
-    if (e.key === 'ArrowRight' && modalOverlay.classList.contains('open')) {
-      const next = document.getElementById('galNext');
-      if (next) next.click();
-    }
-  });
 
   /* ─── INIT ─────────────────────────────────────────── */
   renderGallery();

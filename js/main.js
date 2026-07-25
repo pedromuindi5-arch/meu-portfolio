@@ -16,16 +16,10 @@
   const filterBtns = document.querySelectorAll('.filter-btn');
   const projectsGrid = document.getElementById('projectsGrid');
   const emptyState = document.getElementById('emptyState');
-  const modalOverlay = document.getElementById('modalOverlay');
-  const modal = document.getElementById('modal');
-  const modalClose = document.getElementById('modalClose');
-  const modalBody = document.getElementById('modalBody');
   const statNums = document.querySelectorAll('.stat-num');
   const aboutPhoto = document.getElementById('aboutPhoto');
 
   let currentFilter = 'all';
-  let galleryIndex = 0;
-  let galleryImages = [];
 
   /* ─── HERO SCROLL PARALLAX (Norell style) ──────────── */
   const heroEl = document.getElementById('hero');
@@ -254,135 +248,11 @@
     });
   });
 
-  /* ─── Abre uma imagem (URL normal ou base64) numa nova aba ─── */
-  function openImageInNewTab(imgUrl) {
-    if (imgUrl.startsWith('data:')) {
-      // Para imagens em base64 (upload local), abrimos numa nova aba de forma compatível
-      const newTab = window.open();
-      newTab.document.body.innerHTML = `<img src="${imgUrl}" style="max-width:100%; height:auto;">`;
-      newTab.document.title = 'Visualização de Imagem';
-    } else {
-      window.open(imgUrl, '_blank');
-    }
-  }
-
-  /* ─── MODAL ────────────────────────────────────────── */
-  function openModal(project) {
-    galleryImages = project.images || [];
-    galleryIndex = 0;
-
-    const catLabel = getCategoryLabel(project.category);
-
-    // Build gallery HTML
-    let galleryHTML = '';
-    if (galleryImages.length > 0) {
-      const slides = galleryImages.map(img =>
-        `<div class="modal-gallery-slide"><img src="${img}" alt="${project.title}" loading="lazy" onclick="window.open('${img}', '_blank')"></div>`
-      ).join('');
-      const dots = galleryImages.length > 1
-        ? `<div class="modal-gallery-dots">${galleryImages.map((_, i) =>
-          `<span class="modal-gallery-dot ${i === 0 ? 'active' : ''}" data-idx="${i}"></span>`
-        ).join('')}</div>`
-        : '';
-      const navBtns = galleryImages.length > 1
-        ? `<button class="modal-gallery-nav prev" id="galPrev">‹</button>
-           <button class="modal-gallery-nav next" id="galNext">›</button>`
-        : '';
-      galleryHTML = `
-        <div class="modal-gallery">
-          <div class="modal-gallery-track" id="galTrack">${slides}</div>
-          ${navBtns}
-          ${dots}
-          <div class="modal-fullscreen-btn" id="fullViewBtn">Ver em tamanho real ↗</div>
-        </div>
-      `;
-    }
-
-    modalBody.innerHTML = `
-      ${galleryHTML}
-      <div class="modal-info">
-        <div class="modal-cat">${catLabel}</div>
-        <h2 class="modal-title">${project.title}</h2>
-        <p class="modal-desc">${project.description}</p>
-        <div class="modal-meta">
-          ${project.client ? `<div class="modal-meta-item">
-            <span class="modal-meta-label">Cliente</span>
-            <span class="modal-meta-value">${project.client}</span>
-          </div>` : ''}
-          ${project.year ? `<div class="modal-meta-item">
-            <span class="modal-meta-label">Ano</span>
-            <span class="modal-meta-value">${project.year}</span>
-          </div>` : ''}
-          <div class="modal-meta-item">
-            <span class="modal-meta-label">Categoria</span>
-            <span class="modal-meta-value">${catLabel}</span>
-          </div>
-        </div>
-      </div>
-    `;
-
-    // Botão "ver em tamanho real" — já aponta para a imagem inicial da galeria
-    const fullViewBtn = document.getElementById('fullViewBtn');
-    if (fullViewBtn && galleryImages.length > 0) {
-      fullViewBtn.onclick = () => openImageInNewTab(galleryImages[galleryIndex]);
-    }
-
-    // Gallery navigation
-    if (galleryImages.length > 1) {
-      const track = document.getElementById('galTrack');
-      const prev = document.getElementById('galPrev');
-      const next = document.getElementById('galNext');
-      const dots = document.querySelectorAll('.modal-gallery-dot');
-
-      const goTo = (idx) => {
-        galleryIndex = Math.max(0, Math.min(idx, galleryImages.length - 1));
-        track.style.transform = `translateX(-${galleryIndex * 100}%)`;
-        dots.forEach((d, i) => d.classList.toggle('active', i === galleryIndex));
-
-        // Atualiza o link do botão de tamanho real para a imagem atual da galeria
-        if (fullViewBtn) {
-          fullViewBtn.onclick = () => openImageInNewTab(galleryImages[galleryIndex]);
-        }
-      };
-
-      prev.addEventListener('click', () => goTo(galleryIndex - 1));
-      next.addEventListener('click', () => goTo(galleryIndex + 1));
-      dots.forEach(dot => {
-        dot.addEventListener('click', () => goTo(parseInt(dot.dataset.idx, 10)));
-      });
-    }
-
-    modalOverlay.classList.add('open');
-    modalOverlay.setAttribute('aria-hidden', 'false');
-    document.body.style.overflow = 'hidden';
-  }
-
-  const closeModal = () => {
-    modalOverlay.classList.remove('open');
-    modalOverlay.setAttribute('aria-hidden', 'true');
-    document.body.style.overflow = '';
-  };
-
-  modalClose.addEventListener('click', closeModal);
-  modalOverlay.addEventListener('click', (e) => {
-    if (e.target === modalOverlay) closeModal();
-  });
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') {
-      closeModal();
-      closeMenu();
-    }
-    if (e.key === 'ArrowLeft' && modalOverlay.classList.contains('open')) {
-      const prev = document.getElementById('galPrev');
-      if (prev) prev.click();
-    }
-    if (e.key === 'ArrowRight' && modalOverlay.classList.contains('open')) {
-      const next = document.getElementById('galNext');
-      if (next) next.click();
-    }
-  });
-
   /* ─── INIT ─────────────────────────────────────────── */
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeMenu();
+  });
+
   renderProjects('all');
 
 })();
