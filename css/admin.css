@@ -18,7 +18,7 @@
   --success:    #22c55e;
   --warning:    #f59e0b;
 
-  --font:       'Inter', sans-serif;
+  --font:       'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
   --ease:       cubic-bezier(0.25, 0.46, 0.45, 0.94);
   --transition: 0.25s var(--ease);
 
@@ -53,8 +53,9 @@ input, select, textarea, button { font-family: inherit; font-size: inherit; }
   align-items: center;
   justify-content: center;
   padding: 1.5rem;
-  background: var(--bg);
-  background-image: radial-gradient(ellipse 60% 60% at 50% 50%, rgba(255,255,255,0.02), transparent);
+  background-image: linear-gradient(135deg, rgba(15, 10, 30, 0.6) 0%, rgba(5, 5, 15, 0.85) 100%), url('../assets/backgroundsession.png');
+  background-size: cover;
+  background-position: center;
 }
 
 .login-card {

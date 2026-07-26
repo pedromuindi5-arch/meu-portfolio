@@ -9,143 +9,64 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
-    href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
     rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
 
   <style>
-    /* Estilos específicos para a página de portfólio */
     body {
-      background-image: linear-gradient(rgba(0, 0, 0, 0.85), rgba(0, 0, 0, 0.85)), url('assets/backgroundsession.png');
-      background-attachment: fixed;
-      background-size: cover;
-      background-position: center;
+      background-color: #0b0c10;
       color: var(--text);
     }
 
-    .portfolio-hero {
-      padding-top: calc(var(--nav-h) + 3rem);
-      padding-bottom: 3rem;
-      text-align: center;
+    .portfolio-hero-clean {
+      position: relative;
+      background-image: linear-gradient(135deg, rgba(15, 10, 30, 0.45) 0%, rgba(5, 5, 15, 0.75) 100%), url('assets/backgroundsession.png');
+      background-size: cover;
+      background-position: center;
+      padding-top: calc(var(--nav-h) + 4rem);
+      padding-bottom: clamp(3.5rem, 7vw, 5.5rem);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     }
 
-    .portfolio-title {
-      font-family: var(--font-serif);
-      font-size: clamp(2rem, 5vw, 3.5rem);
-      font-style: italic;
-      font-weight: 400;
-      line-height: 1.1;
-      margin-bottom: 0.5rem;
-    }
-
-    .portfolio-desc {
-      color: var(--text-dim);
-      font-size: 0.95rem;
-      max-width: 60ch;
-      margin: 0 auto 2.5rem;
-    }
-
-    .portfolio-filters {
+    .portfolio-filters-clean {
       display: flex;
-      justify-content: center;
-      gap: 0.5rem;
-      margin-bottom: 3rem;
+      gap: 0.6rem;
+      margin-top: 2rem;
       flex-wrap: wrap;
     }
 
-    .portfolio-filter {
-      padding: 0.65rem 1.5rem;
-      font-size: 0.8rem;
-      font-weight: 500;
-      letter-spacing: 0.05em;
-      color: var(--text-muted);
-      border: 1px solid var(--border);
-      border-radius: 30px;
-      transition: all var(--transition);
-      cursor: pointer;
-      background: transparent;
-    }
-
-    .portfolio-filter:hover {
-      color: var(--text);
-      border-color: rgba(255, 255, 255, 0.25);
-    }
-
-    .portfolio-filter.active {
-      color: var(--bg);
-      background: var(--text);
-      border-color: var(--text);
-    }
-
-    .portfolio-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-      gap: 2rem;
-      margin-bottom: 5rem;
-    }
-
-    .portfolio-card {
-      position: relative;
-      overflow: hidden;
-      border-radius: 8px;
-      cursor: pointer;
-      aspect-ratio: 1;
-      background: #0d0d0d;
-      border: 1px solid rgba(255, 255, 255, 0.05);
-      transition: all var(--transition);
-    }
-
-    .portfolio-card:hover {
-      border-color: rgba(255, 255, 255, 0.15);
-      transform: translateY(-4px);
-    }
-
-    .portfolio-card img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-    }
-
-    .portfolio-card-overlay {
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(135deg, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0.8) 100%);
-      display: flex;
-      flex-direction: column;
-      justify-content: flex-end;
-      padding: 1.5rem;
-      opacity: 0;
-      transition: opacity var(--transition);
-    }
-
-    .portfolio-card:hover .portfolio-card-overlay {
-      opacity: 1;
-    }
-
-    .portfolio-card-cat {
-      font-size: 0.65rem;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: rgba(255, 255, 255, 0.6);
-      margin-bottom: 0.5rem;
-    }
-
-    .portfolio-card-title {
-      font-size: 1.1rem;
+    .portfolio-filter-clean {
+      padding: 0.6rem 1.4rem;
+      font-size: 0.825rem;
       font-weight: 600;
-      color: var(--text);
-      line-height: 1.2;
+      color: rgba(255, 255, 255, 0.75);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 30px;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(8px);
     }
 
-    .portfolio-empty {
-      text-align: center;
-      padding: 3rem;
-      color: var(--text-muted);
+    .portfolio-filter-clean:hover {
+      color: #ffffff;
+      background: rgba(255, 255, 255, 0.18);
+      border-color: rgba(255, 255, 255, 0.4);
     }
 
-    .portfolio-empty p {
-      font-size: 0.95rem;
+    .portfolio-filter-clean.active {
+      color: #111111;
+      background: #ffffff;
+      border-color: #ffffff;
+      font-weight: 700;
+    }
+
+    .portfolio-section-clean {
+      background: #ffffff;
+      color: #111111;
+      padding: clamp(4rem, 7vw, 6rem) 0;
+      min-height: 60vh;
     }
   </style>
 </head>
@@ -185,31 +106,50 @@
     </div>
   </div>
 
-  <!-- CONTAINER PRINCIPAL -->
-  <main class="container">
-    <section class="portfolio-hero">
-      <h1 class="portfolio-title">Portfólio Completo</h1>
-      <p class="portfolio-desc">Explorar todos os projetos realizados, organizados por categoria e tipo de design.</p>
-
-      <!-- FILTROS -->
-      <div class="portfolio-filters">
-        <button class="portfolio-filter active" data-filter="all">Todos</button>
-        <button class="portfolio-filter" data-filter="identidade-visual">Identidade Visual</button>
-        <button class="portfolio-filter" data-filter="design-publicitario">Design Publicitário</button>
-        <button class="portfolio-filter" data-filter="social-media">Social Media</button>
-        <button class="portfolio-filter" data-filter="design-eventos">Design para Eventos</button>
-        <button class="portfolio-filter" data-filter="materiais-graficos">Materiais Gráficos</button>
-        <button class="portfolio-filter" data-filter="web-design">Web Design</button>
+  <main>
+    <!-- SECTION 1: HERO DEGRADÊ -->
+    <section class="portfolio-hero-clean">
+      <div class="hero-clean-container">
+        <div class="hero-clean-left">
+          <span class="service-badge-clean">Portfólio & Projetos</span>
+          <h1 class="service-title-clean">nossos últimos trabalhos.</h1>
+        </div>
+        <div class="hero-clean-right">
+          <p class="service-desc-clean">Explore a coleção de projetos realizados em branding, design gráfico, campanhas, redes sociais e web design.</p>
+          <span class="service-audience-clean">Filtre por categoria para encontrar exatamente o que procura.</span>
+        </div>
       </div>
     </section>
 
-    <!-- GRID DE PROJETOS -->
-    <div class="portfolio-grid" id="portfolioGrid"></div>
+    <!-- SECTION 2: GRID & FILTROS CLEAN -->
+    <section class="portfolio-section-clean">
+      <div class="container" style="max-width: var(--container); margin: 0 auto; padding: 0 1.5rem;">
+        <div class="clean-section-head">
+          <div>
+            <h2 class="clean-section-title">Projetos em Destaque</h2>
+          </div>
 
-    <!-- ESTADO VAZIO -->
-    <div class="portfolio-empty" id="emptyState" style="display:none;">
-      <p>Nenhum projeto nesta categoria ainda.</p>
-    </div>
+          <!-- FILTROS -->
+          <div class="portfolio-filters-clean">
+            <button class="portfolio-filter-clean active" data-filter="all">Todos</button>
+            <button class="portfolio-filter-clean" data-filter="identidade-visual">Identidade Visual</button>
+            <button class="portfolio-filter-clean" data-filter="design-publicitario">Design Publicitário</button>
+            <button class="portfolio-filter-clean" data-filter="social-media">Social Media</button>
+            <button class="portfolio-filter-clean" data-filter="design-eventos">Design para Eventos</button>
+            <button class="portfolio-filter-clean" data-filter="materiais-graficos">Materiais Gráficos</button>
+            <button class="portfolio-filter-clean" data-filter="web-design">Web Design</button>
+          </div>
+        </div>
+
+        <!-- GRID DE PROJETOS -->
+        <div class="portfolio-grid" id="portfolioGrid" style="margin-top: 2.5rem;"></div>
+
+        <!-- ESTADO VAZIO -->
+        <div class="portfolio-empty" id="emptyState" style="display:none; padding: 4rem 0; text-align: center; color: #777;">
+          <p>Nenhum projeto nesta categoria ainda.</p>
+        </div>
+      </div>
+    </section>
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -224,7 +164,7 @@
     const mobileOverlay = document.getElementById('mobileOverlay');
     const mobileClose = document.getElementById('mobileClose');
     const mobileLinks = document.querySelectorAll('[data-mobile-link]');
-    const filterBtns = document.querySelectorAll('.portfolio-filter');
+    const filterBtns = document.querySelectorAll('.portfolio-filter-clean');
     const portfolioGrid = document.getElementById('portfolioGrid');
     const emptyState = document.getElementById('emptyState');
 
@@ -262,20 +202,8 @@
     });
     mobileLinks.forEach(link => link.addEventListener('click', closeMenu));
 
-    /* ─── SMOOTH SCROLL ────────────────────────────────── */
-    document.querySelectorAll('a[href^="#"]').forEach(a => {
-      a.addEventListener('click', (e) => {
-        const target = document.querySelector(a.getAttribute('href'));
-        if (target) {
-          e.preventDefault();
-          target.scrollIntoView({ behavior: 'smooth' });
-        }
-      });
-    });
-
     /* ─── PROJETOS RENDERING ───────────────────────────── */
     async function renderProjects(filter) {
-      // No portfolio.html mostramos todos os projetos visíveis, independentemente de estarem em destaque na Home
       const projects = await getProjectsByCategory(filter);
       portfolioGrid.innerHTML = '';
 

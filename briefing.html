@@ -8,36 +8,32 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
-    href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
     rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
 
   <style>
-    /* Estilos específicos para a página de Briefing */
     body {
-      background-image: linear-gradient(rgba(0, 0, 0, 0.85), rgba(0, 0, 0, 0.85)), url('assets/backgroundsession.png');
-      background-attachment: fixed;
-      background-size: cover;
-      background-position: center;
+      background-color: #0b0c10;
       color: var(--text);
     }
 
-    .briefing-hero {
-      padding-top: calc(var(--nav-h) + 3rem);
-      padding-bottom: 2rem;
-      text-align: center;
+    .briefing-hero-clean {
+      position: relative;
+      background-image: linear-gradient(135deg, rgba(15, 10, 30, 0.45) 0%, rgba(5, 5, 15, 0.75) 100%), url('assets/backgroundsession.png');
+      background-size: cover;
+      background-position: center;
+      padding-top: calc(var(--nav-h) + 4rem);
+      padding-bottom: clamp(3rem, 6vw, 4.5rem);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     }
 
-    .briefing-title {
-      font-family: var(--font-serif);
-      font-size: clamp(2rem, 5vw, 3.5rem);
-      font-style: italic;
-      font-weight: 400;
-      line-height: 1.1;
-      margin-bottom: 0.5rem;
+    .briefing-section-clean {
+      background: #ffffff;
+      color: #111111;
+      padding: clamp(3rem, 6vw, 5rem) 1rem;
+      min-height: 70vh;
     }
-
-    .briefing-desc {
       color: var(--text-dim);
       font-size: 0.95rem;
       max-width: 50ch;
@@ -263,28 +259,37 @@
     </div>
   </div>
 
-  <!-- CONTAINER PRINCIPAL -->
-  <main class="container">
-    <section class="briefing-hero">
-      <h1 class="briefing-title">Alinhar a nossa visão.</h1>
-      <p class="briefing-desc">Escolha uma categoria e responda às perguntas para iniciarmos o processo criativo.
-        Quanto mais detalhes, melhor compreendo a sua visão.</p>
-
-      <!-- SELETOR DE ABAS -->
-      <div class="briefing-tabs">
-        <button type="button" class="briefing-tab active" onclick="switchForm('branding', this)">Branding</button>
-        <button type="button" class="briefing-tab" onclick="switchForm('identidade-visual', this)">Identidade
-          Visual</button>
-        <button type="button" class="briefing-tab" onclick="switchForm('social-media', this)">Social Media</button>
-        <button type="button" class="briefing-tab" onclick="switchForm('flyer', this)">Flyer</button>
-        <button type="button" class="briefing-tab" onclick="switchForm('evento', this)">Evento</button>
-        <button type="button" class="briefing-tab" onclick="switchForm('web', this)">Web Design</button>
-        <button type="button" class="briefing-tab" onclick="switchForm('materiais-graficos', this)">Materiais
-          Gráficos</button>
+  <!-- MAIN -->
+  <main>
+    <!-- SECTION 1: HERO DEGRADÊ -->
+    <section class="briefing-hero-clean">
+      <div class="hero-clean-container">
+        <div class="hero-clean-left">
+          <span class="service-badge-clean">Briefing Interativo</span>
+          <h1 class="service-title-clean">alinhar a nossa visão.</h1>
+        </div>
+        <div class="hero-clean-right">
+          <p class="service-desc-clean">Escolha uma categoria e responda às perguntas para iniciarmos o processo criativo com clareza total.</p>
+          <span class="service-audience-clean">Quanto mais detalhes partilhar, melhor compreendo a sua visão.</span>
+        </div>
       </div>
     </section>
 
-    <div class="briefing-container">
+    <!-- SECTION 2: FORMULÁRIO CLEAN -->
+    <section class="briefing-section-clean">
+      <div style="max-width: var(--container); margin: 0 auto;">
+        <!-- SELETOR DE ABAS -->
+        <div class="briefing-tabs" style="margin-bottom: 3rem;">
+          <button type="button" class="briefing-tab active" onclick="switchForm('branding', this)">Branding</button>
+          <button type="button" class="briefing-tab" onclick="switchForm('identidade-visual', this)">Identidade Visual</button>
+          <button type="button" class="briefing-tab" onclick="switchForm('social-media', this)">Social Media</button>
+          <button type="button" class="briefing-tab" onclick="switchForm('flyer', this)">Flyer</button>
+          <button type="button" class="briefing-tab" onclick="switchForm('evento', this)">Evento</button>
+          <button type="button" class="briefing-tab" onclick="switchForm('web', this)">Web Design</button>
+          <button type="button" class="briefing-tab" onclick="switchForm('materiais-graficos', this)">Materiais Gráficos</button>
+        </div>
+
+        <div class="briefing-container">
 
       <div class="success-message" id="successMessage">
         Briefing enviado com sucesso! Uma cópia em PDF foi descarregada para o teu dispositivo, e o Lucas já foi
@@ -663,9 +668,9 @@
           </div>
         </div>
         <button type="submit" class="btn-submit">Gerar Briefing &amp; Enviar para WhatsApp →</button>
-      </form>
-
-    </div>
+        </div>
+      </div>
+    </section>
   </main>
 
   <!-- TEMPLATE EDITORIAL EXCLUSIVO DO PDF GERADO -->

@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
-    href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
     rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
 </head>
@@ -50,37 +50,47 @@
     </div>
   </div>
 
-  <main class="container">
-
-    <!-- HERO -->
-    <section class="service-hero">
-      <span class="badge-bright">Design Publicitário & Campanhas</span>
-      <h1 class="service-title">Campanhas que <span class="gradient-text">chamam a atenção</span>.</h1>
-      <p class="service-desc">Criação de peças promocionais e campanhas de comunicação — flyers, anúncios, banners e
-        materiais para divulgação digital e impressa, pensados para converter atenção em resultado.</p>
-      <span class="service-audience">Para negócios que precisam de comunicar promoções, lançamentos e campanhas com
-        impacto</span>
-    </section>
-
-    <!-- GALERIA -->
-    <section class="service-section">
-      <div class="service-section-head">
-        <div class="section-label">— Trabalhos</div>
-        <h2 class="service-section-title">Campanhas já criadas</h2>
-      </div>
-      <div class="portfolio-grid" id="serviceGrid" data-category="design-publicitario"></div>
-      <div class="portfolio-empty" id="emptyState" style="display:none;">
-        <p>Novos projetos desta categoria em breve.</p>
+  <main>
+    <!-- SECTION 1: HERO DEGRADÊ -->
+    <section class="service-hero-clean">
+      <div class="hero-clean-container">
+        <div class="hero-clean-left">
+          <span class="service-badge-clean">Design Publicitário & Campanhas</span>
+          <h1 class="service-title-clean">campanhas que conectam e geram impacto.</h1>
+        </div>
+        <div class="hero-clean-right">
+          <p class="service-desc-clean">Criação de peças promocionais e campanhas de comunicação — flyers, anúncios, banners e materiais para divulgação digital e impressa, pensados para converter atenção em resultado.</p>
+          <span class="service-audience-clean">Para negócios que precisam de comunicar promoções, lançamentos e campanhas com impacto.</span>
+        </div>
       </div>
     </section>
 
-    <!-- CTA FINAL -->
-    <section class="service-final-cta">
-      <h2 class="service-section-title">Vamos criar a tua próxima campanha?</h2>
-      <p class="service-desc" style="margin-top:0.75rem;">Conta-me sobre o teu projeto e recebe uma proposta
-        personalizada.</p>
-      <div style="margin-top:2rem;">
-        <a href="briefing.html?tipo=flyer" class="btn-bright">Pedir orçamento</a>
+    <!-- SECTION 2: CONTEÚDO & CASES CLEAN -->
+    <section class="service-section-clean">
+      <div class="container">
+        <div class="clean-section-head">
+          <div>
+            <h2 class="clean-section-title">Campanhas já criadas</h2>
+          </div>
+          <div class="clean-section-subtitle">
+            Veja os últimos materiais promocionais e campanhas publicitárias criadas para impulsionar resultados.
+          </div>
+        </div>
+
+        <div class="portfolio-grid" id="serviceGrid" data-category="design-publicitario"></div>
+        
+        <div class="portfolio-empty" id="emptyState" style="display:none;">
+          <p>Novos projetos desta categoria em breve.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA FINAL CLEAN -->
+    <section class="service-final-cta-clean">
+      <h2 class="clean-cta-title">Vamos criar a tua próxima campanha?</h2>
+      <p class="clean-cta-desc">Conta-me sobre o teu projeto e recebe uma proposta personalizada.</p>
+      <div style="margin-bottom: 1.5rem;">
+        <a href="briefing.html?tipo=flyer" class="btn-clean-dark">Pedir orçamento ↗</a>
       </div>
       <div>
         <a href="portfolio.html" class="service-back">← Voltar ao portfólio</a>
@@ -88,6 +98,7 @@
     </section>
 
   </main>
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/supabase-client.js"></script>
   <script src="js/data.js"></script>
