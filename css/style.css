@@ -18,6 +18,7 @@
   --font-display: 'Bebas Neue', sans-serif;
   --font-serif: 'DM Serif Display', serif;
   --font-body: 'Inter', sans-serif;
+  --font-round: 'General Sans', 'Inter', sans-serif;
 
   --ease: cubic-bezier(0.25, 0.46, 0.45, 0.94);
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
@@ -1979,5 +1980,183 @@ button {
   .project-block-grid.grid-cols-3,
   .project-block-grid.grid-cols-4 {
     grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════
+   HERO V2 + TRABALHOS V2 (redesign clean, inspirado em
+   layouts editoriais modernos — usado nas páginas de serviço)
+═══════════════════════════════════════════════════════ */
+
+.nav-cta {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.6rem 1.4rem;
+  border-radius: 30px;
+  background: var(--text);
+  color: var(--bg);
+  font-family: var(--font-round);
+  font-weight: 600;
+  font-size: 0.82rem;
+  transition: transform var(--transition), opacity var(--transition);
+}
+
+.nav-cta:hover {
+  transform: translateY(-2px);
+  opacity: 0.9;
+}
+
+/* ─── HERO V2 ───────────────────────────────────────── */
+.hero-v2 {
+  position: relative;
+  padding-top: calc(var(--nav-h) + 4rem);
+  padding-bottom: clamp(3rem, 7vw, 5rem);
+  overflow: hidden;
+  margin: 0 calc(-1 * (100vw - 100%) / 2 - 1px);
+  padding-left: max(2rem, calc((100vw - var(--container)) / 2));
+  padding-right: max(2rem, calc((100vw - var(--container)) / 2));
+}
+
+.hero-v2-bg {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(180deg, rgba(0, 0, 0, 0.35) 0%, rgba(0, 0, 0, 0.75) 75%, rgba(0, 0, 0, 0.95) 100%),
+    url('assets/backgroundsession.png');
+  background-size: cover;
+  background-position: center;
+  z-index: -1;
+}
+
+.hero-v2-content {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: clamp(1.5rem, 4vw, 3rem);
+}
+
+.hero-v2-headline {
+  flex: 2 1 480px;
+}
+
+.hero-v2-eyebrow {
+  display: inline-block;
+  font-family: var(--font-round);
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 0.4rem 1rem;
+  border-radius: 30px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: var(--text);
+  margin-bottom: 1.5rem;
+}
+
+.hero-v2-title {
+  font-family: var(--font-round);
+  font-weight: 700;
+  font-size: clamp(2.4rem, 6vw, 4.4rem);
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  margin: 0;
+}
+
+.hero-v2-side {
+  flex: 1 1 260px;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding-bottom: 0.5rem;
+}
+
+.hero-v2-desc {
+  font-family: var(--font-round);
+  font-size: 0.95rem;
+  line-height: 1.65;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.hero-v2-audience {
+  font-family: var(--font-round);
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.55);
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+  padding-top: 0.85rem;
+}
+
+/* ─── TRABALHOS V2 ──────────────────────────────────── */
+.works-v2 {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: clamp(2rem, 5vw, 4rem);
+  align-items: start;
+  padding: clamp(3rem, 7vw, 5rem) 0;
+}
+
+.works-v2-sidebar {
+  position: sticky;
+  top: calc(var(--nav-h) + 2rem);
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.works-v2-label {
+  font-family: var(--font-round);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-dim);
+}
+
+.works-v2-title {
+  font-family: var(--font-round);
+  font-weight: 700;
+  font-size: clamp(1.6rem, 3vw, 2.1rem);
+  line-height: 1.15;
+  color: var(--text);
+}
+
+.works-v2-cta {
+  font-family: var(--font-round);
+  font-weight: 600;
+  font-size: 0.82rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 30px;
+  padding: 0.65rem 1.25rem;
+  width: fit-content;
+  transition: border-color var(--transition), background var(--transition);
+}
+
+.works-v2-cta:hover {
+  border-color: var(--accent);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.works-v2-grid {
+  min-width: 0;
+}
+
+@media (max-width: 860px) {
+  .works-v2 {
+    grid-template-columns: 1fr;
+  }
+  .works-v2-sidebar {
+    position: static;
+  }
+  .hero-v2-content {
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 640px) {
+  .hero-v2 {
+    padding-top: calc(var(--nav-h) + 2.5rem);
   }
 }
