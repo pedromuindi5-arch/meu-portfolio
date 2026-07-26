@@ -2,44 +2,21 @@
  * project-view.js
  * Renderiza a página dedicada de um projeto (projeto.html?id=...)
  * a partir dos blocos de conteúdo guardados em `projects.blocks`.
+ * Estrutura da página: white background, top-bar com X fechar,
+ * blocos de imagem em cima, informações do projeto em baixo (estilo Behance).
  */
 (function () {
   'use strict';
 
-  const navbar = document.getElementById('navbar');
-  const menuBtn = document.getElementById('menuBtn');
-  const mobileOverlay = document.getElementById('mobileOverlay');
-  const mobileClose = document.getElementById('mobileClose');
-  const mobileLinks = document.querySelectorAll('[data-mobile-link]');
-
   const loadingEl = document.getElementById('projectLoading');
   const contentEl = document.getElementById('projectContent');
-  const heroCat = document.getElementById('projectHeroCat');
-  const heroTitle = document.getElementById('projectHeroTitle');
-  const heroDesc = document.getElementById('projectHeroDesc');
-  const heroTags = document.getElementById('projectHeroTags');
-  const heroInfo = document.getElementById('projectHeroInfo');
-  const blocksWrap = document.getElementById('projectBlocks');
 
-  /* ─── NAVBAR / MOBILE MENU (igual ao resto do site) ─── */
-  window.addEventListener('scroll', () => {
-    if (window.scrollY > 60) navbar.classList.add('scrolled');
-    else navbar.classList.remove('scrolled');
-  }, { passive: true });
-
-  const openMenu = () => {
-    mobileOverlay.classList.add('open');
-    menuBtn.classList.add('open');
-    document.body.style.overflow = 'hidden';
-  };
-  const closeMenu = () => {
-    mobileOverlay.classList.remove('open');
-    menuBtn.classList.remove('open');
-    document.body.style.overflow = '';
-  };
-  if (menuBtn) menuBtn.addEventListener('click', openMenu);
-  if (mobileClose) mobileClose.addEventListener('click', closeMenu);
-  mobileLinks.forEach(link => link.addEventListener('click', closeMenu));
+  const projectCat   = document.getElementById('projectCat');
+  const projectTitle = document.getElementById('projectTitle');
+  const projectDesc  = document.getElementById('projectDesc');
+  const projectYear  = document.getElementById('projectYear');
+  const projectTags  = document.getElementById('projectTags');
+  const blocksWrap   = document.getElementById('projectBlocks');
 
   /* ─── CARREGAR PROJETO ──────────────────────────────── */
   async function init() {
@@ -57,48 +34,59 @@
     }
 
     document.title = `${project.title} — Lucas Muindi`;
-    renderHero(project);
-    renderBlocks(project.blocks || []);
+    renderBlocks(project.blocks || [], project);
+    renderInfo(project);
 
     loadingEl.style.display = 'none';
     contentEl.style.display = 'block';
   }
 
   function showError(message) {
-    loadingEl.innerHTML = `<p>${message} <a href="portfolio.html" style="color:var(--text);text-decoration:underline;">Voltar ao portfólio</a></p>`;
+    loadingEl.innerHTML = `<p style="text-align:center;color:#64748b;padding:3rem;">${message} <a href="portfolio.html" style="color:#0f172a;text-decoration:underline;">Voltar ao portfólio</a></p>`;
   }
 
-  function renderHero(project) {
-    heroCat.textContent = getCategoryLabel(project.category);
-    heroTitle.textContent = project.title;
+  function renderInfo(project) {
+    const catLabel = typeof getCategoryLabel === 'function' ? getCategoryLabel(project.category) : (project.category || '');
 
-    if (project.description) {
-      heroDesc.textContent = project.description;
-      heroDesc.style.display = 'block';
+    if (projectCat) projectCat.textContent = catLabel;
+    if (projectTitle) projectTitle.textContent = project.title;
+
+    if (projectYear && project.year) {
+      projectYear.textContent = project.year;
     }
 
-    if (project.tags && project.tags.length > 0) {
-      heroTags.innerHTML = project.tags.map(t => `<span class="project-tag">${escapeHtml(t)}</span>`).join('');
-      heroTags.style.display = 'flex';
+    if (projectDesc && project.description) {
+      projectDesc.textContent = project.description;
+      projectDesc.style.display = 'block';
     }
 
-    const infoItems = [];
-    if (project.client) infoItems.push(['Cliente', project.client]);
-    if (project.year) infoItems.push(['Ano', project.year]);
-    if (infoItems.length > 0) {
-      heroInfo.innerHTML = infoItems.map(([label, value]) => `
-        <div class="project-hero-info-item">
-          <span class="project-hero-info-label">${label}</span>
-          <span class="project-hero-info-value">${escapeHtml(String(value))}</span>
-        </div>
-      `).join('');
-      heroInfo.style.display = 'flex';
+    if (projectTags && project.tags && project.tags.length > 0) {
+      projectTags.innerHTML = project.tags.map(t =>
+        `<span class="project-detail-tag">${escapeHtml(t)}</span>`
+      ).join('');
     }
   }
 
-  function renderBlocks(blocks) {
+  function renderBlocks(blocks, project) {
     blocksWrap.innerHTML = '';
-    if (!blocks || blocks.length === 0) return;
+
+    if (!blocks || blocks.length === 0) {
+      // Fallback: render cover + images
+      const allImgs = [];
+      if (project.cover_image) allImgs.push(project.cover_image);
+      if (project.images && project.images.length > 0) {
+        project.images.forEach(img => { if (img && img !== project.cover_image) allImgs.push(img); });
+      }
+      if (allImgs.length > 0) {
+        allImgs.forEach(url => {
+          const fig = document.createElement('figure');
+          fig.className = 'project-block-image';
+          fig.innerHTML = `<img src="${escapeHtml(url)}" alt="${escapeHtml(project.title)}" loading="lazy">`;
+          blocksWrap.appendChild(fig);
+        });
+      }
+      return;
+    }
 
     blocks.forEach(block => {
       let el;
@@ -119,7 +107,7 @@
     const cols = block.columns || 2;
     const wrap = document.createElement('div');
     wrap.className = `project-block-grid grid-cols-${cols}`;
-    wrap.innerHTML = block.images.map(url => `<img src="${url}" alt="" loading="lazy">`).join('');
+    wrap.innerHTML = block.images.map(url => `<img src="${escapeHtml(url)}" alt="" loading="lazy">`).join('');
     return wrap;
   }
 
@@ -127,7 +115,7 @@
     const fig = document.createElement('figure');
     fig.className = 'project-block-image';
     fig.innerHTML = `
-      <img src="${block.url}" alt="${escapeHtml(block.caption || '')}" loading="lazy">
+      <img src="${escapeHtml(block.url)}" alt="${escapeHtml(block.caption || '')}" loading="lazy">
       ${block.caption ? `<figcaption>${escapeHtml(block.caption)}</figcaption>` : ''}
     `;
     return fig;
@@ -147,7 +135,7 @@
     wrap.className = 'project-block-carousel';
 
     const slides = block.images.map(url => `
-      <div class="carousel-slide"><img src="${url}" alt="" loading="lazy"></div>
+      <div class="carousel-slide"><img src="${escapeHtml(url)}" alt="" loading="lazy"></div>
     `).join('');
 
     const hasMultiple = block.images.length > 1;
@@ -188,7 +176,6 @@
     nextBtn.addEventListener('click', () => goTo(currentIndex() + 1));
     dots.forEach(dot => dot.addEventListener('click', () => goTo(parseInt(dot.dataset.idx, 10))));
 
-    // Atualiza os dots ao fazer scroll (swipe mobile ou drag)
     let scrollTimer;
     track.addEventListener('scroll', () => {
       clearTimeout(scrollTimer);
@@ -198,7 +185,7 @@
       }, 80);
     }, { passive: true });
 
-    // Arrastar horizontalmente com o rato (desktop)
+    // Arrastar horizontalmente (desktop)
     let isDown = false;
     let startX = 0;
     let scrollStart = 0;
@@ -217,7 +204,7 @@
       track.scrollLeft = scrollStart - dx;
     });
 
-    function endDrag(e) {
+    function endDrag() {
       if (!isDown) return;
       isDown = false;
       track.classList.remove('dragging');
@@ -230,7 +217,7 @@
   }
 
   function escapeHtml(str) {
-    return String(str)
+    return String(str || '')
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;');

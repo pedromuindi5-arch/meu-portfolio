@@ -242,7 +242,13 @@
         </div>
       `;
 
-      const open = () => { window.location.href = `projeto.html?id=${project.id}`; };
+      const open = () => {
+        if (typeof window.openProjectModal === 'function') {
+          window.openProjectModal(project.id);
+        } else {
+          window.location.href = `projeto.html?id=${project.id}`;
+        }
+      };
       card.addEventListener('click', open);
       card.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') open(); });
 

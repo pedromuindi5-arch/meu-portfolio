@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt">
 
 <head>
@@ -8,77 +8,484 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
-    href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
+    href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
     rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
+  <style>
+    /* ── BEHANCE-STYLE PROJECT PAGE ─────────────────────── */
+    html, body {
+      background: #ffffff;
+      margin: 0;
+      padding: 0;
+    }
+
+    /* Top bar with close button */
+    .project-topbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 9999;
+      height: 56px;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid #e8ecf0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 1.5rem;
+      gap: 1rem;
+    }
+
+    .project-topbar-logo {
+      font-family: var(--font-display);
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #0f172a;
+      text-decoration: none;
+      letter-spacing: -0.01em;
+    }
+
+    .project-topbar-logo sup {
+      font-size: 0.55em;
+      vertical-align: super;
+      opacity: 0.7;
+    }
+
+    .project-topbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .project-topbar-back {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #64748b;
+      text-decoration: none;
+      padding: 0.45rem 1rem;
+      border-radius: 20px;
+      border: 1px solid #e2e8f0;
+      transition: all 0.2s ease;
+      display: none; /* hidden on mobile for space */
+    }
+
+    .project-topbar-back:hover {
+      color: #0f172a;
+      border-color: #cbd5e1;
+      background: #f8fafc;
+    }
+
+    .project-close-btn {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: #0f172a;
+      color: #ffffff;
+      border: none;
+      cursor: pointer;
+      font-size: 1.1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s ease, transform 0.2s ease;
+      flex-shrink: 0;
+    }
+
+    .project-close-btn:hover {
+      background: #1e293b;
+      transform: scale(1.08);
+    }
+
+    @media (min-width: 640px) {
+      .project-topbar-back { display: flex; }
+    }
+
+    /* Main content area */
+    .project-page-wrap {
+      padding-top: 56px; /* offset topbar */
+      min-height: 100vh;
+      background: #ffffff;
+    }
+
+    /* Loading state */
+    .project-loading-state {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: calc(100vh - 56px);
+      color: #64748b;
+      font-size: 0.95rem;
+    }
+
+    /* Content blocks */
+    .project-blocks-area {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 3rem 1.5rem 0;
+    }
+
+    .project-block-image {
+      margin: 0 0 0.5rem;
+    }
+
+    .project-block-image img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .project-block-image figcaption {
+      font-size: 0.825rem;
+      color: #94a3b8;
+      text-align: center;
+      padding: 0.75rem 1rem;
+    }
+
+    .project-block-text {
+      padding: 2rem 0;
+      font-size: 1rem;
+      line-height: 1.8;
+      color: #334155;
+    }
+
+    .project-block-grid {
+      display: grid;
+      gap: 0.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .project-block-grid.grid-cols-2 { grid-template-columns: repeat(2, 1fr); }
+    .project-block-grid.grid-cols-3 { grid-template-columns: repeat(3, 1fr); }
+
+    .project-block-grid img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    /* Carousel */
+    .project-block-carousel {
+      position: relative;
+      margin-bottom: 0.5rem;
+    }
+
+    .carousel-track {
+      display: flex;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+
+    .carousel-track::-webkit-scrollbar { display: none; }
+
+    .carousel-slide {
+      flex: 0 0 100%;
+      scroll-snap-align: start;
+    }
+
+    .carousel-slide img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .carousel-arrow {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 2;
+      background: rgba(0,0,0,0.5);
+      color: #fff;
+      border: none;
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      font-size: 1.4rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
+    }
+
+    .carousel-arrow:hover { background: rgba(0,0,0,0.75); }
+    .carousel-arrow.prev { left: 1rem; }
+    .carousel-arrow.next { right: 1rem; }
+
+    .carousel-dots {
+      display: flex;
+      justify-content: center;
+      gap: 0.4rem;
+      padding: 0.75rem 0;
+    }
+
+    .carousel-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #cbd5e1;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+      transition: background 0.2s;
+    }
+
+    .carousel-dot.active { background: #0f172a; }
+
+    /* ── PROJECT INFO CARD (Behance style) ─────────────── */
+    .project-info-section {
+      max-width: 1100px;
+      margin: 3rem auto 0;
+      padding: 3rem 1.5rem;
+      border-top: 1px solid #e2e8f0;
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      gap: 3rem;
+    }
+
+    .project-author-col {
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+      border-right: 1px solid #f1f5f9;
+      padding-right: 2rem;
+    }
+
+    .project-author-profile {
+      display: flex;
+      align-items: center;
+      gap: 0.9rem;
+    }
+
+    .project-author-avatar {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid #e2e8f0;
+    }
+
+    .project-author-name {
+      font-weight: 700;
+      font-size: 1rem;
+      color: #0f172a;
+      line-height: 1.2;
+    }
+
+    .project-author-loc {
+      font-size: 0.8rem;
+      color: #64748b;
+      margin-top: 0.15rem;
+    }
+
+    .project-cta-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+      padding: 0.7rem 1.4rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.03em;
+      color: #ffffff;
+      background: #0f172a;
+      border-radius: 30px;
+      text-decoration: none;
+      width: fit-content;
+      transition: background 0.2s ease;
+    }
+
+    .project-cta-btn:hover { background: #1e293b; }
+
+    .project-details-col {
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    .project-detail-meta {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .project-detail-cat {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: #64748b;
+      background: #f1f5f9;
+      padding: 0.3rem 0.8rem;
+      border-radius: 20px;
+    }
+
+    .project-detail-year {
+      font-size: 0.8rem;
+      color: #94a3b8;
+      font-weight: 500;
+    }
+
+    .project-detail-title {
+      font-family: var(--font-display);
+      font-size: clamp(1.75rem, 4vw, 2.6rem);
+      font-weight: 700;
+      color: #0f172a;
+      line-height: 1.15;
+      margin: 0;
+    }
+
+    .project-detail-desc {
+      font-size: 0.95rem;
+      color: #475569;
+      line-height: 1.75;
+      white-space: pre-wrap;
+    }
+
+    .project-detail-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .project-detail-tag {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #475569;
+      background: #f1f5f9;
+      padding: 0.35rem 0.85rem;
+      border-radius: 20px;
+    }
+
+    /* Footer area */
+    .project-page-footer {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem 4rem;
+      display: flex;
+      justify-content: center;
+    }
+
+    .project-page-footer a {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: #64748b;
+      text-decoration: none;
+      border: 1px solid #e2e8f0;
+      padding: 0.7rem 1.5rem;
+      border-radius: 30px;
+      transition: all 0.2s ease;
+    }
+
+    .project-page-footer a:hover {
+      color: #0f172a;
+      border-color: #cbd5e1;
+      background: #f8fafc;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .project-info-section {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+      }
+
+      .project-author-col {
+        border-right: none;
+        padding-right: 0;
+        border-bottom: 1px solid #f1f5f9;
+        padding-bottom: 1.5rem;
+      }
+
+      .project-block-grid.grid-cols-2,
+      .project-block-grid.grid-cols-3 {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
 </head>
 
 <body>
 
-  <!-- NAVBAR -->
-  <nav class="navbar" id="navbar">
-    <a href="index.html" class="nav-logo">Lucas Muindi<sup>®</sup></a>
-    <ul class="nav-links" id="navLinks">
-      <li><a href="index.html#about" class="nav-link">Sobre</a></li>
-      <li><a href="index.html#works" class="nav-link">Trabalhos</a></li>
-      <li><a href="portfolio.html" class="nav-link">Portfólio</a></li>
-      <li><a href="briefing.html" class="nav-link">Briefing</a></li>
-      <li><a href="index.html#contact" class="nav-link">Contacto</a></li>
-    </ul>
-    <button class="nav-menu-btn" id="menuBtn" aria-label="Abrir menu">
-      <span></span>
-      <span></span>
-    </button>
-  </nav>
-
-  <!-- MOBILE MENU OVERLAY -->
-  <div class="mobile-overlay" id="mobileOverlay">
-    <div class="mobile-menu" id="mobileMenu">
-      <button class="mobile-close" id="mobileClose" aria-label="Fechar menu">✕</button>
-      <nav class="mobile-nav">
-        <a href="index.html#about" class="mobile-nav-link" data-mobile-link>Sobre</a>
-        <a href="index.html#works" class="mobile-nav-link" data-mobile-link>Trabalhos</a>
-        <a href="portfolio.html" class="mobile-nav-link" data-mobile-link>Portfólio</a>
-        <a href="briefing.html" class="mobile-nav-link" data-mobile-link>Briefing</a>
-        <a href="index.html#contact" class="mobile-nav-link" data-mobile-link>Contacto</a>
-      </nav>
-      <div class="mobile-footer">
-        <span>lucas@muindi.design</span>
-      </div>
+  <!-- TOP BAR ──────────────────────────────── -->
+  <div class="project-topbar">
+    <a href="index.html" class="project-topbar-logo">Lucas Muindi<sup>®</sup></a>
+    <div class="project-topbar-actions">
+      <a href="portfolio.html" class="project-topbar-back">← Voltar ao portfólio</a>
+      <button class="project-close-btn" id="closeBtn" aria-label="Fechar">✕</button>
     </div>
   </div>
 
-  <main>
-    <div class="project-loading" id="projectLoading">
+  <!-- PAGE CONTENT ─────────────────────────── -->
+  <div class="project-page-wrap">
+
+    <!-- Loading -->
+    <div class="project-loading-state" id="projectLoading">
       <p>A carregar projeto...</p>
     </div>
 
     <div id="projectContent" style="display:none;">
 
-      <!-- HERO -->
-      <section class="project-hero">
-        <span class="project-hero-cat" id="projectHeroCat"></span>
-        <h1 class="project-hero-title" id="projectHeroTitle"></h1>
-        <p class="project-hero-desc" id="projectHeroDesc" style="display:none;"></p>
-        <div class="project-hero-meta" id="projectHeroTags" style="display:none;"></div>
-        <div class="project-hero-info" id="projectHeroInfo" style="display:none;"></div>
-      </section>
-
       <!-- BLOCOS DE CONTEÚDO -->
-      <section class="project-blocks" id="projectBlocks"></section>
+      <div class="project-blocks-area">
+        <div id="projectBlocks"></div>
+      </div>
 
-      <!-- VOLTAR -->
-      <section class="project-footer-nav">
-        <a href="portfolio.html" class="btn-bright">Ver mais projetos</a>
-      </section>
+      <!-- INFORMAÇÕES DO PROJETO (estilo Behance) -->
+      <div class="project-info-section" id="projectInfoSection">
+
+        <!-- Coluna: Autor -->
+        <div class="project-author-col">
+          <div class="project-author-profile">
+            <img src="assets/about.jpeg" alt="Lucas Muindi" class="project-author-avatar"
+              onerror="this.src='assets/hero.jpeg'">
+            <div>
+              <div class="project-author-name">Lucas Muindi</div>
+              <div class="project-author-loc">Namibe, Angola • Designer Gráfico</div>
+            </div>
+          </div>
+          <a href="briefing.html" class="project-cta-btn">Pedir orçamento ↗</a>
+        </div>
+
+        <!-- Coluna: Detalhes do Projeto -->
+        <div class="project-details-col">
+          <div class="project-detail-meta">
+            <span class="project-detail-cat" id="projectCat"></span>
+            <span class="project-detail-year" id="projectYear"></span>
+          </div>
+          <h1 class="project-detail-title" id="projectTitle"></h1>
+          <p class="project-detail-desc" id="projectDesc" style="display:none;"></p>
+          <div class="project-detail-tags" id="projectTags"></div>
+        </div>
+
+      </div>
+
+      <!-- Footer -->
+      <div class="project-page-footer">
+        <a href="portfolio.html">← Ver mais projetos</a>
+      </div>
 
     </div>
-  </main>
+  </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/supabase-client.js"></script>
   <script src="js/data.js"></script>
   <script src="js/project-view.js"></script>
+  <script>
+    // Close button goes back
+    document.getElementById('closeBtn').addEventListener('click', () => {
+      if (document.referrer && document.referrer.includes(window.location.hostname)) {
+        history.back();
+      } else {
+        window.location.href = 'portfolio.html';
+      }
+    });
+  </script>
 </body>
 
 </html>
