@@ -799,7 +799,7 @@
     }
 
     /* ─── PROCESSAMENTO DE DADOS, PDF, E-MAIL E REDIRECIONAMENTO DE WHATSAPP ─── */
-    function handleBriefingSubmit(event, typeName) {
+    async function handleBriefingSubmit(event, typeName) {
       event.preventDefault();
 
       const submitBtn = event.target.querySelector('.btn-submit');
@@ -885,9 +885,23 @@
         console.error('Erro ao gravar briefing na base de dados:', err);
       });
 
-      // Definições de compilação de alta fidelidade para o html2pdf
+      // Definições de compilação do html2pdf
       const element = document.getElementById('pdf-template');
       const safeClientName = (clientName || 'Cliente').replace(/\s+/g, '_');
+
+      // Espera as fontes carregarem antes de medir/capturar — evita texto a
+      // mudar de tamanho/posição a meio da captura (uma das causas do PDF
+      // sair com aspeto incompleto ou desalinhado).
+      if (document.fonts && document.fonts.ready) {
+        await document.fonts.ready;
+      }
+
+      // Mede a altura real do conteúdo e usa-a como tamanho exato da página do PDF.
+      // Isto evita a paginação automática do html2pdf, que corta imagens e texto
+      // ao meio sempre que o conteúdo é mais alto do que uma página A4.
+      const elementWidth = element.offsetWidth;
+      const elementHeight = element.scrollHeight;
+
       const opt = {
         margin: 0,
         filename: `Briefing_${typeName.replace(/\s+/g, '_')}_${safeClientName}.pdf`,
@@ -897,9 +911,12 @@
           useCORS: true,
           letterRendering: true,
           backgroundColor: '#000000',
-          logging: false
+          logging: false,
+          windowWidth: elementWidth,
+          windowHeight: elementHeight
         },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        jsPDF: { unit: 'px', format: [elementWidth, elementHeight], orientation: 'portrait' },
+        pagebreak: { mode: ['avoid-all'] }
       };
 
       // Executa a compilação local do PDF (fica com uma cópia local do briefing)
