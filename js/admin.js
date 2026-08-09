@@ -750,6 +750,23 @@
       const header = document.createElement('div');
       header.className = 'block-type-label';
       header.innerHTML = `<span>${typeLabels[block.type]}</span>`;
+
+      const spacingSelect = document.createElement('select');
+      spacingSelect.style.cssText = 'width:auto;padding:0.3rem 0.5rem;background:#f5f5f7;border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:0.72rem;margin-left:auto;margin-right:0.5rem;';
+      [
+        ['small', 'Espaçamento pequeno'],
+        ['medium', 'Espaçamento médio'],
+        ['large', 'Espaçamento grande'],
+      ].forEach(([val, label]) => {
+        const opt = document.createElement('option');
+        opt.value = val;
+        opt.textContent = label;
+        if ((block.spacing || 'medium') === val) opt.selected = true;
+        spacingSelect.appendChild(opt);
+      });
+      spacingSelect.addEventListener('change', () => { block.spacing = spacingSelect.value; });
+      header.appendChild(spacingSelect);
+
       const removeBtn = document.createElement('button');
       removeBtn.type = 'button';
       removeBtn.className = 'block-remove-btn';
@@ -787,10 +804,21 @@
     const wrap = document.createElement('div');
     wrap.style.cssText = 'display:flex;flex-direction:column;gap:0.5rem;';
 
+    const dropZone = document.createElement('div');
+    dropZone.className = 'block-image-dropzone';
+    dropZone.style.cssText = 'border:1px dashed var(--border);border-radius:6px;padding:0.5rem;text-align:center;';
+
     const preview = document.createElement('img');
     preview.className = 'block-image-preview';
     preview.style.display = block.url ? 'block' : 'none';
     if (block.url) preview.src = block.url;
+
+    const dropHint = document.createElement('span');
+    dropHint.textContent = 'Arrasta uma imagem para aqui, ou usa o botão de upload abaixo';
+    dropHint.style.cssText = 'font-size:0.72rem;color:var(--text-muted);display:block;';
+
+    dropZone.appendChild(preview);
+    dropZone.appendChild(dropHint);
 
     const urlInput = document.createElement('input');
     urlInput.type = 'url';
@@ -802,23 +830,27 @@
       preview.style.display = block.url ? 'block' : 'none';
     });
 
+    async function handleNewImageFile(file) {
+      try {
+        const url = await uploadProjectImage(file);
+        block.url = url;
+        urlInput.value = url;
+        preview.src = url;
+        preview.style.display = 'block';
+      } catch {
+        showToast('Erro ao enviar imagem.', true);
+      }
+    }
+
+    makeDropTarget(dropZone, (files) => handleNewImageFile(files[0]));
+
     const uploadBtn = document.createElement('button');
     uploadBtn.type = 'button';
     uploadBtn.className = 'btn-admin-ghost';
     uploadBtn.textContent = 'Upload de imagem';
     uploadBtn.style.marginTop = '0.35rem';
     uploadBtn.addEventListener('click', () => {
-      triggerFileUpload(async (file) => {
-        try {
-          const url = await uploadProjectImage(file);
-          block.url = url;
-          urlInput.value = url;
-          preview.src = url;
-          preview.style.display = 'block';
-        } catch {
-          showToast('Erro ao enviar imagem.', true);
-        }
-      });
+      triggerFileUpload((file) => handleNewImageFile(file));
     });
 
     const captionInput = document.createElement('input');
@@ -828,7 +860,7 @@
     captionInput.style.marginTop = '0.5rem';
     captionInput.addEventListener('input', () => { block.caption = captionInput.value; });
 
-    wrap.appendChild(preview);
+    wrap.appendChild(dropZone);
     wrap.appendChild(urlInput);
     wrap.appendChild(uploadBtn);
     wrap.appendChild(captionInput);
@@ -855,15 +887,52 @@
       block.images.forEach((url, i) => {
         const thumb = document.createElement('div');
         thumb.className = 'block-carousel-item';
+        thumb.draggable = true;
+        thumb.dataset.index = i;
+        thumb.title = 'Arrasta para reordenar';
         thumb.innerHTML = `<img src="${url}"><button type="button">✕</button>`;
         thumb.querySelector('button').addEventListener('click', () => {
           block.images.splice(i, 1);
           renderCarouselItems();
         });
+
+        thumb.addEventListener('dragstart', () => thumb.classList.add('dragging'));
+        thumb.addEventListener('dragend', () => {
+          thumb.classList.remove('dragging');
+          itemsWrap.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+        });
+        thumb.addEventListener('dragover', (e) => {
+          e.preventDefault();
+          thumb.classList.add('drag-over');
+        });
+        thumb.addEventListener('dragleave', () => thumb.classList.remove('drag-over'));
+        thumb.addEventListener('drop', (e) => {
+          e.preventDefault();
+          thumb.classList.remove('drag-over');
+          const fromIdx = parseInt(itemsWrap.querySelector('.dragging')?.dataset.index, 10);
+          const toIdx = parseInt(thumb.dataset.index, 10);
+          if (isNaN(fromIdx) || isNaN(toIdx) || fromIdx === toIdx) return;
+          const [moved] = block.images.splice(fromIdx, 1);
+          block.images.splice(toIdx, 0, moved);
+          renderCarouselItems();
+        });
+
         itemsWrap.appendChild(thumb);
       });
     }
     renderCarouselItems();
+
+    makeDropTarget(itemsWrap, (files) => {
+      files.forEach(async (file) => {
+        try {
+          const url = await uploadProjectImage(file);
+          block.images.push(url);
+          renderCarouselItems();
+        } catch {
+          showToast('Erro ao enviar imagem.', true);
+        }
+      });
+    });
 
     const urlInput = document.createElement('input');
     urlInput.type = 'url';
@@ -894,7 +963,12 @@
       }, true);
     });
 
+    const dropHint = document.createElement('span');
+    dropHint.textContent = 'Arrasta ficheiros para a área acima para adicionar, ou arrasta as miniaturas entre si para reordenar.';
+    dropHint.style.cssText = 'font-size:0.7rem;color:var(--text-muted);display:block;margin-top:0.35rem;';
+
     wrap.appendChild(itemsWrap);
+    wrap.appendChild(dropHint);
     wrap.appendChild(urlInput);
     wrap.appendChild(uploadBtn);
     return wrap;
@@ -907,9 +981,9 @@
     colsRow.style.cssText = 'margin-bottom:0.6rem;display:flex;align-items:center;gap:0.5rem;';
     const colsLabel = document.createElement('span');
     colsLabel.textContent = 'Colunas:';
-    colsLabel.style.cssText = 'font-size:0.8rem;color:var(--text-dim,#999);';
+    colsLabel.style.cssText = 'font-size:0.8rem;color:var(--text-dim,#6b7280);';
     const colsSelect = document.createElement('select');
-    colsSelect.style.cssText = 'width:auto;padding:0.4rem 0.6rem;background:#0d0d0d;border:1px solid var(--border);border-radius:4px;color:#fff;font-size:0.85rem;';
+    colsSelect.style.cssText = 'width:auto;padding:0.4rem 0.6rem;background:#f5f5f7;border:1px solid var(--border);border-radius:4px;color:var(--text,#16181d);font-size:0.85rem;';
     [2, 3, 4].forEach(n => {
       const opt = document.createElement('option');
       opt.value = n;
@@ -929,15 +1003,52 @@
       block.images.forEach((url, i) => {
         const thumb = document.createElement('div');
         thumb.className = 'block-carousel-item';
+        thumb.draggable = true;
+        thumb.dataset.index = i;
+        thumb.title = 'Arrasta para reordenar';
         thumb.innerHTML = `<img src="${url}"><button type="button">✕</button>`;
         thumb.querySelector('button').addEventListener('click', () => {
           block.images.splice(i, 1);
           renderGridItems();
         });
+
+        thumb.addEventListener('dragstart', () => thumb.classList.add('dragging'));
+        thumb.addEventListener('dragend', () => {
+          thumb.classList.remove('dragging');
+          itemsWrap.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+        });
+        thumb.addEventListener('dragover', (e) => {
+          e.preventDefault();
+          thumb.classList.add('drag-over');
+        });
+        thumb.addEventListener('dragleave', () => thumb.classList.remove('drag-over'));
+        thumb.addEventListener('drop', (e) => {
+          e.preventDefault();
+          thumb.classList.remove('drag-over');
+          const fromIdx = parseInt(itemsWrap.querySelector('.dragging')?.dataset.index, 10);
+          const toIdx = parseInt(thumb.dataset.index, 10);
+          if (isNaN(fromIdx) || isNaN(toIdx) || fromIdx === toIdx) return;
+          const [moved] = block.images.splice(fromIdx, 1);
+          block.images.splice(toIdx, 0, moved);
+          renderGridItems();
+        });
+
         itemsWrap.appendChild(thumb);
       });
     }
     renderGridItems();
+
+    makeDropTarget(itemsWrap, (files) => {
+      files.forEach(async (file) => {
+        try {
+          const url = await uploadProjectImage(file);
+          block.images.push(url);
+          renderGridItems();
+        } catch {
+          showToast('Erro ao enviar imagem.', true);
+        }
+      });
+    });
 
     const urlInput = document.createElement('input');
     urlInput.type = 'url';
@@ -973,6 +1084,26 @@
     wrap.appendChild(urlInput);
     wrap.appendChild(uploadBtn);
     return wrap;
+  }
+
+  /**
+   * Torna um elemento numa zona onde se pode largar ficheiros do computador
+   * (drag-and-drop), além do clique normal. Chama onFiles(fileList) ao largar.
+   */
+  function makeDropTarget(el, onFiles) {
+    el.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      el.classList.add('drag-over');
+    });
+    el.addEventListener('dragleave', () => {
+      el.classList.remove('drag-over');
+    });
+    el.addEventListener('drop', (e) => {
+      e.preventDefault();
+      el.classList.remove('drag-over');
+      const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
+      if (files.length) onFiles(files);
+    });
   }
 
   /**

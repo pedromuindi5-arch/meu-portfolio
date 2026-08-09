@@ -2230,7 +2230,7 @@ button {
   -webkit-backdrop-filter: blur(12px);
   display: flex;
   justify-content: center;
-  overflow-y: auto;
+  align-items: flex-start;
   opacity: 0;
   visibility: hidden;
   transition: opacity 0.3s ease, visibility 0.3s ease;
@@ -2242,7 +2242,10 @@ button {
   visibility: visible;
 }
 
-/* Botão Fechar X Fixo no Canto Superior Direito */
+/* Botão Fechar X Fixo no Canto Superior Direito
+   NOTA: o botão é filho direto do overlay (não do container), e o overlay
+   nunca faz scroll — só o .behance-modal-container (abaixo) tem overflow-y.
+   Isto é o que mantém o X sempre parado, mesmo com o backdrop-filter. */
 .behance-close-btn {
   position: fixed;
   top: 24px;
@@ -2269,14 +2272,17 @@ button {
   background: #f1f5f9;
 }
 
-/* Container do Projeto (Fundo Branco #ffffff) */
+/* Container do Projeto (Fundo Branco #ffffff) — é este elemento que faz
+   scroll internamente, não o overlay. */
 .behance-modal-container {
   width: 100%;
   max-width: 960px;
+  max-height: calc(100vh - clamp(2rem, 8vw, 6rem));
+  overflow-x: hidden;
+  overflow-y: auto;
   background: #ffffff;
   color: #111111;
   border-radius: 16px;
-  overflow: hidden;
   box-shadow: 0 30px 60px rgba(0, 0, 0, 0.35);
   margin: auto;
   position: relative;

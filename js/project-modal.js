@@ -9,6 +9,13 @@
   let modalOverlay = null;
   let modalContainer = null;
   let closeBtn = null;
+  let modalHistoryPushed = false;
+
+  window.addEventListener('popstate', () => {
+    if (modalOverlay && modalOverlay.classList.contains('open')) {
+      closeProjectModal(true);
+    }
+  });
 
   function createModalDOM() {
     if (document.getElementById('behanceProjectModal')) return;
@@ -60,6 +67,11 @@
     modalOverlay.classList.add('open');
     document.body.style.overflow = 'hidden';
 
+    if (!modalHistoryPushed) {
+      history.pushState({ projectModalOpen: true }, '');
+      modalHistoryPushed = true;
+    }
+
     const project = await getProjectById(projectId);
     if (!project) {
       modalContainer.innerHTML = `
@@ -73,10 +85,17 @@
     renderModalContent(project);
   }
 
-  function closeProjectModal() {
+  function closeProjectModal(fromPopState = false) {
     if (!modalOverlay) return;
     modalOverlay.classList.remove('open');
     document.body.style.overflow = '';
+
+    if (modalHistoryPushed) {
+      modalHistoryPushed = false;
+      if (!fromPopState) {
+        history.back();
+      }
+    }
   }
 
   function renderModalContent(project) {
@@ -87,27 +106,40 @@
     const blocks = project.blocks || [];
 
     if (blocks.length > 0) {
+      const SPACING = { none: '0', small: '1.5rem', medium: '3rem', large: '5rem' };
       blocks.forEach(b => {
+        const mb = SPACING[b.spacing] || SPACING.medium;
         if (b.type === 'image' && b.url) {
           blocksHTML += `
-            <figure style="margin:0;">
+            <figure style="margin:0 0 ${mb};">
               <img src="${escapeHtml(b.url)}" alt="${escapeHtml(b.caption || project.title)}" loading="lazy">
               ${b.caption ? `<figcaption style="padding:0.75rem 2.5rem;font-size:0.85rem;color:#64748b;text-align:center;">${escapeHtml(b.caption)}</figcaption>` : ''}
             </figure>
           `;
         } else if (b.type === 'text' && b.content) {
-          blocksHTML += `<div class="project-block-text"><p>${escapeHtml(b.content)}</p></div>`;
+          blocksHTML += `<div class="project-block-text" style="margin-bottom:${mb};"><p>${escapeHtml(b.content)}</p></div>`;
         } else if (b.type === 'grid' && b.images && b.images.length > 0) {
           const cols = b.columns || 2;
           blocksHTML += `
-            <div class="project-block-grid grid-cols-${cols}" style="padding:0 1.5rem;">
+            <div class="project-block-grid grid-cols-${cols}" style="padding:0 1.5rem;margin-bottom:${mb};">
               ${b.images.map(imgUrl => `<img src="${escapeHtml(imgUrl)}" alt="" loading="lazy">`).join('')}
             </div>
           `;
         } else if (b.type === 'carousel' && b.images && b.images.length > 0) {
+          const slides = b.images.map(imgUrl => `
+            <div class="carousel-slide"><img src="${escapeHtml(imgUrl)}" alt="" loading="lazy"></div>
+          `).join('');
+          const hasMultiple = b.images.length > 1;
           blocksHTML += `
-            <div style="display:flex;flex-direction:column;gap:1rem;">
-              ${b.images.map(imgUrl => `<img src="${escapeHtml(imgUrl)}" alt="" loading="lazy">`).join('')}
+            <div class="project-block-carousel" data-carousel style="padding:0 1.5rem;margin-bottom:${mb};">
+              <div class="carousel-track">${slides}</div>
+              ${hasMultiple ? `
+                <button type="button" class="carousel-arrow prev" aria-label="Anterior">‹</button>
+                <button type="button" class="carousel-arrow next" aria-label="Seguinte">›</button>
+                <div class="carousel-dots">
+                  ${b.images.map((_, i) => `<button type="button" class="carousel-dot ${i === 0 ? 'active' : ''}" data-idx="${i}"></button>`).join('')}
+                </div>
+              ` : ''}
             </div>
           `;
         }
@@ -152,6 +184,70 @@
         </div>
       </div>
     `;
+
+    // Inicializa o comportamento (arrastar, setas, swipe) de cada carrossel presente
+    modalContainer.querySelectorAll('[data-carousel]').forEach(initCarousel);
+  }
+
+  /* ─── CARROSSEL: arrastar, setas, swipe, dots ──────── */
+  function initCarousel(wrap) {
+    const track = wrap.querySelector('.carousel-track');
+    const prevBtn = wrap.querySelector('.carousel-arrow.prev');
+    const nextBtn = wrap.querySelector('.carousel-arrow.next');
+    const dots = wrap.querySelectorAll('.carousel-dot');
+    const slideCount = wrap.querySelectorAll('.carousel-slide').length;
+    if (!prevBtn || !nextBtn) return;
+
+    function goTo(idx) {
+      idx = Math.max(0, Math.min(idx, slideCount - 1));
+      track.scrollTo({ left: track.clientWidth * idx, behavior: 'smooth' });
+    }
+
+    function currentIndex() {
+      return Math.round(track.scrollLeft / track.clientWidth);
+    }
+
+    prevBtn.addEventListener('click', () => goTo(currentIndex() - 1));
+    nextBtn.addEventListener('click', () => goTo(currentIndex() + 1));
+    dots.forEach(dot => dot.addEventListener('click', () => goTo(parseInt(dot.dataset.idx, 10))));
+
+    let scrollTimer;
+    track.addEventListener('scroll', () => {
+      clearTimeout(scrollTimer);
+      scrollTimer = setTimeout(() => {
+        const idx = currentIndex();
+        dots.forEach((d, i) => d.classList.toggle('active', i === idx));
+      }, 80);
+    }, { passive: true });
+
+    let isDown = false;
+    let startX = 0;
+    let scrollStart = 0;
+
+    track.addEventListener('pointerdown', (e) => {
+      isDown = true;
+      track.classList.add('dragging');
+      startX = e.clientX;
+      scrollStart = track.scrollLeft;
+      track.setPointerCapture(e.pointerId);
+    });
+
+    track.addEventListener('pointermove', (e) => {
+      if (!isDown) return;
+      const dx = e.clientX - startX;
+      track.scrollLeft = scrollStart - dx;
+    });
+
+    function endDrag() {
+      if (!isDown) return;
+      isDown = false;
+      track.classList.remove('dragging');
+      goTo(currentIndex());
+    }
+
+    track.addEventListener('pointerup', endDrag);
+    track.addEventListener('pointercancel', endDrag);
+    track.addEventListener('pointerleave', () => { if (isDown) endDrag(); });
   }
 
   function escapeHtml(str) {

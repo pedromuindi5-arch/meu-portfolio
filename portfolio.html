@@ -255,12 +255,26 @@
       return card;
     }
 
-    /* ─── FILTER ───────────────────────────────────────── */
+    /* ─── FILTER (categorias levam à página dedicada; "Todos" filtra aqui) ─── */
+    const CATEGORY_PAGES = {
+      'identidade-visual':   'branding.html',
+      'design-publicitario': 'campanhas.html',
+      'social-media':        'social-media-design.html',
+      'design-eventos':      'eventos.html',
+      'materiais-graficos':  'materiais-graficos.html',
+      'web-design':          'web-design.html',
+    };
+
     filterBtns.forEach(btn => {
       btn.addEventListener('click', () => {
+        const filter = btn.dataset.filter;
+        if (filter !== 'all' && CATEGORY_PAGES[filter]) {
+          window.location.href = CATEGORY_PAGES[filter];
+          return;
+        }
         filterBtns.forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
-        currentFilter = btn.dataset.filter;
+        currentFilter = filter;
         renderProjects(currentFilter);
       });
     });

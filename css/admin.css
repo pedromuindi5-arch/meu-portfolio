@@ -5,18 +5,18 @@
 
 /* ─── TOKENS ─────────────────────────────────────────── */
 :root {
-  --bg:         #0a0a0a;
-  --sidebar-bg: #111111;
-  --card-bg:    #161616;
-  --border:     rgba(255,255,255,0.08);
-  --border-2:   rgba(255,255,255,0.14);
-  --text:       #ffffff;
-  --text-dim:   #999999;
-  --text-muted: #555555;
-  --accent:     #ffffff;
-  --danger:     #ff4444;
-  --success:    #22c55e;
-  --warning:    #f59e0b;
+  --bg:         #f5f5f7;
+  --sidebar-bg: #ffffff;
+  --card-bg:    #ffffff;
+  --border:     rgba(0,0,0,0.09);
+  --border-2:   rgba(0,0,0,0.16);
+  --text:       #16181d;
+  --text-dim:   #6b7280;
+  --text-muted: #9ca3af;
+  --accent:     #0d0d0d;
+  --danger:     #dc2626;
+  --success:    #16a34a;
+  --warning:    #d97706;
 
   --font:       'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
   --ease:       cubic-bezier(0.25, 0.46, 0.45, 0.94);
@@ -172,7 +172,7 @@ input, select, textarea, button { font-family: inherit; font-size: inherit; }
   text-align: left;
 }
 .sidebar-link:hover { background: var(--border); color: var(--text); }
-.sidebar-link.active { background: rgba(255,255,255,0.1); color: var(--text); }
+.sidebar-link.active { background: rgba(0,0,0,0.06); color: var(--text); }
 .sidebar-link.danger:hover { background: rgba(255,68,68,0.1); color: var(--danger); }
 
 .sidebar-icon { font-size: 0.95rem; width: 16px; text-align: center; }
@@ -457,18 +457,18 @@ input, select, textarea, button { font-family: inherit; font-size: inherit; }
   color: var(--text-dim);
 }
 .projects-table tr:last-child td { border-bottom: none; }
-.projects-table tr:hover td { background: rgba(255,255,255,0.02); }
+.projects-table tr:hover td { background: rgba(0,0,0,0.02); }
 
 .table-thumb {
   width: 48px; height: 36px;
   object-fit: cover;
   border-radius: 3px;
-  background: var(--bg-3, #1a1a1a);
+  background: var(--bg-3, #e9e9ec);
   display: block;
 }
 .table-thumb-placeholder {
   width: 48px; height: 36px;
-  background: #1a1a1a;
+  background: #e9e9ec;
   border-radius: 3px;
   display: flex; align-items: center; justify-content: center;
   font-size: 0.65rem;
@@ -541,7 +541,7 @@ input, select, textarea, button { font-family: inherit; font-size: inherit; }
 .form-group select:focus,
 .form-group textarea:focus {
   outline: none;
-  border-color: rgba(255,255,255,0.3);
+  border-color: rgba(0,0,0,0.35);
 }
 .form-group input::placeholder,
 .form-group textarea::placeholder { color: var(--text-muted); }
@@ -635,8 +635,8 @@ input, select, textarea, button { font-family: inherit; font-size: inherit; }
   font-size: 0.8rem;
   color: var(--text-muted);
 }
-.upload-drop-zone:hover { border-color: rgba(255,255,255,0.3); background: rgba(255,255,255,0.02); }
-.upload-drop-zone.drag-over { border-color: var(--text); background: rgba(255,255,255,0.04); }
+.upload-drop-zone:hover { border-color: rgba(0,0,0,0.3); background: rgba(0,0,0,0.02); }
+.upload-drop-zone.drag-over { border-color: var(--text); background: rgba(0,0,0,0.04); }
 .upload-icon { font-size: 1.5rem; margin-bottom: 0.25rem; }
 .upload-hint { font-size: 0.7rem; margin-top: 0.15rem; }
 .upload-preview { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.75rem; }
@@ -785,7 +785,7 @@ input, select, textarea, button { font-family: inherit; font-size: inherit; }
 .block-item {
   border: 1px solid var(--border);
   border-radius: 6px;
-  background: var(--surface, #161616);
+  background: var(--card-bg, #ffffff);
   padding: 1rem;
   display: flex;
   gap: 0.85rem;
@@ -833,10 +833,10 @@ input, select, textarea, button { font-family: inherit; font-size: inherit; }
 .block-item input[type="text"],
 .block-item input[type="url"] {
   width: 100%;
-  background: #0d0d0d;
+  background: #f5f5f7;
   border: 1px solid var(--border);
   border-radius: 4px;
-  color: var(--text, #fff);
+  color: var(--text, #16181d);
   padding: 0.6rem 0.75rem;
   font-size: 0.85rem;
   font-family: inherit;
@@ -918,7 +918,7 @@ input, select, textarea, button { font-family: inherit; font-size: inherit; }
   font-size: 0.95rem;
   font-weight: 600;
   margin: 0;
-  color: var(--text, #fff);
+  color: var(--text, #16181d);
 }
 
 .editor-topbar-actions {
@@ -968,7 +968,7 @@ input, select, textarea, button { font-family: inherit; font-size: inherit; }
   gap: 0.6rem;
   background: none;
   border: none;
-  color: var(--text, #fff);
+  color: var(--text, #16181d);
   cursor: pointer;
   font-size: 0.78rem;
   width: 90px;
@@ -978,7 +978,7 @@ input, select, textarea, button { font-family: inherit; font-size: inherit; }
   width: 60px;
   height: 60px;
   border-radius: 50%;
-  background: var(--surface, #161616);
+  background: #f5f5f7;
   border: 1px solid var(--border);
   display: flex;
   align-items: center;
@@ -1032,10 +1032,10 @@ input, select, textarea, button { font-family: inherit; font-size: inherit; }
   align-items: center;
   gap: 0.4rem;
   padding: 1rem 0.5rem;
-  background: var(--surface, #161616);
+  background: #f5f5f7;
   border: 1px solid var(--border);
   border-radius: 6px;
-  color: var(--text, #fff);
+  color: var(--text, #16181d);
   cursor: pointer;
   font-size: 0.72rem;
   transition: border-color var(--transition), background var(--transition);
@@ -1043,7 +1043,7 @@ input, select, textarea, button { font-family: inherit; font-size: inherit; }
 
 .editor-content-btn:hover {
   border-color: var(--accent);
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(0, 0, 0, 0.04);
 }
 
 .editor-content-icon {

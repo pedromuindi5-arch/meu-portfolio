@@ -103,10 +103,13 @@
     });
   }
 
+  const SPACING = { none: '0', small: '1.5rem', medium: '3rem', large: '5rem' };
+
   function buildGridBlock(block) {
     const cols = block.columns || 2;
     const wrap = document.createElement('div');
     wrap.className = `project-block-grid grid-cols-${cols}`;
+    wrap.style.marginBottom = SPACING[block.spacing] || SPACING.medium;
     wrap.innerHTML = block.images.map(url => `<img src="${escapeHtml(url)}" alt="" loading="lazy">`).join('');
     return wrap;
   }
@@ -114,6 +117,7 @@
   function buildImageBlock(block) {
     const fig = document.createElement('figure');
     fig.className = 'project-block-image';
+    fig.style.marginBottom = SPACING[block.spacing] || SPACING.medium;
     fig.innerHTML = `
       <img src="${escapeHtml(block.url)}" alt="${escapeHtml(block.caption || '')}" loading="lazy">
       ${block.caption ? `<figcaption>${escapeHtml(block.caption)}</figcaption>` : ''}
@@ -124,6 +128,7 @@
   function buildTextBlock(block) {
     const div = document.createElement('div');
     div.className = 'project-block-text';
+    div.style.marginBottom = SPACING[block.spacing] || SPACING.medium;
     const p = document.createElement('p');
     p.textContent = block.content;
     div.appendChild(p);
@@ -133,6 +138,7 @@
   function buildCarouselBlock(block) {
     const wrap = document.createElement('div');
     wrap.className = 'project-block-carousel';
+    wrap.style.marginBottom = SPACING[block.spacing] || SPACING.medium;
 
     const slides = block.images.map(url => `
       <div class="carousel-slide"><img src="${escapeHtml(url)}" alt="" loading="lazy"></div>
