@@ -300,16 +300,67 @@ async function updateServiceDocument(serviceType, data) {
 ═══════════════════════════ */
 
 /**
+ * Comprime uma imagem no browser antes do upload — redimensiona se for
+ * maior do que o necessário e converte para WebP (alta qualidade, peso
+ * muito menor). Corre automaticamente sempre que uma imagem é enviada,
+ * sem precisar de nenhum passo manual.
+ */
+async function compressImage(file, { maxWidth = 2200, maxHeight = 2200, quality = 0.85 } = {}) {
+  // Só faz sentido comprimir imagens (não SVG, que já é leve e vetorial)
+  if (!file.type.startsWith('image/') || file.type === 'image/svg+xml') return file;
+
+  return new Promise((resolve) => {
+    const objectUrl = URL.createObjectURL(file);
+    const img = new Image();
+
+    img.onload = () => {
+      let { width, height } = img;
+      if (width > maxWidth || height > maxHeight) {
+        const ratio = Math.min(maxWidth / width, maxHeight / height);
+        width = Math.round(width * ratio);
+        height = Math.round(height * ratio);
+      }
+
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, width, height);
+
+      canvas.toBlob((blob) => {
+        URL.revokeObjectURL(objectUrl);
+        if (!blob || blob.size >= file.size) {
+          // Se a compressão não ajudar (ficheiro já muito leve), mantém o original
+          resolve(file);
+          return;
+        }
+        const compressedName = file.name.replace(/\.[^.]+$/, '') + '.webp';
+        resolve(new File([blob], compressedName, { type: 'image/webp' }));
+      }, 'image/webp', quality);
+    };
+
+    img.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      resolve(file); // se algo falhar, faz upload do ficheiro original em vez de bloquear
+    };
+
+    img.src = objectUrl;
+  });
+}
+
+/**
  * Faz upload de um ficheiro de imagem para o bucket `project-images`
- * e devolve o URL público.
+ * e devolve o URL público. A imagem é comprimida automaticamente antes
+ * do envio (ver compressImage) — nenhuma ação manual é necessária.
  */
 async function uploadProjectImage(file) {
-  const ext = file.name.split('.').pop();
+  const optimized = await compressImage(file);
+  const ext = optimized.name.split('.').pop();
   const path = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
   const { error } = await supabaseClient
     .storage
     .from('project-images')
-    .upload(path, file, { cacheControl: '3600', upsert: false });
+    .upload(path, optimized, { cacheControl: '3600', upsert: false });
   if (error) {
     console.error('Erro ao fazer upload da imagem:', error);
     throw error;
