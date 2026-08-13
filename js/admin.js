@@ -97,6 +97,7 @@
 
   // Export / Import
   const exportBtn  = document.getElementById('exportBtn');
+  const compressImagesBtn = document.getElementById('compressImagesBtn');
   const importFile = document.getElementById('importFile');
 
   // Confirm Dialog
@@ -1310,6 +1311,30 @@
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;');
   }
+
+  /* ══════════════════════════════════════════════════════
+     COMPRIMIR IMAGENS EXISTENTES (correr uma vez)
+  ══════════════════════════════════════════════════════ */
+  compressImagesBtn.addEventListener('click', async () => {
+    if (!confirm('Isto vai percorrer todas as imagens já enviadas e comprimi-las, mantendo os mesmos links (nada quebra). Pode demorar alguns minutos consoante a quantidade de imagens. Continuar?')) {
+      return;
+    }
+    compressImagesBtn.disabled = true;
+    compressImagesBtn.textContent = 'A comprimir...';
+    try {
+      const { data, error } = await supabaseClient.functions.invoke('compress-existing-images', { body: {} });
+      if (error) throw error;
+      const savedMB = ((data.bytesBefore - data.bytesAfter) / (1024 * 1024)).toFixed(1);
+      showToast(`Concluído! ${data.processed} imagens comprimidas, ${savedMB}MB poupados. (${data.skipped} já otimizadas, ${data.failed} falhas)`);
+      console.log('Detalhes da compressão:', data.details);
+    } catch (err) {
+      console.error(err);
+      showToast('Erro ao comprimir imagens. Vê a consola para detalhes.', true);
+    } finally {
+      compressImagesBtn.disabled = false;
+      compressImagesBtn.textContent = '🗜 Comprimir Imagens';
+    }
+  });
 
   /* ══════════════════════════════════════════════════════
      EXPORT / IMPORT
