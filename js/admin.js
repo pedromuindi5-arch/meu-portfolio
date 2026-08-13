@@ -1313,20 +1313,40 @@
   }
 
   /* ══════════════════════════════════════════════════════
-     COMPRIMIR IMAGENS EXISTENTES (correr uma vez)
+     COMPRIMIR IMAGENS EXISTENTES (correr uma vez, em lotes)
   ══════════════════════════════════════════════════════ */
   compressImagesBtn.addEventListener('click', async () => {
-    if (!confirm('Isto vai percorrer todas as imagens já enviadas e comprimi-las, mantendo os mesmos links (nada quebra). Pode demorar alguns minutos consoante a quantidade de imagens. Continuar?')) {
+    if (!confirm('Isto vai percorrer todas as imagens já enviadas e comprimi-las, mantendo os mesmos links (nada quebra). Pode demorar alguns minutos consoante a quantidade de imagens — não feches esta página enquanto estiver a correr. Continuar?')) {
       return;
     }
     compressImagesBtn.disabled = true;
-    compressImagesBtn.textContent = 'A comprimir...';
+
+    const totals = { processed: 0, skipped: 0, failed: 0, bytesBefore: 0, bytesAfter: 0 };
+    let offset = 0;
+    let done = false;
+
     try {
-      const { data, error } = await supabaseClient.functions.invoke('compress-existing-images', { body: {} });
-      if (error) throw error;
-      const savedMB = ((data.bytesBefore - data.bytesAfter) / (1024 * 1024)).toFixed(1);
-      showToast(`Concluído! ${data.processed} imagens comprimidas, ${savedMB}MB poupados. (${data.skipped} já otimizadas, ${data.failed} falhas)`);
-      console.log('Detalhes da compressão:', data.details);
+      while (!done) {
+        const { data, error } = await supabaseClient.functions.invoke('compress-existing-images', {
+          body: { offset }
+        });
+        if (error) throw error;
+
+        totals.processed += data.processed;
+        totals.skipped += data.skipped;
+        totals.failed += data.failed;
+        totals.bytesBefore += data.bytesBefore;
+        totals.bytesAfter += data.bytesAfter;
+        console.log('Detalhes do lote:', data.details);
+
+        offset = data.nextOffset;
+        done = data.done;
+
+        compressImagesBtn.textContent = `A comprimir... ${Math.min(offset, data.total)}/${data.total}`;
+      }
+
+      const savedMB = ((totals.bytesBefore - totals.bytesAfter) / (1024 * 1024)).toFixed(1);
+      showToast(`Concluído! ${totals.processed} imagens comprimidas, ${savedMB}MB poupados. (${totals.skipped} já otimizadas, ${totals.failed} falhas)`);
     } catch (err) {
       console.error(err);
       showToast('Erro ao comprimir imagens. Vê a consola para detalhes.', true);
