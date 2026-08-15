@@ -1608,8 +1608,15 @@
     };
   }
 
-  function renderQuestionPreview(question = draftQuestionFromForm()) {
+  function renderQuestionPreview(question) {
     if (!questionPreviewBody) return;
+    // `null` é usado ao fechar o editor: limpa a pré-visualização sem tentar
+    // ler propriedades de uma pergunta inexistente. Sem argumento, mostra o rascunho.
+    if (question === null) {
+      questionPreviewBody.innerHTML = '<div class="preview-empty-state"><strong>Escolhe uma pergunta</strong><span>Abre uma pergunta para veres como fica para o cliente.</span></div>';
+      return;
+    }
+    question = question || draftQuestionFromForm();
     const help = question.help_text ? `<span class="preview-question-help">${escapeHtmlAdmin(question.help_text)}</span>` : '';
     let field = '';
     if (question.input_type === 'choice_single' || question.input_type === 'choice_multiple') {
