@@ -189,44 +189,6 @@
       border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     }
 
-    /* Componentes guiados do formulário de Identidade Visual */
-    .identity-intro { margin-bottom: 1.75rem; }
-    .identity-kicker { color: var(--text-muted); font-size: .72rem; letter-spacing: .14em; text-transform: uppercase; }
-    .identity-heading { color: var(--text); font-size: clamp(1.35rem, 3vw, 1.9rem); line-height: 1.2; margin: .55rem 0 .65rem; }
-    .identity-copy, .identity-section-note, .identity-mode-hint { color: var(--text-dim); font-size: .86rem; line-height: 1.65; }
-    .identity-copy { max-width: 62ch; margin: 0; }
-    .identity-mode-toggle { display: inline-flex; gap: .25rem; padding: .25rem; margin: .25rem 0 .55rem; border: 1px solid var(--border); border-radius: 999px; background: rgba(255,255,255,.035); }
-    .identity-mode-btn { border: 0; border-radius: 999px; padding: .55rem 1.05rem; color: var(--text-muted); background: transparent; cursor: pointer; font: inherit; font-size: .78rem; transition: all var(--transition); }
-    .identity-mode-btn.active { color: var(--bg); background: var(--text); }
-    .identity-mode-hint { margin: 0 0 1.5rem; font-size: .74rem; }
-    .identity-section-note { margin: -.55rem 0 1.25rem; font-style: italic; }
-    .guided-chip-grid, .guided-choice-grid, .guided-swatch-grid { display: flex; flex-wrap: wrap; gap: .55rem; }
-    .guided-choice-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); }
-    .guided-choice-grid.compact { display: flex; }
-    .guided-chip, .guided-choice, .guided-swatch { border: 1px solid var(--border); color: var(--text-dim); background: rgba(9,9,9,.7); cursor: pointer; font: inherit; transition: all var(--transition); }
-    .guided-chip { border-radius: 999px; padding: .62rem .85rem; font-size: .78rem; }
-    .guided-choice { min-height: 4.25rem; border-radius: 8px; padding: .8rem .9rem; text-align: left; font-size: .82rem; line-height: 1.35; }
-    .guided-choice span, .guided-choice small { display: block; color: var(--text-muted); font-size: .72rem; margin-top: .22rem; }
-    .guided-choice strong { color: var(--text); }
-    .guided-chip:hover, .guided-choice:hover, .guided-swatch:hover { border-color: rgba(255,255,255,.45); color: var(--text); transform: translateY(-1px); }
-    .guided-chip.selected, .guided-choice.selected { color: var(--bg); background: var(--text); border-color: var(--text); }
-    .guided-chip.selected *, .guided-choice.selected * { color: var(--bg); }
-    .guided-question { margin-bottom: 1.25rem; }
-    .guided-question > span { display: block; margin-bottom: .55rem; color: var(--text-dim); font-size: .72rem; letter-spacing: .1em; text-transform: uppercase; }
-    .guided-swatch { display: inline-flex; align-items: center; gap: .45rem; border-radius: 7px; padding: .42rem .5rem; font-size: .7rem; }
-    .guided-swatch i { width: 1.15rem; height: 1.15rem; display: inline-block; border-radius: 50%; border: 1px solid rgba(255,255,255,.25); }
-    .guided-swatch.selected { color: var(--text); border-color: var(--text); background: rgba(255,255,255,.1); }
-    .guided-adjective-row { display: grid; grid-template-columns: 1.3rem minmax(0, 1fr) 1.2rem minmax(0, 2fr); align-items: center; gap: .45rem; margin-bottom: .55rem; color: var(--text-muted); }
-    .guided-adjective-row .field-input { min-width: 0; }
-    .field-help { color: var(--text-muted); font-size: .72rem; line-height: 1.45; margin-top: -.2rem; }
-    .identity-complete-only { display: none; }
-    #form-identidade-visual.identity-complete .identity-complete-only { display: block; }
-    #form-identidade-visual.identity-complete .field-group.identity-complete-only { display: flex; }
-    #form-identidade-visual.identity-complete .form-grid.identity-complete-only { display: grid; }
-    #form-identidade-visual.identity-complete .identity-complete-only.form-section-title { display: block; }
-    #form-identidade-visual.identity-complete .identity-complete-only.identity-section-note { display: block; }
-    @media(max-width:600px) { .guided-choice-grid { grid-template-columns: 1fr; } .guided-adjective-row { grid-template-columns: 1rem minmax(0,1fr); } .guided-adjective-row span:nth-of-type(2) { display: none; } .guided-adjective-row .field-input:last-child { grid-column: 2; } }
-
     /* Template oculto para geração do PDF estilo editorial */
     #pdf-template-wrapper {
       position: fixed;
@@ -393,36 +355,6 @@
       <!-- FORMULÁRIO 2: IDENTIDADE VISUAL -->
       <form id="form-identidade-visual" class="briefing-form"
         onsubmit="handleBriefingSubmit(event, 'Identidade Visual')">
-        <div class="identity-intro">
-          <span class="identity-kicker">Identidade Visual</span>
-          <h2 class="identity-heading">Vamos definir a personalidade da tua marca.</h2>
-          <p class="identity-copy">As perguntas continuam a ser tuas, mas agora podes escolher caminhos visuais concretos em vez de responder apenas com palavras genéricas.</p>
-        </div>
-
-        <div class="identity-mode-toggle" role="group" aria-label="Nível do briefing">
-          <button type="button" class="identity-mode-btn active" data-identity-mode="basic">Essencial</button>
-          <button type="button" class="identity-mode-btn" data-identity-mode="complete">Completo</button>
-        </div>
-        <p class="identity-mode-hint">O modo essencial mostra as perguntas fundamentais. O modo completo acrescenta aplicações, variações e questões técnicas.</p>
-
-        <div class="form-section-title">0. Referências — antes de tudo</div>
-        <p class="identity-section-note">Referências visuais alinham expectativas melhor do que qualquer palavra.</p>
-        <div class="form-grid two-cols">
-          <div class="field-group full">
-            <label class="field-label" for="iv-reference-links">Anexe 2–3 marcas que representam o estilo pretendido</label>
-            <textarea class="field-textarea" id="iv-reference-links" data-question="Referências visuais / links" placeholder="Cole links ou descreva as referências que quer partilhar"></textarea>
-          </div>
-          <div class="field-group full">
-            <label class="field-label" for="iv-reference-likes">O que gosta nessas referências?</label>
-            <textarea class="field-textarea" id="iv-reference-likes" data-question="O que gosta nas referências" placeholder="Ex.: espaço em branco, tipografia fina, contraste, símbolo simples"></textarea>
-          </div>
-          <div class="field-group full">
-            <label class="field-label" for="iv-reference-avoid">O que não gostaria de repetir?</label>
-            <textarea class="field-textarea" id="iv-reference-avoid" data-question="O que não gostaria de repetir" placeholder="Elementos, estilos ou soluções que quer evitar"></textarea>
-          </div>
-        </div>
-
-        <div class="form-section-title">1. Sobre o projeto</div>
         <div class="form-grid two-cols">
           <div class="field-group">
             <label class="field-label" for="iv-name">Nome do Cliente / Empresa *</label>
@@ -430,157 +362,43 @@
           </div>
           <div class="field-group">
             <label class="field-label" for="iv-contact">Contacto (E-mail ou Telefone) *</label>
-            <input class="field-input" type="text" id="iv-contact" required placeholder="Ex: seu@email.com ou +244 923 224 383">
-          </div>
-          <div class="field-group full">
-            <label class="field-label" for="iv-project-name">Nome do projeto e origem do nome</label>
-            <textarea class="field-textarea" id="iv-project-name" data-question="Nome do projeto e origem do nome" placeholder="Qual é o nome e de onde surgiu?"></textarea>
-          </div>
-          <div class="field-group full">
-            <label class="field-label">Que tipo de projeto é este?</label>
-            <div class="guided-chip-grid" data-choice-group data-selection="single">
-              <button type="button" class="guided-chip" data-question="Tipo de projeto" data-value="Empresa / negócio">Empresa / negócio</button>
-              <button type="button" class="guided-chip" data-question="Tipo de projeto" data-value="Organização / ONG">Organização / ONG</button>
-              <button type="button" class="guided-chip" data-question="Tipo de projeto" data-value="Evento">Evento</button>
-              <button type="button" class="guided-chip" data-question="Tipo de projeto" data-value="Produto">Produto</button>
-              <button type="button" class="guided-chip" data-question="Tipo de projeto" data-value="Projeto pessoal">Projeto pessoal</button>
-              <button type="button" class="guided-chip" data-question="Tipo de projeto" data-value="Outro">Outro</button>
-            </div>
-          </div>
-          <div class="field-group full">
-            <label class="field-label" for="iv-project-description">Em uma frase: o que faz e para quem?</label>
-            <textarea class="field-textarea" id="iv-project-description" data-question="O que o projeto faz e para quem" placeholder="Explique de forma simples o que acontece no projeto e quem beneficia dele"></textarea>
-          </div>
-          <div class="field-group full">
-            <label class="field-label" for="iv-purpose">Missão ou propósito — até 3 pontos</label>
-            <textarea class="field-textarea" id="iv-purpose" data-question="Missão ou propósito" placeholder="1. ...&#10;2. ...&#10;3. ..."></textarea>
-          </div>
-          <div class="field-group full">
-            <label class="field-label">É pontual ou permanente?</label>
-            <div class="guided-choice-grid compact" data-choice-group data-selection="single">
-              <button type="button" class="guided-choice" data-question="Duração do projeto" data-value="Pontual — evento ou projeto com data">Pontual <span>evento com data</span></button>
-              <button type="button" class="guided-choice" data-question="Duração do projeto" data-value="Permanente — marca contínua">Permanente <span>marca contínua</span></button>
-            </div>
-          </div>
-        </div>
-
-        <div class="form-section-title">2. Decisões visuais</div>
-        <p class="identity-section-note">Escolhe o lado mais próximo do que imaginas. Nenhuma opção precisa ser perfeita.</p>
-        <div class="guided-decision-list">
-          <div class="guided-question"><span>Luxo</span><div class="guided-choice-grid" data-choice-group data-selection="single">
-            <button type="button" class="guided-choice" data-question="Direção visual — luxo" data-value="Luxo por excesso — dourado, ornamento, textura rica">Luxo por <strong>excesso</strong><small>dourado, ornamento, textura rica</small></button>
-            <button type="button" class="guided-choice" data-question="Direção visual — luxo" data-value="Luxo por contenção — espaço em branco, um detalhe só">Luxo por <strong>contenção</strong><small>espaço em branco, um detalhe só</small></button>
-          </div></div>
-          <div class="guided-question"><span>Tipografia</span><div class="guided-choice-grid" data-choice-group data-selection="single">
-            <button type="button" class="guided-choice" data-question="Direção visual — tipografia" data-value="Tipografia serifada clássica">Tipografia <strong>serifada clássica</strong></button>
-            <button type="button" class="guided-choice" data-question="Direção visual — tipografia" data-value="Tipografia sem serifa, minimalista">Tipografia <strong>sem serifa</strong><small>minimalista</small></button>
-          </div></div>
-          <div class="guided-question"><span>Símbolo</span><div class="guided-choice-grid" data-choice-group data-selection="single">
-            <button type="button" class="guided-choice" data-question="Direção visual — símbolo" data-value="Símbolo literal — representa o objeto diretamente">Símbolo <strong>literal</strong><small>representa o objeto diretamente</small></button>
-            <button type="button" class="guided-choice" data-question="Direção visual — símbolo" data-value="Símbolo abstrato — sugere uma ideia">Símbolo <strong>abstrato</strong><small>sugere uma ideia</small></button>
-          </div></div>
-          <div class="guided-question"><span>Composição</span><div class="guided-choice-grid" data-choice-group data-selection="single">
-            <button type="button" class="guided-choice" data-question="Direção visual — composição" data-value="Composição densa, vários elementos">Composição <strong>densa</strong><small>vários elementos</small></button>
-            <button type="button" class="guided-choice" data-question="Direção visual — composição" data-value="Composição enxuta, um elemento central">Composição <strong>enxuta</strong><small>um elemento central</small></button>
-          </div></div>
-          <div class="guided-question"><span>Presença</span><div class="guided-choice-grid" data-choice-group data-selection="single">
-            <button type="button" class="guided-choice" data-question="Direção visual — presença" data-value="Marca chama atenção à distância">A marca <strong>chama atenção</strong><small>à distância</small></button>
-            <button type="button" class="guided-choice" data-question="Direção visual — presença" data-value="Marca revela-se em detalhe, de perto">A marca <strong>revela-se em detalhe</strong><small>de perto</small></button>
-          </div></div>
-        </div>
-
-        <div class="field-group full identity-complete-only">
-          <label class="field-label">Variações de que este projeto vai precisar</label>
-          <div class="guided-chip-grid" data-choice-group data-selection="multiple">
-            <button type="button" class="guided-chip" data-question="Variações necessárias" data-value="Versão horizontal">Versão horizontal</button>
-            <button type="button" class="guided-chip" data-question="Variações necessárias" data-value="Versão vertical">Versão vertical</button>
-            <button type="button" class="guided-chip" data-question="Variações necessárias" data-value="Símbolo isolado">Símbolo isolado</button>
-            <button type="button" class="guided-chip" data-question="Variações necessárias" data-value="Monocromática">Monocromática</button>
-            <button type="button" class="guided-chip" data-question="Variações necessárias" data-value="Versão para fundo escuro">Versão para fundo escuro</button>
-            <button type="button" class="guided-chip" data-question="Variações necessárias" data-value="Animada / motion">Animada / motion</button>
-          </div>
-        </div>
-
-        <div class="form-section-title">3. Público</div>
-        <div class="form-grid two-cols">
-          <div class="field-group full">
-            <label class="field-label" for="iv-audience-profile">Classe social, faixa etária e gênero predominante</label>
-            <textarea class="field-textarea" id="iv-audience-profile" data-question="Perfil demográfico do público" placeholder="Descreva o público de forma prática"></textarea>
-          </div>
-          <div class="field-group full">
-            <label class="field-label" for="iv-audience-person">Descreva uma pessoa real e específica desse público</label>
-            <span class="field-help">Nome fictício, rotina e o que ela valoriza. Evite descrições genéricas.</span>
-            <textarea class="field-textarea" id="iv-audience-person" data-question="Pessoa específica do público" placeholder="Ex.: Joana, 32 anos, empreendedora, valoriza..." ></textarea>
-          </div>
-        </div>
-
-        <div class="form-section-title">4. Personalidade da marca</div>
-        <div class="field-group full">
-          <label class="field-label">Se esta marca fosse uma pessoa: três adjetivos e exemplos concretos</label>
-          <div class="guided-adjective-row"><span>1</span><input class="field-input" type="text" data-question="Personalidade — adjetivo 1" placeholder="Adjetivo"><span>→</span><input class="field-input" type="text" data-question="Personalidade — exemplo 1" placeholder="Exemplo concreto"></div>
-          <div class="guided-adjective-row"><span>2</span><input class="field-input" type="text" data-question="Personalidade — adjetivo 2" placeholder="Adjetivo"><span>→</span><input class="field-input" type="text" data-question="Personalidade — exemplo 2" placeholder="Exemplo concreto"></div>
-          <div class="guided-adjective-row"><span>3</span><input class="field-input" type="text" data-question="Personalidade — adjetivo 3" placeholder="Adjetivo"><span>→</span><input class="field-input" type="text" data-question="Personalidade — exemplo 3" placeholder="Exemplo concreto"></div>
-        </div>
-        <div class="form-grid two-cols identity-color-grid">
-          <div class="field-group">
-            <label class="field-label">Cores a evitar</label>
-            <div class="guided-swatch-grid" data-choice-group data-selection="multiple">
-              <button type="button" class="guided-swatch" data-question="Cores a evitar" data-value="Preto"><i style="background:#1A1A1A"></i><span>Preto</span></button>
-              <button type="button" class="guided-swatch" data-question="Cores a evitar" data-value="Cinza"><i style="background:#8C8C8C"></i><span>Cinza</span></button>
-              <button type="button" class="guided-swatch" data-question="Cores a evitar" data-value="Branco puro"><i style="background:#FFFFFF"></i><span>Branco</span></button>
-              <button type="button" class="guided-swatch" data-question="Cores a evitar" data-value="Vermelho"><i style="background:#D63C3C"></i><span>Vermelho</span></button>
-              <button type="button" class="guided-swatch" data-question="Cores a evitar" data-value="Verde"><i style="background:#2E6E4E"></i><span>Verde</span></button>
-              <button type="button" class="guided-swatch" data-question="Cores a evitar" data-value="Azul"><i style="background:#2A4E8C"></i><span>Azul</span></button>
-              <button type="button" class="guided-swatch" data-question="Cores a evitar" data-value="Rosa"><i style="background:#E85DB0"></i><span>Rosa</span></button>
-            </div>
+            <input class="field-input" type="text" id="iv-contact" required
+              placeholder="Ex: seu@email.com ou +244 923 224 383">
           </div>
           <div class="field-group">
-            <label class="field-label">Cores desejadas</label>
-            <div class="guided-swatch-grid" data-choice-group data-selection="multiple">
-              <button type="button" class="guided-swatch" data-question="Cores desejadas" data-value="Dourado"><i style="background:#C89B3C"></i><span>Dourado</span></button>
-              <button type="button" class="guided-swatch" data-question="Cores desejadas" data-value="Laranja"><i style="background:#D9803A"></i><span>Laranja</span></button>
-              <button type="button" class="guided-swatch" data-question="Cores desejadas" data-value="Bege"><i style="background:#E8DCC4"></i><span>Bege</span></button>
-              <button type="button" class="guided-swatch" data-question="Cores desejadas" data-value="Mostarda"><i style="background:#C7962A"></i><span>Mostarda</span></button>
-              <button type="button" class="guided-swatch" data-question="Cores desejadas" data-value="Verde oliva"><i style="background:#6B7B5E"></i><span>Oliva</span></button>
-              <button type="button" class="guided-swatch" data-question="Cores desejadas" data-value="Terracota"><i style="background:#7A3B2E"></i><span>Terracota</span></button>
-              <button type="button" class="guided-swatch" data-question="Cores desejadas" data-value="Grafite"><i style="background:#3A3A3A"></i><span>Grafite</span></button>
-              <button type="button" class="guided-swatch" data-question="Cores desejadas" data-value="Marfim"><i style="background:#F5F0E6"></i><span>Marfim</span></button>
-            </div>
+            <label class="field-label" for="iv-text">Texto Principal no Logótipo *</label>
+            <input class="field-input" type="text" id="iv-text" required placeholder="Nome no logótipo">
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="iv-slogan">Existe Slogan no Logótipo?</label>
+            <input class="field-input" type="text" id="iv-slogan" placeholder="Ex: O seu sucesso em destaque">
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="iv-style">Estilo Visual Preferido</label>
+            <select class="field-select" id="iv-style">
+              <option value="">Selecione uma opção</option>
+              <option value="Minimalista & Elegante">Minimalista & Elegante</option>
+              <option value="Moderno & Arrojado">Moderno & Arrojado</option>
+              <option value="Clássico & Tradicional">Clássico & Tradicional</option>
+              <option value="Divertido & Orgânico">Divertido & Orgânico</option>
+              <option value="Geométrico & Abstrato">Geométrico & Abstrato</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="iv-colors">Preferência de Cores (Cores a usar ou evitar)</label>
+            <input class="field-input" type="text" id="iv-colors" placeholder="Ex: Tons terra, evitar o vermelho">
+          </div>
+          <div class="field-group full">
+            <label class="field-label" for="iv-apps">Onde a identidade será mais utilizada?</label>
+            <textarea class="field-textarea" id="iv-apps"
+              placeholder="Ex: Redes sociais, fardas, sacolas, cartões de visita, website, etc."></textarea>
+          </div>
+          <div class="field-group full">
+            <label class="field-label" for="iv-inspiration">Referências ou Inspirações</label>
+            <textarea class="field-textarea" id="iv-inspiration"
+              placeholder="Descreva estilos, marcas ou elementos que o inspiram"></textarea>
           </div>
         </div>
-        <div class="field-group full identity-complete-only">
-          <label class="field-label">A cor desejada deve ser principal ou destaque pontual?</label>
-          <div class="guided-choice-grid compact" data-choice-group data-selection="single">
-            <button type="button" class="guided-choice" data-question="Uso da cor desejada" data-value="Cor principal">Cor principal</button>
-            <button type="button" class="guided-choice" data-question="Uso da cor desejada" data-value="Destaque pontual">Destaque pontual</button>
-          </div>
-        </div>
-
-        <div class="form-section-title identity-complete-only">5. Aplicações físicas e digitais</div>
-        <p class="identity-section-note identity-complete-only">Marque tudo o que este projeto vai precisar — isso muda como a marca é desenhada.</p>
-        <div class="form-grid two-cols identity-complete-only">
-          <div class="field-group full"><label class="field-label">Papelaria e impressos</label><div class="guided-chip-grid" data-choice-group data-selection="multiple">
-            <button type="button" class="guided-chip" data-question="Aplicações — papelaria e impressos" data-value="Cartão de visita">Cartão de visita</button><button type="button" class="guided-chip" data-question="Aplicações — papelaria e impressos" data-value="Papel timbrado">Papel timbrado</button><button type="button" class="guided-chip" data-question="Aplicações — papelaria e impressos" data-value="Envelope">Envelope</button><button type="button" class="guided-chip" data-question="Aplicações — papelaria e impressos" data-value="Embalagem / etiqueta">Embalagem / etiqueta</button><button type="button" class="guided-chip" data-question="Aplicações — papelaria e impressos" data-value="Adesivo">Adesivo</button><button type="button" class="guided-chip" data-question="Aplicações — papelaria e impressos" data-value="Banner / faixa">Banner / faixa</button>
-          </div></div>
-          <div class="field-group full"><label class="field-label">Vestuário e brindes</label><div class="guided-chip-grid" data-choice-group data-selection="multiple">
-            <button type="button" class="guided-chip" data-question="Aplicações — vestuário e brindes" data-value="Camiseta">Camiseta</button><button type="button" class="guided-chip" data-question="Aplicações — vestuário e brindes" data-value="Boné">Boné</button><button type="button" class="guided-chip" data-question="Aplicações — vestuário e brindes" data-value="Caneca">Caneca</button><button type="button" class="guided-chip" data-question="Aplicações — vestuário e brindes" data-value="Uniforme">Uniforme</button><button type="button" class="guided-chip" data-question="Aplicações — vestuário e brindes" data-value="Crachá / credencial">Crachá / credencial</button><button type="button" class="guided-chip" data-question="Aplicações — vestuário e brindes" data-value="Pulseira (evento)">Pulseira (evento)</button>
-          </div></div>
-          <div class="field-group full"><label class="field-label">Ambiente físico e digital</label><div class="guided-chip-grid" data-choice-group data-selection="multiple">
-            <button type="button" class="guided-chip" data-question="Aplicações — ambiente físico e digital" data-value="Fachada / placa">Fachada / placa</button><button type="button" class="guided-chip" data-question="Aplicações — ambiente físico e digital" data-value="Veículo">Veículo</button><button type="button" class="guided-chip" data-question="Aplicações — ambiente físico e digital" data-value="Redes sociais">Redes sociais</button><button type="button" class="guided-chip" data-question="Aplicações — ambiente físico e digital" data-value="Assinatura de email">Assinatura de email</button><button type="button" class="guided-chip" data-question="Aplicações — ambiente físico e digital" data-value="Apresentação / slides">Apresentação / slides</button><button type="button" class="guided-chip" data-question="Aplicações — ambiente físico e digital" data-value="Site / app">Site / app</button>
-          </div></div>
-          <div class="field-group full"><label class="field-label" for="iv-technical-restrictions">Alguma aplicação tem restrição técnica?</label><span class="field-help">Ex.: serigrafia de uma cor, bordado ou gravação a laser.</span><textarea class="field-textarea" id="iv-technical-restrictions" data-question="Restrições técnicas das aplicações"></textarea></div>
-          <div class="field-group full"><label class="field-label">Impressão típica esperada</label><div class="guided-choice-grid compact" data-choice-group data-selection="single"><button type="button" class="guided-choice" data-question="Impressão típica esperada" data-value="Serigrafia / uma cor">Serigrafia / 1 cor</button><button type="button" class="guided-choice" data-question="Impressão típica esperada" data-value="Impressão digital colorida">Impressão digital colorida</button><button type="button" class="guided-choice" data-question="Impressão típica esperada" data-value="Ambas">Ambas</button></div></div>
-        </div>
-
-        <div class="form-section-title">6. Encerramento</div>
-        <div class="form-grid two-cols">
-          <div class="field-group full"><label class="field-label" for="iv-keywords">Existe algum conceito ou palavra-chave que já sabe que quer usar?</label><textarea class="field-textarea" id="iv-keywords" data-question="Conceitos ou palavras-chave desejadas"></textarea></div>
-          <div class="field-group full identity-complete-only"><label class="field-label" for="iv-competitors">Quem são os concorrentes ou referências diretas do setor?</label><span class="field-help">O que fazem visualmente e o que quer evitar por parecer igual.</span><textarea class="field-textarea" id="iv-competitors" data-question="Concorrentes e referências diretas"></textarea></div>
-          <div class="field-group full identity-complete-only"><label class="field-label" for="iv-deadline-budget">Prazo e orçamento aproximados</label><textarea class="field-textarea" id="iv-deadline-budget" data-question="Prazo e orçamento aproximados"></textarea></div>
-          <div class="field-group full identity-complete-only"><label class="field-label">Precisa verificar se o nome ou símbolo já está registrado?</label><div class="guided-choice-grid compact" data-choice-group data-selection="single"><button type="button" class="guided-choice" data-question="Verificação de registro" data-value="Sim">Sim</button><button type="button" class="guided-choice" data-question="Verificação de registro" data-value="Não">Não</button><button type="button" class="guided-choice" data-question="Verificação de registro" data-value="Não sei">Não sei</button></div></div>
-          <div class="field-group full"><label class="field-label" for="iv-practical-restrictions">Alguma restrição prática que já sabe?</label><textarea class="field-textarea" id="iv-practical-restrictions" data-question="Restrições práticas"></textarea></div>
-        </div>
-
         <button type="submit" class="btn-submit">Gerar Briefing &amp; Enviar para WhatsApp →</button>
       </form>
 
@@ -972,39 +790,6 @@
       if (btn) switchForm(tipo, btn);
     })();
 
-    /* ─── INTERAÇÕES GUIADAS DA IDENTIDADE VISUAL ────────── */
-    (function setupIdentityGuidedForm() {
-      const form = document.getElementById('form-identidade-visual');
-      if (!form) return;
-
-      const modeHint = form.querySelector('.identity-mode-hint');
-      form.dataset.identityMode = 'basic';
-
-      form.querySelectorAll('[data-identity-mode]').forEach(button => {
-        button.addEventListener('click', () => {
-          const complete = button.dataset.identityMode === 'complete';
-          form.classList.toggle('identity-complete', complete);
-          form.dataset.identityMode = complete ? 'complete' : 'basic';
-          form.querySelectorAll('[data-identity-mode]').forEach(item => item.classList.toggle('active', item === button));
-          if (modeHint) modeHint.textContent = complete
-            ? 'mostrando também aplicações, prazos, variações e questões técnicas'
-            : 'mostrando as perguntas essenciais para definir a marca';
-        });
-      });
-
-      form.querySelectorAll('[data-choice-group]').forEach(group => {
-        const multiple = group.dataset.selection === 'multiple';
-        group.querySelectorAll('button[data-value]').forEach(button => {
-          button.addEventListener('click', () => {
-            if (!multiple) {
-              group.querySelectorAll('button[data-value]').forEach(item => item.classList.remove('selected'));
-            }
-            button.classList.toggle('selected', multiple ? !button.classList.contains('selected') : true);
-          });
-        });
-      });
-    })();
-
     /* ─── MAPEIA O NOME DO TIPO DE SERVIÇO PARA O SLUG USADO NA BASE DE DADOS ─── */
     const SERVICE_TYPE_SLUGS = {
       'Branding': 'identidade-visual',
@@ -1040,16 +825,14 @@
       // Captura todos os campos preenchíveis dentro do formulário submetido.
       // O formulário enviado é a fonte de verdade; não usamos os outros separadores.
       const activeForm = event.target;
-      const isIdentityComplete = activeForm.dataset.identityMode === 'complete';
       const inputs = activeForm.querySelectorAll('input:not([type="hidden"]), select, textarea');
 
       let clientName = '';
       let clientContact = '';
 
       inputs.forEach(input => {
-        if (input.closest('.identity-complete-only') && !isIdentityComplete) return;
         const labelElement = input.previousElementSibling;
-        const label = (input.dataset.question || labelElement?.textContent || input.name || input.id || 'Campo')
+        const label = (labelElement?.textContent || input.name || input.id || 'Campo')
           .replace(/\s*\*\s*$/, '')
           .trim();
         const value = String(input.value || '').trim() || 'Não especificado';
@@ -1075,24 +858,6 @@
         // Montagem das respostas concluída acima (answersHTML + formData)
       });
 
-      // Captura as escolhas feitas nos botões, chips e amostras de cor.
-      activeForm.querySelectorAll('[data-choice-group]').forEach(group => {
-        if (group.closest('.identity-complete-only') && !isIdentityComplete) return;
-        const selected = Array.from(group.querySelectorAll('button.selected'))
-          .map(button => button.dataset.value)
-          .filter(Boolean);
-        if (!selected.length) return;
-        const question = group.querySelector('[data-question]')?.dataset.question || 'Escolhas visuais';
-        formData[question] = selected.join(', ');
-      });
-
-      // Reconstrói o PDF a partir do objeto final para incluir texto e escolhas.
-      answersHTML = Object.entries(formData).map(([label, value]) => `
-        <div style="margin-bottom: 25px; page-break-inside: avoid;">
-          <p style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: #888888; font-weight: 700; margin: 0 0 8px;">${escapeHtml(label)}</p>
-          <p style="font-size: 1rem; line-height: 1.6; color: #ffffff; margin: 0; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 4px; border-left: 3px solid #ffffff; white-space: pre-wrap;">${escapeHtml(value)}</p>
-        </div>
-      `).join('');
       document.getElementById('pdf-answers').innerHTML = answersHTML;
 
       // ─── Grava o briefing na base de dados e aguarda os emails ───
