@@ -90,6 +90,7 @@
 
   // Perguntas editáveis do briefing
   const questionServiceFilter = document.getElementById('questionServiceFilter');
+  const questionServicePicker = document.getElementById('questionServicePicker');
   const questionsTableBody = document.getElementById('questionsTableBody');
   const addQuestionBtn = document.getElementById('addQuestionBtn');
   const questionEditorWrap = document.getElementById('questionEditorWrap');
@@ -107,6 +108,12 @@
   const questionRequired = document.getElementById('questionRequired');
   const questionRole = document.getElementById('questionRole');
   const cancelQuestionForm = document.getElementById('cancelQuestionForm');
+  const cancelQuestionFormBottom = document.getElementById('cancelQuestionFormBottom');
+  const questionCount = document.getElementById('questionCount');
+  const questionSearch = document.getElementById('questionSearch');
+  const questionPreviewBody = document.getElementById('questionPreviewBody');
+  const questionOptionsWrap = document.getElementById('questionOptionsWrap');
+  const questionOptions = document.getElementById('questionOptions');
 
   // Image tabs
   const tabUrls    = document.getElementById('tabUrls');
@@ -1317,69 +1324,221 @@
   });
 
   /* ══════════════════════════════════════════════════════
-     PERGUNTAS EDITÁVEIS DO BRIEFING
+     PERGUNTAS EDITÁVEIS DO BRIEFING — WORKSPACE VISUAL
   ══════════════════════════════════════════════════════ */
   let questionsCache = [];
 
+  const QUESTION_SERVICE_LABELS = {
+    branding: 'Branding',
+    'identidade-visual': 'Identidade Visual',
+    'social-media': 'Social Media',
+    'design-publicitario': 'Flyer',
+    'design-eventos': 'Identidade Visual para Evento',
+    'web-design': 'Web Design',
+    'materiais-graficos': 'Materiais Gráficos',
+  };
   const QUESTION_TYPE_LABELS = {
-    textarea: 'Resposta longa',
-    text: 'Resposta curta',
-    email: 'Email',
-    file: 'Anexo',
+    textarea: 'Resposta longa', text: 'Resposta curta', email: 'Email', file: 'Anexo',
+    choice_single: 'Uma escolha', choice_multiple: 'Várias escolhas',
   };
 
+  function selectedQuestionOptions(question) {
+    return Array.isArray(question?.options) ? question.options.map(option => {
+      if (typeof option === 'string') return option;
+      return option?.label || option?.value || '';
+    }).filter(Boolean) : [];
+  }
+
+  function visibleQuestions() {
+    const term = (questionSearch?.value || '').trim().toLowerCase();
+    if (!term) return questionsCache;
+    return questionsCache.filter(q => [q.label, q.section_title, q.help_text, q.question_key]
+      .some(value => String(value || '').toLowerCase().includes(term)));
+  }
+
+  function renderQuestionServicePicker() {
+    if (!questionServicePicker) return;
+    const current = questionServiceFilter?.value || 'branding';
+    questionServicePicker.innerHTML = Object.entries(QUESTION_SERVICE_LABELS).map(([value, label]) => `
+      <button type="button" class="questions-service-pill ${value === current ? 'active' : ''}" data-service="${value}" role="tab" aria-selected="${value === current}">
+        <span>${escapeHtmlAdmin(label)}</span>
+        <small>${value === current ? `${questionsCache.length} perguntas` : 'abrir'}</small>
+      </button>`).join('');
+    questionServicePicker.querySelectorAll('[data-service]').forEach(button => {
+      button.addEventListener('click', () => {
+        questionServiceFilter.value = button.dataset.service;
+        closeQuestionForm();
+        renderQuestionsTable();
+      });
+    });
+  }
+
   async function renderQuestionsTable() {
-    const serviceType = questionServiceFilter.value || 'identidade-visual';
+    const serviceType = questionServiceFilter.value || 'branding';
     questionsCache = await getBriefingQuestions(serviceType, true);
+    const list = visibleQuestions().sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
     questionsTableBody.innerHTML = '';
-    if (!questionsCache.length) {
-      questionsTableBody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:2rem;">Ainda não existem perguntas configuradas.</td></tr>';
+    renderQuestionServicePicker();
+    const activeCount = questionsCache.filter(question => question.is_active).length;
+    const inactiveCount = questionsCache.length - activeCount;
+    if (questionCount) questionCount.textContent = `${activeCount} ativas${inactiveCount ? ` · ${inactiveCount} inativas` : ''}`;
+
+    if (!list.length) {
+      questionsTableBody.innerHTML = `<div class="questions-empty">${questionsCache.length ? 'Nenhuma pergunta corresponde à pesquisa.' : 'Ainda não existem perguntas neste serviço. Clica em “Nova pergunta” para começar.'}</div>`;
       return;
     }
 
-    questionsCache.forEach(question => {
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td>${question.sort_order || '—'}</td>
-        <td><span class="table-title">${escapeHtmlAdmin(question.label)}</span></td>
-        <td>${escapeHtmlAdmin(question.section_title || question.section_key)}</td>
-        <td>${QUESTION_TYPE_LABELS[question.input_type] || escapeHtmlAdmin(question.input_type)}</td>
-        <td>${question.required ? 'Sim' : 'Não'}</td>
-        <td><button type="button" class="recent-item-status ${question.is_active ? 'status-visible' : 'status-hidden'} question-toggle" title="Alterar estado">${question.is_active ? 'Ativa' : 'Inativa'}</button></td>
-        <td>
-          <button type="button" class="btn-table-action question-edit">Editar</button>
-          <button type="button" class="btn-table-action question-delete">Eliminar</button>
-        </td>
-      `;
-      tr.querySelector('.question-toggle').addEventListener('click', async () => {
-        try {
-          await updateBriefingQuestion(question.id, { is_active: !question.is_active });
-          await renderQuestionsTable();
-          showToast(question.is_active ? 'Pergunta desativada.' : 'Pergunta ativada.');
-        } catch (error) {
-          console.error(error);
-          showToast('Não foi possível alterar o estado da pergunta.', true);
-        }
-      });
-      tr.querySelector('.question-edit').addEventListener('click', () => openQuestionForm(question));
-      tr.querySelector('.question-delete').addEventListener('click', async () => {
-        if (!confirm('Eliminar esta pergunta? Os briefings antigos não serão alterados.')) return;
-        try {
-          await deleteBriefingQuestion(question.id);
-          await renderQuestionsTable();
-          showToast('Pergunta eliminada.');
-        } catch (error) {
-          console.error(error);
-          showToast('Não foi possível eliminar a pergunta.', true);
-        }
-      });
-      questionsTableBody.appendChild(tr);
+    const grouped = new Map();
+    list.forEach(question => {
+      const key = question.section_key || 'geral';
+      if (!grouped.has(key)) grouped.set(key, []);
+      grouped.get(key).push(question);
     });
+
+    grouped.forEach((sectionQuestions, sectionKey) => {
+      const section = document.createElement('section');
+      section.className = 'questions-section-card';
+      const title = sectionQuestions[0].section_title || sectionKey;
+      section.innerHTML = `<div class="questions-section-head"><div><h3 class="questions-section-title">${escapeHtmlAdmin(title)}</h3><span class="questions-section-count">${sectionQuestions.length} pergunta${sectionQuestions.length === 1 ? '' : 's'}</span></div><button type="button" class="section-toggle" aria-expanded="true">Recolher</button></div><div class="questions-section-list"></div>`;
+      const sectionList = section.querySelector('.questions-section-list');
+      const sectionToggle = section.querySelector('.section-toggle');
+      sectionToggle.addEventListener('click', () => {
+        const collapsed = sectionList.hidden;
+        sectionList.hidden = !collapsed;
+        sectionToggle.textContent = collapsed ? 'Recolher' : 'Mostrar';
+        sectionToggle.setAttribute('aria-expanded', String(collapsed));
+      });
+      sectionQuestions.forEach(question => {
+        const card = document.createElement('article');
+        card.className = 'question-card';
+        const chips = [
+          QUESTION_TYPE_LABELS[question.input_type] || question.input_type,
+          question.mode === 'basic' ? 'Essencial' : question.mode === 'complete' ? 'Completo' : 'Sempre',
+          question.required ? 'Obrigatória' : 'Opcional',
+          !question.is_active ? 'Inativa' : '',
+        ].filter(Boolean);
+        card.innerHTML = `
+          <span class="question-drag" title="A ordem é definida pela posição">⠿</span>
+          <div class="question-card-copy">
+            <div class="question-card-label">${escapeHtmlAdmin(question.label)}</div>
+            <div class="question-card-meta">${chips.map(chip => `<span class="question-chip ${chip === 'Inativa' ? 'inactive' : ''}">${escapeHtmlAdmin(chip)}</span>`).join('')}</div>
+          </div>
+          <div class="question-card-actions">
+            <button type="button" class="question-action" data-action="up" title="Mover para cima">↑</button>
+            <button type="button" class="question-action" data-action="down" title="Mover para baixo">↓</button>
+            <button type="button" class="question-action" data-action="duplicate">Duplicar</button>
+            <button type="button" class="question-action" data-action="toggle">${question.is_active ? 'Desativar' : 'Ativar'}</button>
+            <button type="button" class="question-action" data-action="edit">Editar</button>
+            <button type="button" class="question-action danger" data-action="delete">Eliminar</button>
+          </div>`;
+        card.addEventListener('click', event => {
+          if (!event.target.closest('button')) {
+            renderQuestionPreview(question);
+            openQuestionForm(question);
+          }
+        });
+        card.querySelectorAll('[data-action]').forEach(button => button.addEventListener('click', () => handleQuestionAction(button.dataset.action, question)));
+        sectionList.appendChild(card);
+      });
+      questionsTableBody.appendChild(section);
+    });
+  }
+
+  async function handleQuestionAction(action, question) {
+    try {
+      if (action === 'edit') {
+        openQuestionForm(question);
+        return;
+      }
+      if (action === 'toggle') {
+        await updateBriefingQuestion(question.id, { is_active: !question.is_active });
+        await renderQuestionsTable();
+        showToast(question.is_active ? 'Pergunta desativada.' : 'Pergunta ativada.');
+        return;
+      }
+      if (action === 'delete') {
+        if (!confirm('Eliminar esta pergunta? Os briefings antigos não serão alterados.')) return;
+        await deleteBriefingQuestion(question.id);
+        await renderQuestionsTable();
+        showToast('Pergunta eliminada.');
+        return;
+      }
+      if (action === 'duplicate') {
+        await createBriefingQuestion({
+          service_type: question.service_type,
+          section_key: question.section_key,
+          section_title: question.section_title,
+          question_key: `${question.question_key}_copia_${Date.now()}`,
+          label: `${question.label} (cópia)`,
+          help_text: question.help_text,
+          placeholder: question.placeholder,
+          input_type: question.input_type,
+          options: question.options || [],
+          required: question.required,
+          mode: question.mode,
+          role: 'none',
+          sort_order: (question.sort_order || 0) + 1,
+          is_active: true,
+        });
+        await renderQuestionsTable();
+        showToast('Pergunta duplicada.');
+        return;
+      }
+      if (action === 'up' || action === 'down') {
+        const ordered = [...questionsCache].sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
+        const index = ordered.findIndex(item => item.id === question.id);
+        const targetIndex = action === 'up' ? index - 1 : index + 1;
+        if (index < 0 || targetIndex < 0 || targetIndex >= ordered.length) return;
+        const target = ordered[targetIndex];
+        await Promise.all([
+          updateBriefingQuestion(question.id, { sort_order: target.sort_order || targetIndex + 1 }),
+          updateBriefingQuestion(target.id, { sort_order: question.sort_order || index + 1 }),
+        ]);
+        await renderQuestionsTable();
+        showToast('Ordem atualizada.');
+      }
+    } catch (error) {
+      console.error(error);
+      showToast(`Não foi possível concluir a ação: ${error.message || 'tenta novamente.'}`, true);
+    }
+  }
+
+  function draftQuestionFromForm() {
+    const options = (questionOptions?.value || '').split('\n').map(value => value.trim()).filter(Boolean);
+    return {
+      label: questionLabel?.value.trim() || 'A tua pergunta aparece aqui',
+      help_text: questionHelp?.value.trim() || '',
+      placeholder: questionPlaceholder?.value.trim() || 'Escreve a tua resposta',
+      input_type: questionInputType?.value || 'textarea',
+      options,
+      required: Boolean(questionRequired?.checked),
+    };
+  }
+
+  function renderQuestionPreview(question = draftQuestionFromForm()) {
+    if (!questionPreviewBody) return;
+    const help = question.help_text ? `<span class="preview-question-help">${escapeHtmlAdmin(question.help_text)}</span>` : '';
+    let field = '';
+    if (question.input_type === 'choice_single' || question.input_type === 'choice_multiple') {
+      field = (selectedQuestionOptions(question).length ? selectedQuestionOptions(question) : ['Primeira opção', 'Outra opção'])
+        .map(option => `<span class="preview-option">${escapeHtmlAdmin(option)}</span>`).join('');
+    } else if (question.input_type === 'file') {
+      field = '<div class="preview-field">Clica aqui para adicionar um ficheiro</div>';
+    } else {
+      field = `<div class="preview-field">${escapeHtmlAdmin(question.placeholder || 'Escreve a tua resposta')}</div>`;
+    }
+    questionPreviewBody.innerHTML = `<label class="preview-question-label">${escapeHtmlAdmin(question.label)}${question.required ? ' *' : ''}</label>${help}${field}`;
+  }
+
+  function syncQuestionOptionsVisibility() {
+    const choice = questionInputType?.value === 'choice_single' || questionInputType?.value === 'choice_multiple';
+    if (questionOptionsWrap) questionOptionsWrap.style.display = choice ? 'grid' : 'none';
+    renderQuestionPreview();
   }
 
   function openQuestionForm(question = null) {
     questionEditorWrap.style.display = 'block';
-    questionEditorTitle.textContent = question ? 'Editar pergunta' : 'Adicionar pergunta';
+    questionEditorTitle.textContent = question ? 'Editar pergunta' : 'Nova pergunta';
     questionId.value = question?.id || '';
     questionSectionKey.value = question?.section_key || 'projeto';
     questionSectionTitle.value = question?.section_title || 'Sobre o projeto';
@@ -1387,10 +1546,14 @@
     questionHelp.value = question?.help_text || '';
     questionPlaceholder.value = question?.placeholder || 'Escreve a tua resposta';
     questionInputType.value = question?.input_type || 'textarea';
+    questionOptions.value = selectedQuestionOptions(question).join('\n');
     questionSortOrder.value = question?.sort_order || ((questionsCache.length || 0) + 1);
     questionMode.value = question?.mode || 'all';
     questionRequired.checked = Boolean(question?.required);
     questionRole.value = question?.role || 'none';
+    syncQuestionOptionsVisibility();
+    renderQuestionPreview(question || draftQuestionFromForm());
+    questionEditorWrap.scrollIntoView({ behavior: 'smooth', block: 'start' });
     questionLabel.focus();
   }
 
@@ -1398,28 +1561,36 @@
     questionEditorWrap.style.display = 'none';
     questionForm.reset();
     questionId.value = '';
+    if (questionOptionsWrap) questionOptionsWrap.style.display = 'none';
+    renderQuestionPreview(null);
   }
 
   addQuestionBtn.addEventListener('click', () => openQuestionForm());
   cancelQuestionForm.addEventListener('click', closeQuestionForm);
-  questionServiceFilter.addEventListener('change', renderQuestionsTable);
+  if (cancelQuestionFormBottom) cancelQuestionFormBottom.addEventListener('click', closeQuestionForm);
+  questionServiceFilter.addEventListener('change', () => { closeQuestionForm(); renderQuestionsTable(); });
+  if (questionSearch) questionSearch.addEventListener('input', renderQuestionsTable);
+  if (questionInputType) questionInputType.addEventListener('change', syncQuestionOptionsVisibility);
+  [questionLabel, questionHelp, questionPlaceholder, questionOptions].forEach(field => field?.addEventListener('input', () => renderQuestionPreview()));
   questionForm.addEventListener('submit', async event => {
     event.preventDefault();
+    const options = (questionOptions.value || '').split('\n').map(value => value.trim()).filter(Boolean).map(value => ({ label: value, value }));
+    const existing = questionId.value ? questionsCache.find(q => q.id === questionId.value) : null;
     const payload = {
-      service_type: questionServiceFilter.value || 'identidade-visual',
+      service_type: questionServiceFilter.value || 'branding',
       section_key: questionSectionKey.value.trim(),
       section_title: questionSectionTitle.value.trim(),
-      question_key: (questionId.value ? questionsCache.find(q => q.id === questionId.value)?.question_key : null) || `${questionSectionKey.value.trim()}_${Date.now()}`,
+      question_key: existing?.question_key || `${questionSectionKey.value.trim()}_${Date.now()}`,
       label: questionLabel.value.trim(),
       help_text: questionHelp.value.trim() || null,
       placeholder: questionPlaceholder.value.trim() || 'Escreve a tua resposta',
       input_type: questionInputType.value,
-      options: [],
+      options,
       required: questionRequired.checked,
       mode: questionMode.value,
       role: questionRole.value,
       sort_order: Number(questionSortOrder.value) || 1,
-      is_active: true,
+      is_active: existing?.is_active ?? true,
     };
     try {
       if (questionId.value) await updateBriefingQuestion(questionId.value, payload);
