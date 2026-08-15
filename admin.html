@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/admin.css?v=20260815-questions-v2">
+  <link rel="stylesheet" href="css/admin.css?v=20260815-admin-fix-v4">
   <meta name="robots" content="noindex, nofollow">
 </head>
 <body>
@@ -314,48 +314,114 @@
           <form id="documentForm" class="project-form" novalidate>
             <input type="hidden" id="docServiceType">
 
-            <div class="form-group">
-              <label for="docTitle">Título do Serviço *</label>
-              <input type="text" id="docTitle" required placeholder="Ex: Identidade Visual">
+            <div class="welcome-editor-intro">
+              <span class="eyebrow">WELCOME PACK POR SERVIÇO</span>
+              <p>O design do PDF é igual para todos os serviços. Nesta área alteras apenas os textos que aparecem em cada página. As alterações ficam guardadas para o serviço selecionado.</p>
             </div>
 
             <div class="form-group">
-              <label for="docWelcome">Mensagem de Boas-Vindas *</label>
-              <textarea id="docWelcome" rows="3" required
-                placeholder="Ex: Estou grato por teres confiado este serviço à mim..."></textarea>
+              <label for="docTitle">Nome do Serviço *</label>
+              <input type="text" id="docTitle" required placeholder="Ex.: Identidade Visual">
             </div>
 
-            <div class="form-group">
-              <label for="docIncludes">O Que Está Incluído (uma linha por item)</label>
-              <textarea id="docIncludes" rows="5"
-                placeholder="Cores e paleta cromática&#10;Tipografia&#10;Elementos de apoio gráfico"></textarea>
-            </div>
-
-            <div class="form-row">
-              <div class="form-group">
-                <label for="docDeliveryTime">Prazo de Entrega</label>
-                <input type="text" id="docDeliveryTime" placeholder="Ex: 2 semanas a 1 mês e meio">
+            <details class="welcome-editor-page" open>
+              <summary><span class="welcome-editor-page-number">01</span><span><strong>Capa</strong><small>Frase curta que aparece na primeira página.</small></span></summary>
+              <div class="welcome-editor-page-body">
+                <div class="form-group"><label for="docCoverEyebrow">Etiqueta da capa</label><input type="text" id="docCoverEyebrow" placeholder="WELCOME PACK"></div>
+                <div class="form-group"><label for="docCoverSlogan">Frase de impacto</label><textarea id="docCoverSlogan" rows="2" placeholder="Uma marca forte começa com uma direção clara."></textarea></div>
               </div>
-              <div class="form-group">
-                <label for="docRevisions">Alterações Incluídas</label>
-                <input type="text" id="docRevisions" placeholder="Ex: 2 rondas de revisão incluídas">
+            </details>
+
+            <details class="welcome-editor-page" open>
+              <summary><span class="welcome-editor-page-number">02</span><span><strong>Boas-vindas</strong><small>Mensagem inicial e nota sobre o documento.</small></span></summary>
+              <div class="welcome-editor-page-body">
+                <div class="form-row"><div class="form-group"><label for="docPage2TitleLine1">Título — primeira linha</label><input type="text" id="docPage2TitleLine1"></div><div class="form-group"><label for="docPage2TitleEmphasis">Título — destaque</label><input type="text" id="docPage2TitleEmphasis"></div></div>
+                <div class="form-group"><label for="docWelcome">Mensagem de boas-vindas *</label><textarea id="docWelcome" rows="4" required placeholder="Escreve uma mensagem simples e pessoal para o cliente."></textarea></div>
+                <div class="form-group"><label for="docPage2NoteText">Nota interna do documento</label><textarea id="docPage2NoteText" rows="3"></textarea></div>
               </div>
-            </div>
+            </details>
 
-            <div class="form-group">
-              <label for="docPayment">Forma de Pagamento</label>
-              <input type="text" id="docPayment" placeholder="Ex: 50% adiantado, 50% na entrega">
-            </div>
+            <details class="welcome-editor-page" open>
+              <summary><span class="welcome-editor-page-number">03</span><span><strong>Próximos passos</strong><small>Introdução e quatro etapas numeradas.</small></span></summary>
+              <div class="welcome-editor-page-body">
+                <div class="form-row"><div class="form-group"><label for="docPage3TitleLine1">Título — primeira linha</label><input type="text" id="docPage3TitleLine1"></div><div class="form-group"><label for="docPage3TitleEmphasis">Título — destaque</label><input type="text" id="docPage3TitleEmphasis"></div></div>
+                <div class="form-group"><label for="docPage3Intro">Texto de introdução</label><textarea id="docPage3Intro" rows="3"></textarea></div>
+                <div class="welcome-editor-list-grid">
+                  <div class="welcome-editor-list-item"><span>01</span><input id="docStep1Title" placeholder="Nome da etapa"><textarea id="docStep1Text" rows="3" placeholder="Explicação da etapa"></textarea></div>
+                  <div class="welcome-editor-list-item"><span>02</span><input id="docStep2Title" placeholder="Nome da etapa"><textarea id="docStep2Text" rows="3" placeholder="Explicação da etapa"></textarea></div>
+                  <div class="welcome-editor-list-item"><span>03</span><input id="docStep3Title" placeholder="Nome da etapa"><textarea id="docStep3Text" rows="3" placeholder="Explicação da etapa"></textarea></div>
+                  <div class="welcome-editor-list-item"><span>04</span><input id="docStep4Title" placeholder="Nome da etapa"><textarea id="docStep4Text" rows="3" placeholder="Explicação da etapa"></textarea></div>
+                </div>
+              </div>
+            </details>
 
-            <div class="form-group">
-              <label for="docNextSteps">Próximos Passos (um por linha)</label>
-              <textarea id="docNextSteps" rows="4"
-                placeholder="Confirmação do pagamento inicial&#10;Reunião de alinhamento&#10;Primeira apresentação de conceitos"></textarea>
-            </div>
+            <details class="welcome-editor-page">
+              <summary><span class="welcome-editor-page-number">04</span><span><strong>Como trabalharemos</strong><small>Princípios e linha temporal do processo.</small></span></summary>
+              <div class="welcome-editor-page-body">
+                <div class="form-row"><div class="form-group"><label for="docPage4TitleLine1">Título — primeira linha</label><input type="text" id="docPage4TitleLine1"></div><div class="form-group"><label for="docPage4TitleEmphasis">Título — destaque</label><input type="text" id="docPage4TitleEmphasis"></div></div>
+                <div class="form-group"><label for="docPage4Intro">Texto de introdução</label><textarea id="docPage4Intro" rows="3"></textarea></div>
+                <div class="welcome-editor-list-grid welcome-editor-three-columns">
+                  <div class="welcome-editor-list-item"><span>01</span><input id="docPrinciple1Title" placeholder="Princípio"><textarea id="docPrinciple1Text" rows="3" placeholder="Explicação"></textarea></div>
+                  <div class="welcome-editor-list-item"><span>02</span><input id="docPrinciple2Title" placeholder="Princípio"><textarea id="docPrinciple2Text" rows="3" placeholder="Explicação"></textarea></div>
+                  <div class="welcome-editor-list-item"><span>03</span><input id="docPrinciple3Title" placeholder="Princípio"><textarea id="docPrinciple3Text" rows="3" placeholder="Explicação"></textarea></div>
+                </div>
+                <div class="form-group"><label for="docTimeline">Linha temporal (uma palavra por linha)</label><textarea id="docTimeline" rows="4" placeholder="ENTENDER&#10;DEFINIR&#10;DESENVOLVER&#10;ENTREGAR"></textarea></div>
+              </div>
+            </details>
+
+            <details class="welcome-editor-page">
+              <summary><span class="welcome-editor-page-number">05</span><span><strong>O que precisamos de ti</strong><small>Quatro cartões e o destaque final.</small></span></summary>
+              <div class="welcome-editor-page-body">
+                <div class="form-row"><div class="form-group"><label for="docPage5TitleLine1">Título — primeira linha</label><input type="text" id="docPage5TitleLine1"></div><div class="form-group"><label for="docPage5TitleEmphasis">Título — destaque</label><input type="text" id="docPage5TitleEmphasis"></div></div>
+                <div class="form-group"><label for="docPage5Intro">Texto de introdução</label><textarea id="docPage5Intro" rows="3"></textarea></div>
+                <div class="welcome-editor-list-grid">
+                  <div class="welcome-editor-list-item"><span>A</span><input id="docNeed1Title" placeholder="Título do cartão"><textarea id="docNeed1Text" rows="3" placeholder="Explicação"></textarea></div>
+                  <div class="welcome-editor-list-item"><span>B</span><input id="docNeed2Title" placeholder="Título do cartão"><textarea id="docNeed2Text" rows="3" placeholder="Explicação"></textarea></div>
+                  <div class="welcome-editor-list-item"><span>C</span><input id="docNeed3Title" placeholder="Título do cartão"><textarea id="docNeed3Text" rows="3" placeholder="Explicação"></textarea></div>
+                  <div class="welcome-editor-list-item"><span>D</span><input id="docNeed4Title" placeholder="Título do cartão"><textarea id="docNeed4Text" rows="3" placeholder="Explicação"></textarea></div>
+                </div>
+                <div class="form-row"><div class="form-group"><label for="docCalloutLabel">Etiqueta do destaque</label><input id="docCalloutLabel"></div><div class="form-group"><label for="docCalloutTitle">Título do destaque</label><input id="docCalloutTitle"></div></div>
+                <div class="form-group"><label for="docCalloutText">Texto do destaque</label><textarea id="docCalloutText" rows="2"></textarea></div>
+              </div>
+            </details>
+
+            <details class="welcome-editor-page">
+              <summary><span class="welcome-editor-page-number">06</span><span><strong>Prazos e comunicação</strong><small>Quatro blocos, prazo, pagamento e contacto.</small></span></summary>
+              <div class="welcome-editor-page-body">
+                <div class="form-row"><div class="form-group"><label for="docPage6TitleLine1">Título — primeira linha</label><input id="docPage6TitleLine1"></div><div class="form-group"><label for="docPage6TitleEmphasis">Título — destaque</label><input id="docPage6TitleEmphasis"></div></div>
+                <div class="form-group"><label for="docPage6Intro">Texto de introdução</label><textarea id="docPage6Intro" rows="3"></textarea></div>
+                <div class="welcome-editor-list-grid">
+                  <div class="welcome-editor-list-item"><span>01</span><input id="docSchedule1Title" placeholder="Título"><textarea id="docSchedule1Text" rows="3" placeholder="Descrição"></textarea></div>
+                  <div class="welcome-editor-list-item"><span>02</span><input id="docSchedule2Title" placeholder="Título"><textarea id="docSchedule2Text" rows="3" placeholder="Descrição"></textarea></div>
+                  <div class="welcome-editor-list-item"><span>03</span><input id="docSchedule3Title" placeholder="Título"><textarea id="docSchedule3Text" rows="3" placeholder="Descrição"></textarea></div>
+                  <div class="welcome-editor-list-item"><span>04</span><input id="docSchedule4Title" placeholder="Título"><textarea id="docSchedule4Text" rows="3" placeholder="Descrição"></textarea></div>
+                </div>
+                <div class="form-row"><div class="form-group"><label for="docDeliveryTime">Prazo principal</label><input id="docDeliveryTime" placeholder="Ex.: 2 semanas"></div><div class="form-group"><label for="docRevisions">Alterações incluídas</label><input id="docRevisions" placeholder="Ex.: 2 rondas de revisão"></div></div>
+                <div class="form-group"><label for="docPayment">Forma de pagamento</label><input id="docPayment" placeholder="Ex.: 50% adiantado, 50% na entrega"></div>
+                <div class="form-row"><div class="form-group"><label for="docContactEmail">Email de contacto</label><input type="email" id="docContactEmail"></div><div class="form-group"><label for="docContactUrl">URL do portfolio</label><input id="docContactUrl"></div></div>
+              </div>
+            </details>
+
+            <details class="welcome-editor-page">
+              <summary><span class="welcome-editor-page-number">07</span><span><strong>Encerramento</strong><small>Frase final e contactos.</small></span></summary>
+              <div class="welcome-editor-page-body">
+                <div class="form-row"><div class="form-group"><label for="docPage7TitleLine1">Título — primeira linha</label><input id="docPage7TitleLine1"></div><div class="form-group"><label for="docPage7TitleEmphasis">Título — destaque</label><input id="docPage7TitleEmphasis"></div></div>
+                <div class="form-group"><label for="docPage7CloseText">Mensagem de encerramento</label><textarea id="docPage7CloseText" rows="3"></textarea></div>
+                <div class="form-row"><div class="form-group"><label for="docFooterEmail">Email no rodapé</label><input type="email" id="docFooterEmail"></div><div class="form-group"><label for="docFooterUrl">URL no rodapé</label><input id="docFooterUrl"></div></div>
+              </div>
+            </details>
+
+            <details class="welcome-editor-page">
+              <summary><span class="welcome-editor-page-number">↗</span><span><strong>Compatibilidade</strong><small>Campos antigos usados no resumo do documento.</small></span></summary>
+              <div class="welcome-editor-page-body">
+                <div class="form-group"><label for="docIncludes">O que está incluído (uma linha por item)</label><textarea id="docIncludes" rows="4"></textarea></div>
+                <div class="form-group"><label for="docNextSteps">Próximos passos antigos (uma linha por item)</label><textarea id="docNextSteps" rows="3"></textarea></div>
+              </div>
+            </details>
 
             <div class="form-actions">
               <button type="button" class="btn-admin-ghost" id="cancelDocumentForm">Cancelar</button>
-              <button type="submit" class="btn-admin-primary">Guardar Documento</button>
+              <button type="submit" class="btn-admin-primary">Guardar Welcome Pack</button>
             </div>
           </form>
         </div>
@@ -392,7 +458,7 @@
       </div>
 
       <!-- ═══════ VIEW: PERGUNTAS DO BRIEFING ═══════ -->
-      <div id="viewQuestions" class="admin-view" data-questions-manager-version="2" style="display:none;">
+      <div id="viewQuestions" class="admin-view" data-questions-manager-version="4" style="display:none;">
         <div class="questions-workspace-head">
           <div>
             <span class="eyebrow">CONFIGURAÇÃO</span>
@@ -484,7 +550,8 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/supabase-client.js"></script>
-  <script src="js/data.js?v=20260815-questions-v2"></script>
-  <script src="js/admin.js?v=20260815-questions-v2"></script>
+  <script src="js/welcome-pack-defaults.js?v=20260815-welcome-pack-v1"></script>
+  <script src="js/data.js?v=20260815-admin-fix-v4"></script>
+  <script src="js/admin.js?v=20260815-welcome-pack-v1"></script>
 </body>
 </html>
