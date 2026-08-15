@@ -327,6 +327,7 @@ async function getServiceDocument(serviceType) {
  */
 async function updateServiceDocument(serviceType, data) {
   const payload = {
+    service_type: serviceType,
     title: data.title,
     welcome_message: data.welcome_message,
     includes: data.includes || [],
@@ -334,11 +335,11 @@ async function updateServiceDocument(serviceType, data) {
     revisions: data.revisions || null,
     payment_method: data.payment_method || null,
     next_steps: data.next_steps || [],
+    content: data.content || {},
   };
   const { error } = await supabaseClient
     .from('service_documents')
-    .update(payload)
-    .eq('service_type', serviceType);
+    .upsert(payload, { onConflict: 'service_type' });
   if (error) {
     console.error('Erro ao atualizar documento de serviço:', error);
     throw error;

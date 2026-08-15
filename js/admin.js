@@ -78,6 +78,22 @@
   const docPayment        = document.getElementById('docPayment');
   const docNextSteps      = document.getElementById('docNextSteps');
   const cancelDocumentForm = document.getElementById('cancelDocumentForm');
+  const docField = (id) => document.getElementById(id);
+  const docWelcomeFields = [
+    'docCoverEyebrow', 'docCoverSlogan',
+    'docPage2TitleLine1', 'docPage2TitleEmphasis', 'docPage2NoteText',
+    'docPage3TitleLine1', 'docPage3TitleEmphasis', 'docPage3Intro',
+    'docStep1Title', 'docStep1Text', 'docStep2Title', 'docStep2Text', 'docStep3Title', 'docStep3Text', 'docStep4Title', 'docStep4Text',
+    'docPage4TitleLine1', 'docPage4TitleEmphasis', 'docPage4Intro',
+    'docPrinciple1Title', 'docPrinciple1Text', 'docPrinciple2Title', 'docPrinciple2Text', 'docPrinciple3Title', 'docPrinciple3Text', 'docTimeline',
+    'docPage5TitleLine1', 'docPage5TitleEmphasis', 'docPage5Intro',
+    'docNeed1Title', 'docNeed1Text', 'docNeed2Title', 'docNeed2Text', 'docNeed3Title', 'docNeed3Text', 'docNeed4Title', 'docNeed4Text',
+    'docCalloutLabel', 'docCalloutTitle', 'docCalloutText',
+    'docPage6TitleLine1', 'docPage6TitleEmphasis', 'docPage6Intro',
+    'docSchedule1Title', 'docSchedule1Text', 'docSchedule2Title', 'docSchedule2Text', 'docSchedule3Title', 'docSchedule3Text', 'docSchedule4Title', 'docSchedule4Text',
+    'docContactEmail', 'docContactUrl',
+    'docPage7TitleLine1', 'docPage7TitleEmphasis', 'docPage7CloseText', 'docFooterEmail', 'docFooterUrl'
+  ];
 
   // Briefings
   const briefingStatusFilter = document.getElementById('briefingStatusFilter');
@@ -1219,42 +1235,122 @@
   /* ══════════════════════════════════════════════════════
      DOCUMENTOS DE SERVIÇO
   ══════════════════════════════════════════════════════ */
+  const WELCOME_SERVICE_LABELS = {
+    branding: 'Branding',
+    'identidade-visual': 'Identidade Visual',
+    'social-media': 'Social Media',
+    'design-publicitario': 'Design Publicitário & Campanhas',
+    'design-eventos': 'Identidade Visual para Eventos',
+    'web-design': 'Web Design',
+    'materiais-graficos': 'Materiais Gráficos & Impressos',
+  };
+
+  const getWelcomeContent = (doc, serviceType) => window.WelcomePack
+    ? window.WelcomePack.fromDocument(doc, serviceType)
+    : (doc || { service_type: serviceType });
+
+  function setDocumentField(id, value) {
+    const field = docField(id);
+    if (field) field.value = value == null ? '' : String(value);
+  }
+
+  function getDocumentField(id) {
+    const field = docField(id);
+    return field ? field.value.trim() : '';
+  }
+
+  function setDocumentList(prefix, items, length) {
+    const list = Array.isArray(items) ? items : [];
+    for (let index = 0; index < length; index += 1) {
+      const item = list[index] || {};
+      setDocumentField(`${prefix}${index + 1}Title`, item.title || '');
+      setDocumentField(`${prefix}${index + 1}Text`, item.text || '');
+    }
+  }
+
+  function collectDocumentList(prefix, length, extra = {}) {
+    return Array.from({ length }, (_, index) => ({
+      ...extra,
+      ...(extra.indexKey ? { [extra.indexKey]: String(index + 1).padStart(2, '0') } : {}),
+      title: getDocumentField(`${prefix}${index + 1}Title`),
+      text: getDocumentField(`${prefix}${index + 1}Text`),
+    }));
+  }
+
   async function renderDocumentsGrid() {
     const docs = await getServiceDocuments();
+    const docsByService = new Map((docs || []).map(doc => [doc.service_type, doc]));
+    const serviceTypes = window.WelcomePack?.serviceTypes || Object.keys(WELCOME_SERVICE_LABELS);
     documentsGrid.innerHTML = '';
 
-    docs.forEach(doc => {
+    serviceTypes.forEach(serviceType => {
+      const existing = docsByService.get(serviceType) || { service_type: serviceType };
+      const content = getWelcomeContent(existing, serviceType);
+      const missing = !docsByService.has(serviceType);
       const card = document.createElement('div');
       card.className = 'stat-card';
       card.style.cursor = 'pointer';
       card.style.textAlign = 'left';
-      const missing = !doc.delivery_time || !doc.revisions || !doc.payment_method;
       card.innerHTML = `
-        <div class="stat-card-label" style="margin-bottom:0.5rem;">${doc.title}</div>
+        <div class="stat-card-label" style="margin-bottom:0.5rem;">${escapeHtmlAdmin(content.title || WELCOME_SERVICE_LABELS[serviceType])}</div>
         <div style="font-size:0.78rem;color:var(--text-muted);line-height:1.5;margin-bottom:1rem;">
-          <div><strong>Prazo:</strong> ${doc.delivery_time || '— por preencher —'}</div>
-          <div><strong>Alterações:</strong> ${doc.revisions || '— por preencher —'}</div>
-          <div><strong>Pagamento:</strong> ${doc.payment_method || '— por preencher —'}</div>
+          <div><strong>Prazo:</strong> ${escapeHtmlAdmin(content.deliveryTime || '— por preencher —')}</div>
+          <div><strong>Páginas:</strong> 7 páginas editoriais</div>
+          <div><strong>Estado:</strong> ${missing ? 'Ainda não guardado' : 'Personalizado'}</div>
         </div>
-        ${missing ? '<span class="recent-item-status status-hidden" style="margin-bottom:0.75rem;display:inline-block;">Dados em falta</span><br>' : ''}
-        <button type="button" class="btn-admin-ghost" style="width:100%;">Editar</button>
+        ${missing ? '<span class="recent-item-status status-hidden" style="margin-bottom:0.75rem;display:inline-block;">Usar conteúdo padrão</span><br>' : '<span class="recent-item-status status-visible" style="margin-bottom:0.75rem;display:inline-block;">Pronto para envio</span><br>'}
+        <button type="button" class="btn-admin-ghost" style="width:100%;">Editar Welcome Pack</button>
       `;
-      card.querySelector('button').addEventListener('click', () => openDocumentEditForm(doc));
+      card.querySelector('button').addEventListener('click', () => openDocumentEditForm(existing));
       documentsGrid.appendChild(card);
     });
   }
 
   function openDocumentEditForm(doc) {
+    const serviceType = doc?.service_type || 'identidade-visual';
+    const content = getWelcomeContent(doc, serviceType);
     documentFormWrap.style.display = 'block';
-    documentFormTitle.textContent = `Editar — ${doc.title}`;
-    docServiceType.value  = doc.service_type;
-    docTitle.value        = doc.title || '';
-    docWelcome.value      = doc.welcome_message || '';
-    docIncludes.value     = (doc.includes || []).join('\n');
-    docDeliveryTime.value = doc.delivery_time || '';
-    docRevisions.value    = doc.revisions || '';
-    docPayment.value      = doc.payment_method || '';
-    docNextSteps.value    = (doc.next_steps || []).join('\n');
+    documentFormTitle.textContent = `Editar Welcome Pack — ${content.title || WELCOME_SERVICE_LABELS[serviceType]}`;
+    docServiceType.value = serviceType;
+    setDocumentField('docTitle', content.title);
+    setDocumentField('docCoverEyebrow', content.page1?.eyebrow);
+    setDocumentField('docCoverSlogan', content.page1?.slogan);
+    setDocumentField('docPage2TitleLine1', content.page2?.titleLine1);
+    setDocumentField('docPage2TitleEmphasis', content.page2?.titleEmphasis);
+    setDocumentField('docWelcome', content.welcomeMessage || content.page2?.intro);
+    setDocumentField('docPage2NoteText', content.page2?.noteText);
+    setDocumentField('docPage3TitleLine1', content.page3?.titleLine1);
+    setDocumentField('docPage3TitleEmphasis', content.page3?.titleEmphasis);
+    setDocumentField('docPage3Intro', content.page3?.intro);
+    setDocumentList('docStep', content.page3?.steps, 4);
+    setDocumentField('docPage4TitleLine1', content.page4?.titleLine1);
+    setDocumentField('docPage4TitleEmphasis', content.page4?.titleEmphasis);
+    setDocumentField('docPage4Intro', content.page4?.intro);
+    setDocumentList('docPrinciple', content.page4?.principles, 3);
+    setDocumentField('docTimeline', (content.page4?.timeline || []).join('\n'));
+    setDocumentField('docPage5TitleLine1', content.page5?.titleLine1);
+    setDocumentField('docPage5TitleEmphasis', content.page5?.titleEmphasis);
+    setDocumentField('docPage5Intro', content.page5?.intro);
+    setDocumentList('docNeed', content.page5?.needs, 4);
+    setDocumentField('docCalloutLabel', content.page5?.calloutLabel);
+    setDocumentField('docCalloutTitle', content.page5?.calloutTitle);
+    setDocumentField('docCalloutText', content.page5?.calloutText);
+    setDocumentField('docPage6TitleLine1', content.page6?.titleLine1);
+    setDocumentField('docPage6TitleEmphasis', content.page6?.titleEmphasis);
+    setDocumentField('docPage6Intro', content.page6?.intro);
+    setDocumentList('docSchedule', content.page6?.schedule, 4);
+    setDocumentField('docDeliveryTime', content.deliveryTime);
+    setDocumentField('docRevisions', content.revisions);
+    setDocumentField('docPayment', content.paymentMethod);
+    setDocumentField('docContactEmail', content.page6?.contactEmail || content.shared?.contactEmail);
+    setDocumentField('docContactUrl', content.page6?.contactUrl || content.shared?.portfolioUrl);
+    setDocumentField('docPage7TitleLine1', content.page7?.closeHeadlineLine1);
+    setDocumentField('docPage7TitleEmphasis', content.page7?.closeHeadlineEmphasis);
+    setDocumentField('docPage7CloseText', content.page7?.closeText);
+    setDocumentField('docFooterEmail', content.page7?.footerEmail || content.shared?.contactEmail);
+    setDocumentField('docFooterUrl', content.page7?.footerUrl || content.shared?.portfolioUrl);
+    setDocumentField('docIncludes', (content.includes || []).join('\n'));
+    setDocumentField('docNextSteps', (content.page3?.steps || []).map(step => step.title).join('\n'));
     documentFormWrap.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
@@ -1267,22 +1363,93 @@
     const submitBtn = documentForm.querySelector('button[type="submit"]');
     submitBtn.disabled = true;
     try {
+      const serviceType = docServiceType.value;
+      const current = getWelcomeContent(null, serviceType);
+      const page3Steps = collectDocumentList('docStep', 4);
+      const page4Principles = collectDocumentList('docPrinciple', 3);
+      const page5Needs = collectDocumentList('docNeed', 4, { indexKey: 'index' });
+      const page6Schedule = collectDocumentList('docSchedule', 4).map((item, index) => ({
+        label: current.page6?.schedule?.[index]?.label || `${String(index + 1).padStart(2, '0')} / ETAPA`,
+        title: item.title,
+        text: item.text,
+        dark: index === 0,
+      }));
+      const content = window.WelcomePack
+        ? window.WelcomePack.merge(current, {
+          serviceType,
+          title: getDocumentField('docTitle'),
+          welcomeMessage: getDocumentField('docWelcome'),
+          includes: getDocumentField('docIncludes').split('\n').map(value => value.trim()).filter(Boolean),
+          deliveryTime: getDocumentField('docDeliveryTime'),
+          revisions: getDocumentField('docRevisions'),
+          paymentMethod: getDocumentField('docPayment'),
+          page1: { eyebrow: getDocumentField('docCoverEyebrow'), slogan: getDocumentField('docCoverSlogan') },
+          page2: {
+            titleLine1: getDocumentField('docPage2TitleLine1'),
+            titleEmphasis: getDocumentField('docPage2TitleEmphasis'),
+            intro: getDocumentField('docWelcome'),
+            noteText: getDocumentField('docPage2NoteText')
+          },
+          page3: {
+            titleLine1: getDocumentField('docPage3TitleLine1'),
+            titleEmphasis: getDocumentField('docPage3TitleEmphasis'),
+            intro: getDocumentField('docPage3Intro'),
+            steps: page3Steps
+          },
+          page4: {
+            titleLine1: getDocumentField('docPage4TitleLine1'),
+            titleEmphasis: getDocumentField('docPage4TitleEmphasis'),
+            intro: getDocumentField('docPage4Intro'),
+            principles: page4Principles,
+            timeline: getDocumentField('docTimeline').split('\n').map(value => value.trim()).filter(Boolean)
+          },
+          page5: {
+            titleLine1: getDocumentField('docPage5TitleLine1'),
+            titleEmphasis: getDocumentField('docPage5TitleEmphasis'),
+            intro: getDocumentField('docPage5Intro'),
+            needs: page5Needs,
+            calloutLabel: getDocumentField('docCalloutLabel'),
+            calloutTitle: getDocumentField('docCalloutTitle'),
+            calloutText: getDocumentField('docCalloutText')
+          },
+          page6: {
+            titleLine1: getDocumentField('docPage6TitleLine1'),
+            titleEmphasis: getDocumentField('docPage6TitleEmphasis'),
+            intro: getDocumentField('docPage6Intro'),
+            schedule: page6Schedule,
+            contactEmail: getDocumentField('docContactEmail'),
+            contactUrl: getDocumentField('docContactUrl')
+          },
+          page7: {
+            closeHeadlineLine1: getDocumentField('docPage7TitleLine1'),
+            closeHeadlineEmphasis: getDocumentField('docPage7TitleEmphasis'),
+            closeText: getDocumentField('docPage7CloseText'),
+            footerEmail: getDocumentField('docFooterEmail'),
+            footerUrl: getDocumentField('docFooterUrl')
+          },
+          shared: {
+            contactEmail: getDocumentField('docContactEmail'),
+            portfolioUrl: getDocumentField('docContactUrl')
+          }
+        })
+        : current;
       const data = {
-        title: docTitle.value.trim(),
-        welcome_message: docWelcome.value.trim(),
-        includes: docIncludes.value.split('\n').map(s => s.trim()).filter(Boolean),
-        delivery_time: docDeliveryTime.value.trim(),
-        revisions: docRevisions.value.trim(),
-        payment_method: docPayment.value.trim(),
-        next_steps: docNextSteps.value.split('\n').map(s => s.trim()).filter(Boolean),
+        title: getDocumentField('docTitle'),
+        welcome_message: getDocumentField('docWelcome'),
+        includes: getDocumentField('docIncludes').split('\n').map(value => value.trim()).filter(Boolean),
+        delivery_time: getDocumentField('docDeliveryTime'),
+        revisions: getDocumentField('docRevisions'),
+        payment_method: getDocumentField('docPayment'),
+        next_steps: page3Steps.map(step => step.title).filter(Boolean),
+        content,
       };
-      await updateServiceDocument(docServiceType.value, data);
-      showToast('Documento de serviço atualizado!');
+      await updateServiceDocument(serviceType, data);
+      showToast('Welcome Pack guardado para este serviço.');
       documentFormWrap.style.display = 'none';
       await renderDocumentsGrid();
     } catch (err) {
       console.error(err);
-      showToast('Erro ao guardar documento.', true);
+      showToast('Erro ao guardar Welcome Pack: ' + (err.message || 'tenta novamente.'), true);
     } finally {
       submitBtn.disabled = false;
     }

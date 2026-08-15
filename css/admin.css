@@ -1377,3 +1377,121 @@ input, select, textarea, button { font-family: inherit; font-size: inherit; }
   background: #161616;
   color: #fff;
 }
+
+/* ─── EDITOR DO WELCOME PACK POR SERVIÇO ───────────────────────── */
+.welcome-editor-intro {
+  background: var(--bg, #f5f5f7);
+  border: 1px solid var(--border, #e5e5e5);
+  border-radius: 16px;
+  padding: 1rem 1.1rem;
+  margin-bottom: 1.25rem;
+  color: var(--text-dim, #666);
+  font-size: 0.82rem;
+  line-height: 1.6;
+}
+.welcome-editor-intro .eyebrow {
+  display: block;
+  margin-bottom: 0.35rem;
+  color: var(--text, #111);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+}
+.welcome-editor-intro p { margin: 0; }
+.welcome-editor-page {
+  border: 1px solid var(--border, #e5e5e5);
+  border-radius: 16px;
+  background: var(--card-bg, #fff);
+  margin: 0 0 0.8rem;
+  overflow: hidden;
+}
+.welcome-editor-page[open] { box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04); }
+.welcome-editor-page > summary {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  cursor: pointer;
+  list-style: none;
+  padding: 1rem 1.1rem;
+  font-size: 0.9rem;
+}
+.welcome-editor-page > summary::-webkit-details-marker { display: none; }
+.welcome-editor-page > summary::after {
+  content: '+';
+  margin-left: auto;
+  font-size: 1.2rem;
+  color: var(--text-muted, #888);
+}
+.welcome-editor-page[open] > summary::after { content: '−'; }
+.welcome-editor-page > summary strong { display: block; color: var(--text, #111); font-weight: 700; }
+.welcome-editor-page > summary small {
+  display: block;
+  color: var(--text-muted, #777);
+  font-size: 0.74rem;
+  font-weight: 400;
+  margin-top: 0.2rem;
+}
+.welcome-editor-page-number {
+  display: grid;
+  place-items: center;
+  flex: 0 0 2rem;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background: #111;
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+.welcome-editor-page-body {
+  border-top: 1px solid var(--border, #e5e5e5);
+  padding: 1rem 1.1rem 1.15rem;
+}
+.welcome-editor-list-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin: 0.2rem 0 1rem;
+}
+.welcome-editor-three-columns { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.welcome-editor-list-item {
+  border: 1px solid var(--border, #e5e5e5);
+  border-radius: 12px;
+  padding: 0.75rem;
+  background: #fafafa;
+}
+.welcome-editor-list-item > span {
+  display: inline-grid;
+  place-items: center;
+  width: 1.55rem;
+  height: 1.55rem;
+  border-radius: 50%;
+  background: #e8e8e8;
+  color: #555;
+  font-size: 0.65rem;
+  font-weight: 800;
+  margin-bottom: 0.55rem;
+}
+.welcome-editor-list-item input,
+.welcome-editor-list-item textarea {
+  width: 100%;
+  box-sizing: border-box;
+  margin-top: 0.45rem;
+}
+.welcome-editor-list-item textarea { min-height: 70px; resize: vertical; }
+.welcome-editor-page .form-group { margin-bottom: 1rem; }
+.welcome-editor-page .form-group:last-child { margin-bottom: 0; }
+.welcome-editor-page label { font-size: 0.73rem; font-weight: 700; letter-spacing: 0.02em; }
+.welcome-editor-page input,
+.welcome-editor-page textarea { border-radius: 10px; }
+.welcome-editor-page .form-row { gap: 0.75rem; }
+.welcome-editor-page .form-actions { margin-top: 1.25rem; }
+@media (max-width: 760px) {
+  .welcome-editor-list-grid,
+  .welcome-editor-three-columns { grid-template-columns: 1fr; }
+  .welcome-editor-page > summary { padding: 0.85rem; }
+  .welcome-editor-page-body { padding: 0.9rem; }
+  .welcome-editor-page .form-row { display: block; }
+  .welcome-editor-page .form-row .form-group + .form-group { margin-top: 1rem; }
+}
