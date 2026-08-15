@@ -189,6 +189,31 @@
       border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     }
 
+    /* Tema preto e branco — alinhado com as restantes páginas do portfolio */
+    body { background: #000000; color: #ffffff; }
+    .briefing-hero-clean { background: #000000; border-bottom: 1px solid #242424; }
+    .briefing-section-clean { background: #000000; color: #ffffff; }
+    .briefing-container { background: #000000; border: 1px solid #242424; border-radius: 0; box-shadow: none; backdrop-filter: none; }
+    .briefing-tab { color: #a6a6a6; border-color: #2a2a2a; background: transparent; }
+    .briefing-tab:hover { color: #ffffff; border-color: #ffffff; }
+    .briefing-tab.active { color: #000000; background: #ffffff; border-color: #ffffff; }
+    .field-label, .form-section-title { color: #ffffff; }
+    .field-input, .field-select, .field-textarea { background: #000000; color: #ffffff; border-color: #303030; border-radius: 0; }
+    .field-input::placeholder, .field-textarea::placeholder { color: #777777; }
+    .field-input:focus, .field-select:focus, .field-textarea:focus { border-color: #ffffff; box-shadow: none; }
+    .btn-submit { background: #ffffff; color: #000000; border: 1px solid #ffffff; border-radius: 0; text-transform: uppercase; letter-spacing: .12em; }
+    .btn-submit:hover { background: #000000; color: #ffffff; border-color: #ffffff; }
+    .identity-mode-toggle { background: #000000; border-color: #303030; border-radius: 0; }
+    .identity-mode-btn { color: #a6a6a6; border-radius: 0; }
+    .identity-mode-btn.active { color: #000000; background: #ffffff; }
+    .guided-chip, .guided-choice, .guided-swatch { background: #000000; color: #d7d7d7; border-color: #303030; border-radius: 0; }
+    .guided-chip:hover, .guided-choice:hover, .guided-swatch:hover { color: #ffffff; border-color: #ffffff; }
+    .guided-chip.selected, .guided-choice.selected { background: #ffffff; color: #000000; border-color: #ffffff; }
+    .guided-swatch.selected { background: #151515; color: #ffffff; border-color: #ffffff; }
+    .guided-choice strong { color: #ffffff; }
+    .guided-choice span, .guided-choice small, .identity-copy, .identity-section-note, .identity-mode-hint, .field-help { color: #969696; }
+    .identity-heading { color: #ffffff; }
+
     /* Componentes guiados do formulário de Identidade Visual */
     .identity-intro { margin-bottom: 1.75rem; }
     .identity-kicker { color: var(--text-muted); font-size: .72rem; letter-spacing: .14em; text-transform: uppercase; }
@@ -226,6 +251,20 @@
     #form-identidade-visual.identity-complete .identity-complete-only.form-section-title { display: block; }
     #form-identidade-visual.identity-complete .identity-complete-only.identity-section-note { display: block; }
     @media(max-width:600px) { .guided-choice-grid { grid-template-columns: 1fr; } .guided-adjective-row { grid-template-columns: 1rem minmax(0,1fr); } .guided-adjective-row span:nth-of-type(2) { display: none; } .guided-adjective-row .field-input:last-child { grid-column: 2; } }
+
+    /* Acabamento final do tema minimalista */
+    .identity-heading { color: #ffffff; }
+    .identity-copy, .identity-section-note, .identity-mode-hint, .field-help { color: #969696; }
+    .identity-mode-toggle { background: #000000; border-color: #303030; border-radius: 0; }
+    .identity-mode-btn { color: #a6a6a6; border-radius: 0; }
+    .identity-mode-btn.active { color: #000000; background: #ffffff; }
+    .guided-chip, .guided-choice, .guided-swatch { background: #000000; color: #d7d7d7; border-color: #303030; border-radius: 0; }
+    .guided-chip:hover, .guided-choice:hover, .guided-swatch:hover { color: #ffffff; border-color: #ffffff; }
+    .guided-chip.selected, .guided-choice.selected { background: #ffffff; color: #000000; border-color: #ffffff; }
+    .guided-chip.selected *, .guided-choice.selected * { color: #000000; }
+    .guided-swatch.selected { background: #151515; color: #ffffff; border-color: #ffffff; }
+    .guided-choice strong { color: #ffffff; }
+    .guided-choice span, .guided-choice small { color: #969696; }
 
     /* Template oculto para geração do PDF estilo editorial */
     #pdf-template-wrapper {
@@ -387,7 +426,7 @@
               placeholder="Ex: Minimalista, Clássico, Moderno, Orgânico, Geométrico"></textarea>
           </div>
         </div>
-        <button type="submit" class="btn-submit">Gerar Briefing &amp; Enviar para WhatsApp →</button>
+        <button type="submit" class="btn-submit">SUBMETER</button>
       </form>
 
       <!-- FORMULÁRIO 2: IDENTIDADE VISUAL -->
@@ -581,7 +620,7 @@
           <div class="field-group full"><label class="field-label" for="iv-practical-restrictions">Alguma restrição prática que já sabe?</label><textarea class="field-textarea" id="iv-practical-restrictions" data-question="Restrições práticas"></textarea></div>
         </div>
 
-        <button type="submit" class="btn-submit">Gerar Briefing &amp; Enviar para WhatsApp →</button>
+        <button type="submit" class="btn-submit">SUBMETER</button>
       </form>
 
       <!-- FORMULÁRIO 3: SOCIAL MEDIA -->
@@ -633,7 +672,7 @@
               placeholder="Ex: Profissional, Descontraído, Inspirador, Educativo, Divertido"></textarea>
           </div>
         </div>
-        <button type="submit" class="btn-submit">Gerar Briefing &amp; Enviar para WhatsApp →</button>
+        <button type="submit" class="btn-submit">SUBMETER</button>
       </form>
 
       <!-- FORMULÁRIO 4: FLYER -->
@@ -683,7 +722,7 @@
               placeholder="Ex: Cores vibrantes, tons pastéis, monocromático"></textarea>
           </div>
         </div>
-        <button type="submit" class="btn-submit">Gerar Briefing &amp; Enviar para WhatsApp →</button>
+        <button type="submit" class="btn-submit">SUBMETER</button>
       </form>
 
       <!-- FORMULÁRIO 5: EVENTO -->
@@ -739,7 +778,7 @@
               placeholder="Ex: Profissional mas acessível, Inovador e dinâmico, Elegante e sofisticado"></textarea>
           </div>
         </div>
-        <button type="submit" class="btn-submit">Gerar Briefing &amp; Enviar para WhatsApp →</button>
+        <button type="submit" class="btn-submit">SUBMETER</button>
       </form>
 
       <!-- FORMULÁRIO 6: WEB DESIGN -->
@@ -795,7 +834,7 @@
               placeholder="Ex: Profissional, Moderno, Criativo, Minimalista, Corporativo"></textarea>
           </div>
         </div>
-        <button type="submit" class="btn-submit">Gerar Briefing &amp; Enviar para WhatsApp →</button>
+        <button type="submit" class="btn-submit">SUBMETER</button>
       </form>
 
       <!-- FORMULÁRIO 7: MATERIAIS GRÁFICOS & IMPRESSOS -->
@@ -851,7 +890,7 @@
               placeholder="Ex: Cores da marca, tons pastéis, monocromático"></textarea>
           </div>
         </div>
-        <button type="submit" class="btn-submit">Gerar Briefing &amp; Enviar para WhatsApp →</button>
+        <button type="submit" class="btn-submit">SUBMETER</button>
         </div>
       </div>
     </section>
@@ -1020,7 +1059,7 @@
       return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test((value || '').trim());
     }
 
-    /* ─── PROCESSAMENTO DE DADOS, PDF, E-MAIL E REDIRECIONAMENTO DE WHATSAPP ─── */
+    /* ─── PROCESSAMENTO DE DADOS, PDF E E-MAIL ─── */
     async function handleBriefingSubmit(event, typeName) {
       event.preventDefault();
 
@@ -1056,7 +1095,7 @@
 
         formData[label] = value;
 
-        // Armazenar nome e contacto principais para a mensagem de abertura do WhatsApp
+        // Armazenar nome e contacto principais para o fluxo de email
         if (label.toLowerCase().includes('cliente') || label.toLowerCase().includes('organização')) {
           clientName = value;
         }
