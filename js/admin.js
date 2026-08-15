@@ -90,7 +90,7 @@
 
   // Perguntas editáveis do briefing
   const questionServiceFilter = document.getElementById('questionServiceFilter');
-  const questionServicePicker = document.getElementById('questionServicePicker');
+  let questionServicePicker = document.getElementById('questionServicePicker');
   const questionsTableBody = document.getElementById('questionsTableBody');
   const addQuestionBtn = document.getElementById('addQuestionBtn');
   const questionEditorWrap = document.getElementById('questionEditorWrap');
@@ -1338,9 +1338,35 @@
     'materiais-graficos': 'Materiais Gráficos',
   };
   const QUESTION_TYPE_LABELS = {
-    textarea: 'Resposta longa', text: 'Resposta curta', email: 'Email', file: 'Anexo',
-    choice_single: 'Uma escolha', choice_multiple: 'Várias escolhas',
+    textarea: 'Texto longo', text: 'Texto curto', email: 'Email', file: 'Enviar ficheiro',
+    choice_single: 'Escolher uma opção', choice_multiple: 'Escolher várias opções',
   };
+
+  function ensureQuestionServiceOptions() {
+    if (!questionServiceFilter) return;
+    const selected = questionServiceFilter.value || 'identidade-visual';
+    questionServiceFilter.innerHTML = Object.entries(QUESTION_SERVICE_LABELS)
+      .map(([value, label]) => `<option value="${value}">${escapeHtmlAdmin(label)}</option>`)
+      .join('');
+    questionServiceFilter.value = QUESTION_SERVICE_LABELS[selected] ? selected : 'identidade-visual';
+
+    if (!questionServicePicker) {
+      questionServicePicker = document.createElement('div');
+      questionServicePicker.id = 'questionServicePicker';
+      questionServicePicker.className = 'questions-service-picker';
+      questionServicePicker.setAttribute('role', 'tablist');
+      questionServicePicker.setAttribute('aria-label', 'Escolher serviço');
+      questionServiceFilter.closest('.questions-service-bar')?.insertAdjacentElement('afterend', questionServicePicker);
+    }
+  }
+
+  function setQuestionValue(field, value) {
+    if (field) field.value = value ?? '';
+  }
+
+  function setQuestionChecked(field, value) {
+    if (field) field.checked = Boolean(value);
+  }
 
   function selectedQuestionOptions(question) {
     return Array.isArray(question?.options) ? question.options.map(option => {
@@ -1358,7 +1384,7 @@
 
   function renderQuestionServicePicker() {
     if (!questionServicePicker) return;
-    const current = questionServiceFilter?.value || 'branding';
+    const current = questionServiceFilter?.value || 'identidade-visual';
     questionServicePicker.innerHTML = Object.entries(QUESTION_SERVICE_LABELS).map(([value, label]) => `
       <button type="button" class="questions-service-pill ${value === current ? 'active' : ''}" data-service="${value}" role="tab" aria-selected="${value === current}">
         <span>${escapeHtmlAdmin(label)}</span>
@@ -1374,9 +1400,11 @@
   }
 
   async function renderQuestionsTable() {
-    const serviceType = questionServiceFilter.value || 'branding';
+    ensureQuestionServiceOptions();
+    const serviceType = questionServiceFilter?.value || 'identidade-visual';
     questionsCache = await getBriefingQuestions(serviceType, true);
     const list = visibleQuestions().sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
+    if (!questionsTableBody) return;
     questionsTableBody.innerHTML = '';
     renderQuestionServicePicker();
     const activeCount = questionsCache.filter(question => question.is_active).length;
@@ -1537,63 +1565,66 @@
   }
 
   function openQuestionForm(question = null) {
+    if (!questionEditorWrap) return;
     questionEditorWrap.style.display = 'block';
-    questionEditorTitle.textContent = question ? 'Editar pergunta' : 'Nova pergunta';
-    questionId.value = question?.id || '';
-    questionSectionKey.value = question?.section_key || 'projeto';
-    questionSectionTitle.value = question?.section_title || 'Sobre o projeto';
-    questionLabel.value = question?.label || '';
-    questionHelp.value = question?.help_text || '';
-    questionPlaceholder.value = question?.placeholder || 'Escreve a tua resposta';
-    questionInputType.value = question?.input_type || 'textarea';
-    questionOptions.value = selectedQuestionOptions(question).join('\n');
-    questionSortOrder.value = question?.sort_order || ((questionsCache.length || 0) + 1);
-    questionMode.value = question?.mode || 'all';
-    questionRequired.checked = Boolean(question?.required);
-    questionRole.value = question?.role || 'none';
+    if (questionEditorTitle) questionEditorTitle.textContent = question ? 'Editar pergunta' : 'Nova pergunta';
+    setQuestionValue(questionId, question?.id || '');
+    setQuestionValue(questionSectionKey, question?.section_key || 'projeto');
+    setQuestionValue(questionSectionTitle, question?.section_title || 'Sobre o projeto');
+    setQuestionValue(questionLabel, question?.label || '');
+    setQuestionValue(questionHelp, question?.help_text || '');
+    setQuestionValue(questionPlaceholder, question?.placeholder || 'Escreve a tua resposta');
+    setQuestionValue(questionInputType, question?.input_type || 'textarea');
+    setQuestionValue(questionOptions, selectedQuestionOptions(question).join('\n'));
+    setQuestionValue(questionSortOrder, question?.sort_order || ((questionsCache.length || 0) + 1));
+    setQuestionValue(questionMode, question?.mode || 'all');
+    setQuestionChecked(questionRequired, question?.required);
+    setQuestionValue(questionRole, question?.role || 'none');
     syncQuestionOptionsVisibility();
     renderQuestionPreview(question || draftQuestionFromForm());
     questionEditorWrap.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    questionLabel.focus();
+    questionLabel?.focus();
   }
 
   function closeQuestionForm() {
+    if (!questionEditorWrap) return;
     questionEditorWrap.style.display = 'none';
-    questionForm.reset();
-    questionId.value = '';
+    questionForm?.reset();
+    setQuestionValue(questionId, '');
     if (questionOptionsWrap) questionOptionsWrap.style.display = 'none';
     renderQuestionPreview(null);
   }
 
-  addQuestionBtn.addEventListener('click', () => openQuestionForm());
-  cancelQuestionForm.addEventListener('click', closeQuestionForm);
+  addQuestionBtn?.addEventListener('click', () => openQuestionForm());
+  cancelQuestionForm?.addEventListener('click', closeQuestionForm);
   if (cancelQuestionFormBottom) cancelQuestionFormBottom.addEventListener('click', closeQuestionForm);
-  questionServiceFilter.addEventListener('change', () => { closeQuestionForm(); renderQuestionsTable(); });
+  questionServiceFilter?.addEventListener('change', () => { closeQuestionForm(); renderQuestionsTable(); });
   if (questionSearch) questionSearch.addEventListener('input', renderQuestionsTable);
   if (questionInputType) questionInputType.addEventListener('change', syncQuestionOptionsVisibility);
   [questionLabel, questionHelp, questionPlaceholder, questionOptions].forEach(field => field?.addEventListener('input', () => renderQuestionPreview()));
-  questionForm.addEventListener('submit', async event => {
+  questionForm?.addEventListener('submit', async event => {
     event.preventDefault();
-    const options = (questionOptions.value || '').split('\n').map(value => value.trim()).filter(Boolean).map(value => ({ label: value, value }));
-    const existing = questionId.value ? questionsCache.find(q => q.id === questionId.value) : null;
+    const options = (questionOptions?.value || '').split('\n').map(value => value.trim()).filter(Boolean).map(value => ({ label: value, value }));
+    const existing = questionId?.value ? questionsCache.find(q => q.id === questionId.value) : null;
+    const sectionKey = questionSectionKey?.value.trim() || `pergunta_${Date.now()}`;
     const payload = {
-      service_type: questionServiceFilter.value || 'branding',
-      section_key: questionSectionKey.value.trim(),
-      section_title: questionSectionTitle.value.trim(),
-      question_key: existing?.question_key || `${questionSectionKey.value.trim()}_${Date.now()}`,
-      label: questionLabel.value.trim(),
-      help_text: questionHelp.value.trim() || null,
-      placeholder: questionPlaceholder.value.trim() || 'Escreve a tua resposta',
-      input_type: questionInputType.value,
+      service_type: questionServiceFilter?.value || 'identidade-visual',
+      section_key: sectionKey,
+      section_title: questionSectionTitle?.value.trim() || 'Sobre o projeto',
+      question_key: existing?.question_key || `${sectionKey}_${Date.now()}`,
+      label: questionLabel?.value.trim(),
+      help_text: questionHelp?.value.trim() || null,
+      placeholder: questionPlaceholder?.value.trim() || 'Escreve a tua resposta',
+      input_type: questionInputType?.value || 'textarea',
       options,
-      required: questionRequired.checked,
-      mode: questionMode.value,
-      role: questionRole.value,
-      sort_order: Number(questionSortOrder.value) || 1,
+      required: Boolean(questionRequired?.checked),
+      mode: questionMode?.value || 'all',
+      role: questionRole?.value || 'none',
+      sort_order: Number(questionSortOrder?.value) || 1,
       is_active: existing?.is_active ?? true,
     };
     try {
-      if (questionId.value) await updateBriefingQuestion(questionId.value, payload);
+      if (questionId?.value) await updateBriefingQuestion(questionId.value, payload);
       else await createBriefingQuestion(payload);
       closeQuestionForm();
       await renderQuestionsTable();
