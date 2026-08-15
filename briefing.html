@@ -289,7 +289,22 @@
     .dynamic-question-section input[type="file"]::file-selector-button { margin-right: .75rem; border: 0; border-radius: 999px; padding: .65rem 1rem; background: #111111; color: #ffffff; font: inherit; cursor: pointer; }
     .dynamic-questions-status { margin-bottom: 1.4rem; color: #777777; font-size: .78rem; }
     .dynamic-questions-status.error { color: #a02222; }
-    @media (max-width: 600px) { .briefing-container { border-radius: 28px; padding: 1.25rem; } }
+
+    /* Seletor de nível: simples para o cliente, mas ligado aos modos do painel admin. */
+    .briefing-mode-panel { display: grid; gap: .55rem; margin: 0 0 1.65rem; padding: 1rem 1.1rem; border: 1px solid #e4e4e4; border-radius: 24px; background: #fafafa; }
+    .briefing-mode-label { color: #555; font-size: .7rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
+    .briefing-mode-switch { display: flex; flex-wrap: wrap; gap: .5rem; }
+    .briefing-mode-btn { flex: 1 1 160px; min-height: 44px; border: 1px solid #d6d6d6; border-radius: 999px; padding: .7rem 1rem; background: #fff; color: #555; cursor: pointer; font: inherit; font-size: .78rem; font-weight: 700; transition: background .2s ease, color .2s ease, border-color .2s ease, transform .2s ease; }
+    .briefing-mode-btn:hover { border-color: #111; color: #111; transform: translateY(-1px); }
+    .briefing-mode-btn.active { background: #111; border-color: #111; color: #fff; }
+    .briefing-mode-hint { margin: 0; color: #777; font-size: .76rem; line-height: 1.5; }
+    .dynamic-choice-list { display: grid; gap: .55rem; }
+    .dynamic-choice-option { display: flex; align-items: center; gap: .65rem; min-height: 46px; padding: .75rem .9rem; border: 1px solid #dedede; border-radius: 999px; background: #fafafa; color: #333; cursor: pointer; font-size: .84rem; transition: border-color .2s ease, background .2s ease; }
+    .dynamic-choice-option:hover { border-color: #111; background: #fff; }
+    .dynamic-choice-option input { width: 16px; height: 16px; accent-color: #111; }
+    .dynamic-choice-option:has(input:checked) { border-color: #111; background: #f1f1f1; }
+    .dynamic-question-section.is-hidden { display: none; }
+    @media (max-width: 600px) { .briefing-container { border-radius: 28px; padding: 1.25rem; } .briefing-mode-panel { border-radius: 20px; } }
 
     /* Template oculto para geração do PDF estilo editorial */
     #pdf-template-wrapper {
@@ -401,61 +416,19 @@
       </div>
 
       <!-- FORMULÁRIO 1: BRANDING (MARCA) -->
-      <form id="form-branding" class="briefing-form active" onsubmit="handleBriefingSubmit(event, 'Branding')">
-        <div class="form-grid two-cols">
-          <div class="field-group">
-            <label class="field-label" for="b-name">Nome do Cliente / Empresa *</label>
-            <input class="field-input" type="text" id="b-name" required placeholder="Ex: Sua Empresa Lda.">
-          </div>
-          <div class="field-group">
-            <label class="field-label" for="b-contact">Contacto (E-mail ou Telefone) *</label>
-            <input class="field-input" type="text" id="b-contact" required
-              placeholder="Ex: seu@email.com ou +244 923 224 383">
-          </div>
-          <div class="field-group">
-            <label class="field-label" for="b-brand">Nome Proposto para a Marca *</label>
-            <input class="field-input" type="text" id="b-brand" required placeholder="Nome exato que será usado">
-          </div>
-          <div class="field-group">
-            <label class="field-label" for="b-market">Diferencial / Produto Principal</label>
-            <input class="field-input" type="text" id="b-market" placeholder="O que a sua marca faz de exclusivo?">
-          </div>
-          <div class="field-group full">
-            <label class="field-label" for="b-values">Quais são os 3 principais valores da marca?</label>
-            <textarea class="field-textarea" id="b-values"
-              placeholder="Ex: Inovação, Sustentabilidade, Proximidade"></textarea>
-          </div>
-          <div class="field-group full">
-            <label class="field-label" for="b-feel">Qual o sentimento que a marca deve transmitir?</label>
-            <textarea class="field-textarea" id="b-feel"
-              placeholder="Ex: Sofisticação, Confiança, Força, Energia, Dinamismo"></textarea>
-          </div>
-          <div class="field-group full">
-            <label class="field-label" for="b-target">Quem é o público-alvo principal?</label>
-            <textarea class="field-textarea" id="b-target"
-              placeholder="Descreva a idade, profissão, interesses e comportamento do seu público"></textarea>
-          </div>
-          <div class="field-group full">
-            <label class="field-label" for="b-competitors">Quem são os seus principais concorrentes?</label>
-            <textarea class="field-textarea" id="b-competitors"
-              placeholder="Cite algumas marcas ou empresas concorrentes e o que as diferencia"></textarea>
-          </div>
-          <div class="field-group full">
-            <label class="field-label" for="b-colors">Preferência de Cores (Cores a usar ou evitar)</label>
-            <textarea class="field-textarea" id="b-colors"
-              placeholder="Ex: Tons terra, azul corporativo, evitar o vermelho"></textarea>
-          </div>
-          <div class="field-group full">
-            <label class="field-label" for="b-style">Estilo Visual Preferido</label>
-            <textarea class="field-textarea" id="b-style"
-              placeholder="Ex: Minimalista, Clássico, Moderno, Orgânico, Geométrico"></textarea>
-          </div>
+      <form id="form-branding" class="briefing-form active" data-briefing-mode="basic" onsubmit="handleBriefingSubmit(event, 'Branding')">
+        <div class="service-form-intro">
+          <span class="identity-kicker">Branding</span>
+          <h2 class="identity-heading">Vamos começar pela tua marca.</h2>
+          <p class="identity-copy">Conta-nos o que precisas para construir ou organizar a tua marca.</p>
         </div>
+        <div id="brandingQuestionsStatus" class="dynamic-questions-status" aria-live="polite">A carregar as perguntas...</div>
+        <div id="brandingQuestionsMount" class="dynamic-questions" aria-live="polite"></div>
         <button type="submit" class="btn-submit">SUBMETER</button>
       </form>
 
       <!-- FORMULÁRIO 2: IDENTIDADE VISUAL -->
-      <form id="form-identidade-visual" class="briefing-form" onsubmit="handleBriefingSubmit(event, 'Identidade Visual')">
+      <form id="form-identidade-visual" class="briefing-form" data-briefing-mode="basic" onsubmit="handleBriefingSubmit(event, 'Identidade Visual')">
         <div class="identity-intro">
           <span class="identity-kicker">Identidade Visual</span>
           <h2 class="identity-heading">Vamos conhecer melhor o teu projeto.</h2>
@@ -467,275 +440,66 @@
       </form>
 
       <!-- FORMULÁRIO 3: SOCIAL MEDIA -->
-      <form id="form-social-media" class="briefing-form" onsubmit="handleBriefingSubmit(event, 'Social Media')">
-        <div class="form-grid two-cols">
-          <div class="field-group">
-            <label class="field-label" for="sm-name">Nome do Cliente / Empresa *</label>
-            <input class="field-input" type="text" id="sm-name" required placeholder="Ex: Sua Empresa Lda.">
-          </div>
-          <div class="field-group">
-            <label class="field-label" for="sm-contact">Contacto (E-mail ou Telefone) *</label>
-            <input class="field-input" type="text" id="sm-contact" required
-              placeholder="Ex: seu@email.com ou +244 923 224 383">
-          </div>
-          <div class="field-group">
-            <label class="field-label" for="sm-platforms">Redes Sociais a Trabalhar *</label>
-            <input class="field-input" type="text" id="sm-platforms" required
-              placeholder="Ex: Instagram, TikTok, Facebook, LinkedIn">
-          </div>
-          <div class="field-group">
-            <label class="field-label" for="sm-frequency">Frequência de Publicação Desejada</label>
-            <select class="field-select" id="sm-frequency">
-              <option value="">Selecione uma opção</option>
-              <option value="Diária">Diária</option>
-              <option value="3-4 vezes por semana">3-4 vezes por semana</option>
-              <option value="2 vezes por semana">2 vezes por semana</option>
-              <option value="Semanal">Semanal</option>
-            </select>
-          </div>
-          <div class="field-group full">
-            <label class="field-label" for="sm-goals">Objetivos Principais (Seguidores, Vendas, Engagement,
-              etc.)</label>
-            <textarea class="field-textarea" id="sm-goals"
-              placeholder="Descreva os seus objetivos com as redes sociais"></textarea>
-          </div>
-          <div class="field-group full">
-            <label class="field-label" for="sm-content">Tipo de Conteúdo Preferido</label>
-            <textarea class="field-textarea" id="sm-content"
-              placeholder="Ex: Educativo, Inspiracional, Promocional, Behind-the-scenes, Testimoniais"></textarea>
-          </div>
-          <div class="field-group full">
-            <label class="field-label" for="sm-audience">Descreva o Seu Público-Alvo</label>
-            <textarea class="field-textarea" id="sm-audience"
-              placeholder="Idade, profissão, interesses, comportamento online"></textarea>
-          </div>
-          <div class="field-group full">
-            <label class="field-label" for="sm-tone">Tom de Comunicação Desejado</label>
-            <textarea class="field-textarea" id="sm-tone"
-              placeholder="Ex: Profissional, Descontraído, Inspirador, Educativo, Divertido"></textarea>
-          </div>
+      <form id="form-social-media" class="briefing-form" data-briefing-mode="basic" onsubmit="handleBriefingSubmit(event, 'Social Media')">
+        <div class="service-form-intro">
+          <span class="identity-kicker">Social Media</span>
+          <h2 class="identity-heading">Vamos preparar a tua presença online.</h2>
+          <p class="identity-copy">Responde com as tuas palavras. Não precisas de dominar termos de marketing.</p>
         </div>
+        <div id="social-mediaQuestionsStatus" class="dynamic-questions-status" aria-live="polite">A carregar as perguntas...</div>
+        <div id="social-mediaQuestionsMount" class="dynamic-questions" aria-live="polite"></div>
         <button type="submit" class="btn-submit">SUBMETER</button>
       </form>
 
       <!-- FORMULÁRIO 4: FLYER -->
-      <form id="form-flyer" class="briefing-form" onsubmit="handleBriefingSubmit(event, 'Flyer')">
-        <div class="form-grid two-cols">
-          <div class="field-group">
-            <label class="field-label" for="fl-name">Nome do Cliente / Empresa *</label>
-            <input class="field-input" type="text" id="fl-name" required placeholder="Ex: Sua Empresa Lda.">
-          </div>
-          <div class="field-group">
-            <label class="field-label" for="fl-contact">Contacto (E-mail ou Telefone) *</label>
-            <input class="field-input" type="text" id="fl-contact" required
-              placeholder="Ex: seu@email.com ou +244 923 224 383">
-          </div>
-          <div class="field-group">
-            <label class="field-label" for="fl-title">Título Principal do Flyer *</label>
-            <input class="field-input" type="text" id="fl-title" required placeholder="Ex: Grande Promoção de Verão">
-          </div>
-          <div class="field-group">
-            <label class="field-label" for="fl-format">Formato Preferido</label>
-            <select class="field-select" id="fl-format">
-              <option value="">Selecione uma opção</option>
-              <option value="A4 Vertical">A4 Vertical</option>
-              <option value="A4 Horizontal">A4 Horizontal</option>
-              <option value="A5">A5</option>
-              <option value="Personalizado">Personalizado</option>
-            </select>
-          </div>
-          <div class="field-group full">
-            <label class="field-label" for="fl-message">Mensagem Principal / Call-to-Action *</label>
-            <textarea class="field-textarea" id="fl-message" required
-              placeholder="Ex: Aproveite 50% de desconto em todos os produtos até 31 de Agosto!"></textarea>
-          </div>
-          <div class="field-group full">
-            <label class="field-label" for="fl-details">Detalhes Importantes (Data, Local, Horário, Contacto)</label>
-            <textarea class="field-textarea" id="fl-details"
-              placeholder="Todas as informações que devem aparecer no flyer"></textarea>
-          </div>
-          <div class="field-group full">
-            <label class="field-label" for="fl-style">Estilo Visual Desejado</label>
-            <textarea class="field-textarea" id="fl-style"
-              placeholder="Ex: Moderno, Clássico, Divertido, Corporativo, Elegante"></textarea>
-          </div>
-          <div class="field-group full">
-            <label class="field-label" for="fl-colors">Paleta de Cores Preferida</label>
-            <textarea class="field-textarea" id="fl-colors"
-              placeholder="Ex: Cores vibrantes, tons pastéis, monocromático"></textarea>
-          </div>
+      <form id="form-flyer" class="briefing-form" data-briefing-mode="basic" onsubmit="handleBriefingSubmit(event, 'Flyer')">
+        <div class="service-form-intro">
+          <span class="identity-kicker">Flyer</span>
+          <h2 class="identity-heading">Vamos dar forma à tua comunicação.</h2>
+          <p class="identity-copy">Partilha as informações principais e eu trato de transformar a ideia numa peça clara.</p>
         </div>
+        <div id="flyerQuestionsStatus" class="dynamic-questions-status" aria-live="polite">A carregar as perguntas...</div>
+        <div id="flyerQuestionsMount" class="dynamic-questions" aria-live="polite"></div>
         <button type="submit" class="btn-submit">SUBMETER</button>
       </form>
 
       <!-- FORMULÁRIO 5: EVENTO -->
-      <form id="form-evento" class="briefing-form"
+      <form id="form-evento" class="briefing-form" data-briefing-mode="basic"
         onsubmit="handleBriefingSubmit(event, 'Identidade Visual para Evento')">
-        <div class="form-grid two-cols">
-          <div class="field-group">
-            <label class="field-label" for="ev-name">Nome do Cliente / Organização *</label>
-            <input class="field-input" type="text" id="ev-name" required placeholder="Ex: Sua Organização">
-          </div>
-          <div class="field-group">
-            <label class="field-label" for="ev-contact">Contacto (E-mail ou Telefone) *</label>
-            <input class="field-input" type="text" id="ev-contact" required
-              placeholder="Ex: seu@email.com ou +244 923 224 383">
-          </div>
-          <div class="field-group">
-            <label class="field-label" for="ev-title">Nome do Evento *</label>
-            <input class="field-input" type="text" id="ev-title" required placeholder="Ex: Conexão Design 2025">
-          </div>
-          <div class="field-group">
-            <label class="field-label" for="ev-type">Tipo de Evento</label>
-            <select class="field-select" id="ev-type">
-              <option value="">Selecione uma opção</option>
-              <option value="Corporativo / Palestras">Corporativo / Palestras</option>
-              <option value="Cultural / Concerto">Cultural / Concerto</option>
-              <option value="Festival / Feira">Festival / Feira</option>
-              <option value="Privado / Gala">Privado / Gala</option>
-              <option value="Workshop / Formação">Workshop / Formação</option>
-            </select>
-          </div>
-          <div class="field-group">
-            <label class="field-label" for="ev-date">Data e Local do Evento *</label>
-            <input class="field-input" type="text" id="ev-date" required
-              placeholder="Ex: 15 de Novembro no Centro Cultural">
-          </div>
-          <div class="field-group">
-            <label class="field-label" for="ev-concept">Tema ou Conceito do Evento</label>
-            <input class="field-input" type="text" id="ev-concept" placeholder="Ex: O futuro da criatividade">
-          </div>
-          <div class="field-group full">
-            <label class="field-label" for="ev-materials">Materiais de Design Necessários *</label>
-            <textarea class="field-textarea" id="ev-materials" required
-              placeholder="Ex: Lonas de fundo, credenciais, posts digitais, rollups, flyers, convites, etc."></textarea>
-          </div>
-          <div class="field-group full">
-            <label class="field-label" for="ev-audience">Público-Alvo do Evento</label>
-            <textarea class="field-textarea" id="ev-audience"
-              placeholder="Descreva quem vai participar do evento"></textarea>
-          </div>
-          <div class="field-group full">
-            <label class="field-label" for="ev-vibe">Vibe / Atmosfera Desejada</label>
-            <textarea class="field-textarea" id="ev-vibe"
-              placeholder="Ex: Profissional mas acessível, Inovador e dinâmico, Elegante e sofisticado"></textarea>
-          </div>
+        <div class="service-form-intro">
+          <span class="identity-kicker">Identidade Visual para Evento</span>
+          <h2 class="identity-heading">Vamos preparar o teu evento.</h2>
+          <p class="identity-copy">Conta-me o essencial sobre o evento, o público e a imagem que queres transmitir.</p>
         </div>
+        <div id="eventoQuestionsStatus" class="dynamic-questions-status" aria-live="polite">A carregar as perguntas...</div>
+        <div id="eventoQuestionsMount" class="dynamic-questions" aria-live="polite"></div>
         <button type="submit" class="btn-submit">SUBMETER</button>
       </form>
 
       <!-- FORMULÁRIO 6: WEB DESIGN -->
-      <form id="form-web" class="briefing-form" onsubmit="handleBriefingSubmit(event, 'Web Design')">
-        <div class="form-grid two-cols">
-          <div class="field-group">
-            <label class="field-label" for="web-name">Nome do Cliente / Empresa *</label>
-            <input class="field-input" type="text" id="web-name" required placeholder="Ex: Sua Empresa Lda.">
-          </div>
-          <div class="field-group">
-            <label class="field-label" for="web-contact">Contacto (E-mail ou Telefone) *</label>
-            <input class="field-input" type="text" id="web-contact" required
-              placeholder="Ex: seu@email.com ou +244 923 224 383">
-          </div>
-          <div class="field-group">
-            <label class="field-label" for="web-domain">Domínio / URL Desejado</label>
-            <input class="field-input" type="text" id="web-domain" placeholder="Ex: www.suaempresa.com">
-          </div>
-          <div class="field-group">
-            <label class="field-label" for="web-type">Tipo de Website</label>
-            <select class="field-select" id="web-type">
-              <option value="">Selecione uma opção</option>
-              <option value="Portfólio / Currículo">Portfólio / Currículo</option>
-              <option value="E-commerce">E-commerce</option>
-              <option value="Blog / Notícias">Blog / Notícias</option>
-              <option value="Corporativo">Corporativo</option>
-              <option value="Landing Page">Landing Page</option>
-            </select>
-          </div>
-          <div class="field-group full">
-            <label class="field-label" for="web-purpose">Objetivo Principal do Website *</label>
-            <textarea class="field-textarea" id="web-purpose" required
-              placeholder="Ex: Vender produtos, Gerar leads, Mostrar portfólio, Informar sobre serviços"></textarea>
-          </div>
-          <div class="field-group full">
-            <label class="field-label" for="web-features">Funcionalidades Necessárias</label>
-            <textarea class="field-textarea" id="web-features"
-              placeholder="Ex: Formulário de contacto, Carrinho de compras, Blog, Galeria, Sistema de agendamento"></textarea>
-          </div>
-          <div class="field-group full">
-            <label class="field-label" for="web-audience">Público-Alvo</label>
-            <textarea class="field-textarea" id="web-audience"
-              placeholder="Descreva quem vai visitar o seu website"></textarea>
-          </div>
-          <div class="field-group full">
-            <label class="field-label" for="web-inspiration">Referências ou Websites que Admira</label>
-            <textarea class="field-textarea" id="web-inspiration"
-              placeholder="Descreva elementos de design que gosta em outros websites"></textarea>
-          </div>
-          <div class="field-group full">
-            <label class="field-label" for="web-tone">Tom e Estilo Visual Desejado</label>
-            <textarea class="field-textarea" id="web-tone"
-              placeholder="Ex: Profissional, Moderno, Criativo, Minimalista, Corporativo"></textarea>
-          </div>
+      <form id="form-web" class="briefing-form" data-briefing-mode="basic" onsubmit="handleBriefingSubmit(event, 'Web Design')">
+        <div class="service-form-intro">
+          <span class="identity-kicker">Web Design</span>
+          <h2 class="identity-heading">Vamos pensar no teu site.</h2>
+          <p class="identity-copy">Explica o que queres que o site faça e como gostarias que as pessoas se sentissem ao visitá-lo.</p>
         </div>
+        <div id="webQuestionsStatus" class="dynamic-questions-status" aria-live="polite">A carregar as perguntas...</div>
+        <div id="webQuestionsMount" class="dynamic-questions" aria-live="polite"></div>
         <button type="submit" class="btn-submit">SUBMETER</button>
       </form>
 
       <!-- FORMULÁRIO 7: MATERIAIS GRÁFICOS & IMPRESSOS -->
-      <form id="form-materiais-graficos" class="briefing-form"
+      <form id="form-materiais-graficos" class="briefing-form" data-briefing-mode="basic"
         onsubmit="handleBriefingSubmit(event, 'Materiais Gráficos')">
-        <div class="form-grid two-cols">
-          <div class="field-group">
-            <label class="field-label" for="mg-name">Nome do Cliente / Empresa *</label>
-            <input class="field-input" type="text" id="mg-name" required placeholder="Ex: Sua Empresa Lda.">
-          </div>
-          <div class="field-group">
-            <label class="field-label" for="mg-contact">Contacto (E-mail ou Telefone) *</label>
-            <input class="field-input" type="text" id="mg-contact" required
-              placeholder="Ex: seu@email.com ou +244 923 224 383">
-          </div>
-          <div class="field-group">
-            <label class="field-label" for="mg-type">Tipo de Material *</label>
-            <select class="field-select" id="mg-type" required>
-              <option value="">Selecione uma opção</option>
-              <option value="Menu">Menu</option>
-              <option value="Catálogo">Catálogo</option>
-              <option value="Apresentação">Apresentação</option>
-              <option value="Cartão de visita">Cartão de visita</option>
-              <option value="Brochura">Brochura</option>
-              <option value="Embalagem">Embalagem</option>
-              <option value="Lona">Lona</option>
-              <option value="Roll-up">Roll-up</option>
-              <option value="Decoração de viatura">Decoração de viatura</option>
-              <option value="Outro">Outro</option>
-            </select>
-          </div>
-          <div class="field-group">
-            <label class="field-label" for="mg-quantity">Quantidade Pretendida</label>
-            <input class="field-input" type="text" id="mg-quantity" placeholder="Ex: 500 unidades, 1 viatura">
-          </div>
-          <div class="field-group full">
-            <label class="field-label" for="mg-dimensions">Dimensões / Tamanho</label>
-            <input class="field-input" type="text" id="mg-dimensions" placeholder="Ex: A5, 90x50mm, 3x1.5m">
-          </div>
-          <div class="field-group full">
-            <label class="field-label" for="mg-content">Conteúdo a Incluir *</label>
-            <textarea class="field-textarea" id="mg-content" required
-              placeholder="Texto, imagens, logotipo, informações de contacto — tudo o que deve constar no material"></textarea>
-          </div>
-          <div class="field-group full">
-            <label class="field-label" for="mg-style">Estilo Visual Desejado</label>
-            <textarea class="field-textarea" id="mg-style"
-              placeholder="Ex: Moderno, Clássico, Minimalista, Corporativo"></textarea>
-          </div>
-          <div class="field-group full">
-            <label class="field-label" for="mg-colors">Paleta de Cores Preferida</label>
-            <textarea class="field-textarea" id="mg-colors"
-              placeholder="Ex: Cores da marca, tons pastéis, monocromático"></textarea>
-          </div>
+        <div class="service-form-intro">
+          <span class="identity-kicker">Materiais Gráficos</span>
+          <h2 class="identity-heading">Vamos organizar o material.</h2>
+          <p class="identity-copy">Indica onde vais usar a peça, o que precisa de aparecer e qualquer detalhe importante.</p>
         </div>
+        <div id="materiais-graficosQuestionsStatus" class="dynamic-questions-status" aria-live="polite">A carregar as perguntas...</div>
+        <div id="materiais-graficosQuestionsMount" class="dynamic-questions" aria-live="polite"></div>
         <button type="submit" class="btn-submit">SUBMETER</button>
-        </div>
-      </div>
+      </form>
     </section>
   </main>
 
@@ -854,37 +618,113 @@
       if (btn) switchForm(tipo, btn);
     })();
 
-    /* ─── PERGUNTAS DE IDENTIDADE VISUAL GERIDAS PELO PAINEL ADMIN ─── */
-    let identityQuestions = [];
+    /* ─── MODOS ESSENCIAL / COMPLETO ─────────────────────── */
+    const BRIEFING_MODE_COPY = {
+      basic: 'Essencial: responde apenas ao que é indispensável para começar.',
+      complete: 'Completo: responde também às perguntas adicionais para um briefing mais detalhado.'
+    };
 
-    async function loadIdentityQuestions() {
-      const mount = document.getElementById('identityQuestionsMount');
-      const status = document.getElementById('identityQuestionsStatus');
+    function modeLabel(mode) {
+      return mode === 'complete' ? 'Completo' : 'Essencial';
+    }
+
+    function setBriefingMode(form, mode) {
+      const selectedMode = mode === 'complete' ? 'complete' : 'basic';
+      form.dataset.briefingMode = selectedMode;
+      form.querySelectorAll('[data-briefing-mode-button]').forEach(button => {
+        const active = button.dataset.briefingModeButton === selectedMode;
+        button.classList.toggle('active', active);
+        button.setAttribute('aria-selected', String(active));
+      });
+      const hint = form.querySelector('[data-briefing-mode-hint]');
+      if (hint) hint.textContent = BRIEFING_MODE_COPY[selectedMode];
+
+      const config = BRIEFING_SERVICE_MOUNTS.find(item => item.form === form.id);
+      if (config && briefingQuestionsByService.has(config.service)) {
+        const questions = briefingQuestionsByService.get(config.service) || [];
+        const visibleCount = questions.filter(question => question.mode === 'all' || !question.mode || question.mode === selectedMode).length;
+        const mount = document.getElementById(config.mount);
+        const status = document.getElementById(config.status);
+        if (mount) mount.innerHTML = renderServiceQuestions(questions, selectedMode);
+        if (status) {
+          status.textContent = visibleCount ? '' : 'Ainda não existem perguntas para este modo neste serviço.';
+          status.style.display = visibleCount ? 'none' : 'block';
+        }
+      }
+    }
+
+    function setupBriefingModeControls() {
+      document.querySelectorAll('.briefing-form').forEach(form => {
+        if (form.querySelector('.briefing-mode-panel')) return;
+        const panel = document.createElement('div');
+        panel.className = 'briefing-mode-panel';
+        panel.innerHTML = `
+          <span class="briefing-mode-label">Nível do briefing</span>
+          <div class="briefing-mode-switch" role="tablist" aria-label="Escolher nível do briefing">
+            <button type="button" class="briefing-mode-btn active" data-briefing-mode-button="basic" role="tab" aria-selected="true">Essencial</button>
+            <button type="button" class="briefing-mode-btn" data-briefing-mode-button="complete" role="tab" aria-selected="false">Completo</button>
+          </div>
+          <p class="briefing-mode-hint" data-briefing-mode-hint>${BRIEFING_MODE_COPY.basic}</p>`;
+        const anchor = form.querySelector('.service-form-intro, .identity-intro');
+        if (anchor) anchor.insertAdjacentElement('afterend', panel);
+        panel.querySelectorAll('[data-briefing-mode-button]').forEach(button => {
+          button.addEventListener('click', () => setBriefingMode(form, button.dataset.briefingModeButton));
+        });
+        setBriefingMode(form, form.dataset.briefingMode || 'basic');
+      });
+    }
+
+    /* ─── PERGUNTAS DOS SERVIÇOS GERIDAS PELO PAINEL ADMIN ─── */
+    const briefingQuestionsByService = new Map();
+    const BRIEFING_SERVICE_MOUNTS = [
+      { service: 'branding', form: 'form-branding', mount: 'brandingQuestionsMount', status: 'brandingQuestionsStatus' },
+      { service: 'identidade-visual', form: 'form-identidade-visual', mount: 'identityQuestionsMount', status: 'identityQuestionsStatus' },
+      { service: 'social-media', form: 'form-social-media', mount: 'social-mediaQuestionsMount', status: 'social-mediaQuestionsStatus' },
+      { service: 'design-publicitario', form: 'form-flyer', mount: 'flyerQuestionsMount', status: 'flyerQuestionsStatus' },
+      { service: 'design-eventos', form: 'form-evento', mount: 'eventoQuestionsMount', status: 'eventoQuestionsStatus' },
+      { service: 'web-design', form: 'form-web', mount: 'webQuestionsMount', status: 'webQuestionsStatus' },
+      { service: 'materiais-graficos', form: 'form-materiais-graficos', mount: 'materiais-graficosQuestionsMount', status: 'materiais-graficosQuestionsStatus' },
+    ];
+
+    function questionOptions(question) {
+      return Array.isArray(question.options) ? question.options.map(option => {
+        if (typeof option === 'string') return { label: option, value: option };
+        return { label: option?.label || option?.value || '', value: option?.value || option?.label || '' };
+      }).filter(option => option.label) : [];
+    }
+
+    async function loadServiceQuestions(config) {
+      const mount = document.getElementById(config.mount);
+      const status = document.getElementById(config.status);
       if (!mount || !status || typeof supabaseClient === 'undefined') return;
 
       const { data, error } = await supabaseClient
         .from('briefing_questions')
-        .select('id, section_key, section_title, question_key, label, help_text, placeholder, input_type, options, required, mode, role, sort_order')
-        .eq('service_type', 'identidade-visual')
+        .select('id, service_type, section_key, section_title, question_key, label, help_text, placeholder, input_type, options, required, mode, role, sort_order')
+        .eq('service_type', config.service)
         .eq('is_active', true)
         .order('sort_order', { ascending: true });
 
       if (error) {
-        console.error('Erro ao carregar perguntas:', error);
+        console.error(`Erro ao carregar perguntas de ${config.service}:`, error);
         status.textContent = 'Não foi possível carregar as perguntas. Tenta novamente mais tarde.';
         status.classList.add('error');
         return;
       }
 
-      identityQuestions = data || [];
-      mount.innerHTML = renderIdentityQuestions(identityQuestions);
-      status.textContent = identityQuestions.length ? '' : 'Ainda não existem perguntas configuradas para este serviço.';
-      status.style.display = identityQuestions.length ? 'none' : 'block';
+      briefingQuestionsByService.set(config.service, data || []);
+      const form = document.getElementById(config.form);
+      const mode = form?.dataset.briefingMode || 'basic';
+      const visibleQuestions = (data || []).filter(question => question.mode === 'all' || !question.mode || question.mode === mode);
+      mount.innerHTML = renderServiceQuestions(data || [], mode);
+      status.textContent = visibleQuestions.length ? '' : 'Ainda não existem perguntas para este modo neste serviço.';
+      status.style.display = visibleQuestions.length ? 'none' : 'block';
     }
 
-    function renderIdentityQuestions(questions) {
+    function renderServiceQuestions(questions, mode = 'basic') {
       let currentSection = '';
-      return questions.map(question => {
+      const visibleQuestions = (questions || []).filter(question => question.mode === 'all' || !question.mode || question.mode === mode);
+      return visibleQuestions.map(question => {
         const section = question.section_key !== currentSection
           ? `<div class="form-section-title">${escapeHtml(question.section_title || 'Sobre o projeto')}</div>`
           : '';
@@ -897,7 +737,10 @@
         let field = '';
 
         if (question.input_type === 'file') {
-          field = `<input class="field-input" type="file" id="${id}" data-question="${escapeHtml(question.label)}" data-question-key="${escapeHtml(question.question_key)}" accept="image/jpeg,image/png,image/webp,image/gif,application/pdf" multiple${required}>`;
+          field = `<input class="field-input" type="file" id="${id}" data-question="${escapeHtml(question.label)}" data-question-key="${escapeHtml(question.question_key)}" data-input-type="file" accept="image/jpeg,image/png,image/webp,image/gif,application/pdf" multiple${required}>`;
+        } else if (question.input_type === 'choice_single' || question.input_type === 'choice_multiple') {
+          const multiple = question.input_type === 'choice_multiple';
+          field = `<div class="dynamic-choice-list" data-choice-wrapper="${escapeHtml(question.question_key)}">${questionOptions(question).map((option, index) => `<label class="dynamic-choice-option"><input type="${multiple ? 'checkbox' : 'radio'}" name="${id}" value="${escapeHtml(option.value)}" data-choice-key="${escapeHtml(question.question_key)}" data-question="${escapeHtml(question.label)}"${role}${required && index === 0 ? ' required' : ''}><span>${escapeHtml(option.label)}</span></label>`).join('')}</div>`;
         } else if (question.input_type === 'email') {
           field = `<input class="field-input" type="email" id="${id}" data-question="${escapeHtml(question.label)}" data-question-key="${escapeHtml(question.question_key)}" placeholder="${placeholder}"${role}${required}>`;
         } else if (question.input_type === 'text') {
@@ -910,11 +753,15 @@
       }).join('');
     }
 
-    loadIdentityQuestions();
+    function loadAllServiceQuestions() {
+      return Promise.all(BRIEFING_SERVICE_MOUNTS.map(loadServiceQuestions));
+    }
+
+    loadAllServiceQuestions().then(() => setupBriefingModeControls()).catch(error => console.error('Erro ao inicializar os modos do briefing:', error));
 
     /* ─── MAPEIA O NOME DO TIPO DE SERVIÇO PARA O SLUG USADO NA BASE DE DADOS ─── */
     const SERVICE_TYPE_SLUGS = {
-      'Branding': 'identidade-visual',
+      'Branding': 'branding',
       'Identidade Visual': 'identidade-visual',
       'Social Media': 'social-media',
       'Flyer': 'design-publicitario',
@@ -941,52 +788,49 @@
       document.getElementById('pdf-date').textContent = dateString;
       document.getElementById('pdf-type-title').textContent = `Briefing de Projeto — ${typeName}`;
 
-      let answersHTML = '';
       const formData = {};
 
-      // Captura todos os campos preenchíveis dentro do formulário submetido.
       // O formulário enviado é a fonte de verdade; não usamos os outros separadores.
       const activeForm = event.target;
-      const isIdentityComplete = activeForm.dataset.identityMode === 'complete';
-      const inputs = activeForm.querySelectorAll('input:not([type="hidden"]):not([type="file"]), select, textarea');
+      const selectedMode = activeForm.dataset.briefingMode === 'complete' ? 'complete' : 'basic';
+      const inputs = Array.from(activeForm.querySelectorAll('input:not([type="hidden"]):not([type="file"]), select, textarea'));
       const fileInputs = Array.from(activeForm.querySelectorAll('input[type="file"][data-question-key]'));
+      const handledChoiceGroups = new Set();
 
       let clientName = '';
       let clientContact = '';
+      formData['Nível do briefing'] = modeLabel(selectedMode);
+
+      const storeAnswer = (input, label, value) => {
+        const cleanValue = String(value || '').trim() || 'Não especificado';
+        formData[label] = cleanValue;
+        const role = input?.dataset?.role || '';
+        const lowerLabel = label.toLowerCase();
+        if (role === 'client_name' || lowerLabel.includes('cliente') || lowerLabel.includes('organização')) clientName = cleanValue;
+        if (role === 'client_contact' || lowerLabel.includes('contacto') || lowerLabel.includes('email')) clientContact = cleanValue;
+      };
 
       inputs.forEach(input => {
-        if (input.closest('.identity-complete-only') && !isIdentityComplete) return;
+        if (input.closest('.identity-complete-only') && selectedMode !== 'complete') return;
+
+        // Os tipos de escolha são agregados por pergunta para não guardar opções não selecionadas.
+        if (input.type === 'radio' || input.type === 'checkbox') {
+          if (handledChoiceGroups.has(input.name)) return;
+          handledChoiceGroups.add(input.name);
+          const group = inputs.filter(candidate => candidate.type === input.type && candidate.name === input.name);
+          const selected = group.filter(candidate => candidate.checked).map(candidate => candidate.value).filter(Boolean);
+          const label = (input.dataset.question || input.name || input.id || 'Escolha').replace(/\s*\*\s*$/, '').trim();
+          storeAnswer(group.find(candidate => candidate.checked) || input, label, selected.join(', '));
+          return;
+        }
+
         const labelElement = input.previousElementSibling;
-        const label = (input.dataset.question || labelElement?.textContent || input.name || input.id || 'Campo')
-          .replace(/\s*\*\s*$/, '')
-          .trim();
-        const value = String(input.value || '').trim() || 'Não especificado';
-
-        formData[label] = value;
-
-        // Armazenar nome e contacto principais para o fluxo de email
-        if (input.dataset.role === 'client_name' || label.toLowerCase().includes('cliente') || label.toLowerCase().includes('organização')) {
-          clientName = value;
-        }
-        if (input.dataset.role === 'client_contact' || label.toLowerCase().includes('contacto')) {
-          clientContact = value;
-        }
-
-        // Formatação das respostas no PDF editorial
-        answersHTML += `
-          <div style="margin-bottom: 25px; page-break-inside: avoid;">
-            <p style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: #888888; font-weight: 700; margin: 0 0 8px;">${escapeHtml(label)}</p>
-            <p style="font-size: 1rem; line-height: 1.6; color: #ffffff; margin: 0; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 4px; border-left: 3px solid #ffffff; white-space: pre-wrap;">${escapeHtml(value)}</p>
-          </div>
-        `;
-
-        // Montagem das respostas concluída acima (answersHTML + formData)
+        const label = (input.dataset.question || labelElement?.textContent || input.name || input.id || 'Campo').replace(/\s*\*\s*$/, '').trim();
+        storeAnswer(input, label, input.value);
       });
 
-      // As perguntas administráveis são respondidas por texto; os anexos são tratados acima.
-
-      // Reconstrói o PDF a partir do objeto final para incluir texto e escolhas.
-      answersHTML = Object.entries(formData).map(([label, value]) => `
+      // Reconstrói o PDF a partir do objeto final para incluir texto, escolhas e o modo selecionado.
+      let answersHTML = Object.entries(formData).map(([label, value]) => `
         <div style="margin-bottom: 25px; page-break-inside: avoid;">
           <p style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: #888888; font-weight: 700; margin: 0 0 8px;">${escapeHtml(label)}</p>
           <p style="font-size: 1rem; line-height: 1.6; color: #ffffff; margin: 0; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 4px; border-left: 3px solid #ffffff; white-space: pre-wrap;">${escapeHtml(value)}</p>
@@ -1042,6 +886,14 @@
         formData['Ficheiros de referência anexados'] = fileNames.join(', ');
         const updateData = await supabaseClient.from('briefings').update({ form_data: formData }).eq('id', briefingRow.id);
         if (updateData.error) throw new Error(`O briefing foi guardado, mas não foi possível atualizar os nomes dos anexos: ${updateData.error.message}`);
+
+        // Atualiza também a cópia local do PDF para refletir os anexos enviados.
+        document.getElementById('pdf-answers').innerHTML = Object.entries(formData).map(([label, value]) => `
+          <div style="margin-bottom: 25px; page-break-inside: avoid;">
+            <p style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: #888888; font-weight: 700; margin: 0 0 8px;">${escapeHtml(label)}</p>
+            <p style="font-size: 1rem; line-height: 1.6; color: #ffffff; margin: 0; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 4px; border-left: 3px solid #ffffff; white-space: pre-wrap;">${escapeHtml(value)}</p>
+          </div>
+        `).join('');
       }
 
       const { error: adminEmailError } = await supabaseClient.functions.invoke('notify-admin-briefing', {

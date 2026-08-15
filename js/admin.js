@@ -97,6 +97,7 @@
   const questionEditorTitle = document.getElementById('questionEditorTitle');
   const questionForm = document.getElementById('questionForm');
   const questionId = document.getElementById('questionId');
+  const questionKey = document.getElementById('questionKey');
   const questionSectionKey = document.getElementById('questionSectionKey');
   const questionSectionTitle = document.getElementById('questionSectionTitle');
   const questionLabel = document.getElementById('questionLabel');
@@ -1364,6 +1365,16 @@
     if (field) field.value = value ?? '';
   }
 
+  function makeQuestionKey(value) {
+    return String(value || '')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '_')
+      .replace(/^_+|_+$/g, '')
+      .slice(0, 80);
+  }
+
   function setQuestionChecked(field, value) {
     if (field) field.checked = Boolean(value);
   }
@@ -1569,6 +1580,7 @@
     questionEditorWrap.style.display = 'block';
     if (questionEditorTitle) questionEditorTitle.textContent = question ? 'Editar pergunta' : 'Nova pergunta';
     setQuestionValue(questionId, question?.id || '');
+    setQuestionValue(questionKey, question?.question_key || '');
     setQuestionValue(questionSectionKey, question?.section_key || 'projeto');
     setQuestionValue(questionSectionTitle, question?.section_title || 'Sobre o projeto');
     setQuestionValue(questionLabel, question?.label || '');
@@ -1611,7 +1623,7 @@
       service_type: questionServiceFilter?.value || 'identidade-visual',
       section_key: sectionKey,
       section_title: questionSectionTitle?.value.trim() || 'Sobre o projeto',
-      question_key: existing?.question_key || `${sectionKey}_${Date.now()}`,
+      question_key: makeQuestionKey(questionKey?.value.trim()) || existing?.question_key || makeQuestionKey(questionLabel?.value) || `${sectionKey}_${Date.now()}`,
       label: questionLabel?.value.trim(),
       help_text: questionHelp?.value.trim() || null,
       placeholder: questionPlaceholder?.value.trim() || 'Escreve a tua resposta',
