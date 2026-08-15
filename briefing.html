@@ -317,6 +317,20 @@
       z-index: 9999;
     }
 
+    /* O html2canvas precisa de um elemento dentro da área renderizável durante a captura. */
+    #pdf-template {
+      box-sizing: border-box;
+      width: 794px !important;
+      min-height: 1123px;
+    }
+
+    .success-message.error {
+      display: block;
+      color: #9f1d20;
+      background: rgba(159, 29, 32, 0.08);
+      border-color: rgba(159, 29, 32, 0.28);
+    }
+
     .success-message {
       display: none;
       padding: 1.5rem;
@@ -774,197 +788,263 @@
       return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test((value || '').trim());
     }
 
-    /* ─── PROCESSAMENTO DE DADOS, PDF E E-MAIL ─── */
-    async function handleBriefingSubmit(event, typeName) {
-      event.preventDefault();
+    const GMAIL_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzyW6gyaEJq6pmHvKgETRfIuS2ock0DGYbl6aP8gidxoWmSZQjf1TSyjKr6HyAfJY9QgA/exec';
+const GMAIL_WEB_APP_TOKEN = 'Lucas_Muindi_Gmail_2026_';
 
-      const submitBtn = event.target.querySelector('.btn-submit');
-      const originalBtnText = submitBtn.textContent;
-      submitBtn.disabled = true;
-      submitBtn.textContent = 'A gerar o PDF...';
+async function handleBriefingSubmit(event, typeName) {
+  event.preventDefault();
 
-      try {
-        const dateString = new Date().toLocaleDateString('pt-PT');
-      document.getElementById('pdf-date').textContent = dateString;
-      document.getElementById('pdf-type-title').textContent = `Briefing de Projeto — ${typeName}`;
+  const submitBtn = event.target.querySelector('.btn-submit');
+  const originalBtnText = submitBtn.textContent;
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'A gerar o PDF...';
 
-      const formData = {};
+  try {
+    const dateString = new Date().toLocaleDateString('pt-PT');
+    document.getElementById('pdf-date').textContent = dateString;
+    document.getElementById('pdf-type-title').textContent = `Briefing de Projeto — ${typeName}`;
 
-      // O formulário enviado é a fonte de verdade; não usamos os outros separadores.
-      const activeForm = event.target;
-      const selectedMode = activeForm.dataset.briefingMode === 'complete' ? 'complete' : 'basic';
-      const inputs = Array.from(activeForm.querySelectorAll('input:not([type="hidden"]):not([type="file"]), select, textarea'));
-      const fileInputs = Array.from(activeForm.querySelectorAll('input[type="file"][data-question-key]'));
-      const handledChoiceGroups = new Set();
+    const formData = {};
+    const activeForm = event.target;
+    const selectedMode = activeForm.dataset.briefingMode === 'complete' ? 'complete' : 'basic';
+    const inputs = Array.from(activeForm.querySelectorAll('input:not([type="hidden"]):not([type="file"]), select, textarea'));
+    const fileInputs = Array.from(activeForm.querySelectorAll('input[type="file"][data-question-key]'));
+    const handledChoiceGroups = new Set();
 
-      let clientName = '';
-      let clientContact = '';
-      formData['Nível do briefing'] = modeLabel(selectedMode);
+    let clientName = '';
+    let clientContact = '';
+    formData['Nível do briefing'] = modeLabel(selectedMode);
 
-      const storeAnswer = (input, label, value) => {
-        const cleanValue = String(value || '').trim() || 'Não especificado';
-        formData[label] = cleanValue;
-        const role = input?.dataset?.role || '';
-        const lowerLabel = label.toLowerCase();
-        if (role === 'client_name' || lowerLabel.includes('cliente') || lowerLabel.includes('organização')) clientName = cleanValue;
-        if (role === 'client_contact' || lowerLabel.includes('contacto') || lowerLabel.includes('email')) clientContact = cleanValue;
-      };
+    const storeAnswer = (input, label, value) => {
+      const cleanValue = String(value || '').trim() || 'Não especificado';
+      formData[label] = cleanValue;
+      const role = input?.dataset?.role || '';
+      const lowerLabel = label.toLowerCase();
+      if (role === 'client_name' || lowerLabel.includes('cliente') || lowerLabel.includes('organização')) clientName = cleanValue;
+      if (role === 'client_contact' || lowerLabel.includes('contacto') || lowerLabel.includes('email')) clientContact = cleanValue;
+    };
 
-      inputs.forEach(input => {
-        if (input.closest('.identity-complete-only') && selectedMode !== 'complete') return;
+    inputs.forEach(input => {
+      if (input.closest('.identity-complete-only') && selectedMode !== 'complete') return;
 
-        // Os tipos de escolha são agregados por pergunta para não guardar opções não selecionadas.
-        if (input.type === 'radio' || input.type === 'checkbox') {
-          if (handledChoiceGroups.has(input.name)) return;
-          handledChoiceGroups.add(input.name);
-          const group = inputs.filter(candidate => candidate.type === input.type && candidate.name === input.name);
-          const selected = group.filter(candidate => candidate.checked).map(candidate => candidate.value).filter(Boolean);
-          const label = (input.dataset.question || input.name || input.id || 'Escolha').replace(/\s*\*\s*$/, '').trim();
-          storeAnswer(group.find(candidate => candidate.checked) || input, label, selected.join(', '));
-          return;
-        }
-
-        const labelElement = input.previousElementSibling;
-        const label = (input.dataset.question || labelElement?.textContent || input.name || input.id || 'Campo').replace(/\s*\*\s*$/, '').trim();
-        storeAnswer(input, label, input.value);
-      });
-
-      // Reconstrói o PDF a partir do objeto final para incluir texto, escolhas e o modo selecionado.
-      let answersHTML = Object.entries(formData).map(([label, value]) => `
-        <div style="margin-bottom: 25px; page-break-inside: avoid;">
-          <p style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: #888888; font-weight: 700; margin: 0 0 8px;">${escapeHtml(label)}</p>
-          <p style="font-size: 1rem; line-height: 1.6; color: #ffffff; margin: 0; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 4px; border-left: 3px solid #ffffff; white-space: pre-wrap;">${escapeHtml(value)}</p>
-        </div>
-      `).join('');
-      document.getElementById('pdf-answers').innerHTML = answersHTML;
-
-      // ─── Grava o briefing na base de dados e aguarda os emails ───
-      const contactIsEmail = looksLikeEmail(clientContact);
-      const serviceType = SERVICE_TYPE_SLUGS[typeName] || 'branding';
-
-      const { data: briefingRow, error: briefingError } = await supabaseClient
-        .from('briefings')
-        .insert({
-          service_type: serviceType,
-          client_name: clientName || 'Não especificado',
-          client_contact: clientContact || 'Não especificado',
-          contact_is_email: contactIsEmail,
-          form_data: formData,
-          status: 'novo',
-        })
-        .select()
-        .single();
-
-      if (briefingError || !briefingRow) {
-        throw new Error(`Não foi possível guardar o briefing: ${briefingError?.message || 'resposta vazia'}`);
+      if (input.type === 'radio' || input.type === 'checkbox') {
+        if (handledChoiceGroups.has(input.name)) return;
+        handledChoiceGroups.add(input.name);
+        const group = inputs.filter(candidate => candidate.type === input.type && candidate.name === input.name);
+        const selected = group.filter(candidate => candidate.checked).map(candidate => candidate.value).filter(Boolean);
+        const label = (input.dataset.question || input.name || input.id || 'Escolha').replace(/\\s*\\*\\s*$/, '').trim();
+        storeAnswer(group.find(candidate => candidate.checked) || input, label, selected.join(', '));
+        return;
       }
 
-      // Guarda as referências anexadas no Storage privado e relaciona-as com o briefing.
-      const selectedFiles = fileInputs.flatMap(input => Array.from(input.files || []));
-      if (selectedFiles.length) {
-        const fileNames = [];
-        for (const file of selectedFiles) {
-          const safeName = file.name.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-zA-Z0-9._-]+/g, '_');
-          const storagePath = `${briefingRow.id}/${crypto.randomUUID()}-${safeName}`;
-          const upload = await supabaseClient.storage.from('briefing-references').upload(storagePath, file, {
-            cacheControl: '3600',
-            upsert: false,
-            contentType: file.type || 'application/octet-stream'
-          });
-          if (upload.error) throw new Error(`Não foi possível anexar ${file.name}: ${upload.error.message}`);
+      const labelElement = input.previousElementSibling;
+      const label = (input.dataset.question || labelElement?.textContent || input.name || input.id || 'Campo').replace(/\\s*\\*\\s*$/, '').trim();
+      storeAnswer(input, label, input.value);
+    });
 
-          const attachmentInsert = await supabaseClient.from('briefing_attachments').insert({
-            briefing_id: briefingRow.id,
-            file_name: file.name,
-            storage_path: storagePath,
-            mime_type: file.type || null,
-            file_size: file.size
-          });
-          if (attachmentInsert.error) throw new Error(`O ficheiro ${file.name} foi enviado, mas não ficou associado ao briefing.`);
-          fileNames.push(file.name);
-        }
-        formData['Ficheiros de referência anexados'] = fileNames.join(', ');
-        const updateData = await supabaseClient.from('briefings').update({ form_data: formData }).eq('id', briefingRow.id);
-        if (updateData.error) throw new Error(`O briefing foi guardado, mas não foi possível atualizar os nomes dos anexos: ${updateData.error.message}`);
+    const renderAnswers = () => Object.entries(formData).map(([label, value]) => `
+      <div style="margin-bottom:25px;page-break-inside:avoid;">
+        <p style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.1em;color:#888;font-weight:700;margin:0 0 8px;">${escapeHtml(label)}</p>
+        <p style="font-size:1rem;line-height:1.6;color:#fff;margin:0;background:rgba(255,255,255,0.05);padding:15px;border-radius:4px;border-left:3px solid #fff;white-space:pre-wrap;">${escapeHtml(value)}</p>
+      </div>
+    `).join('');
 
-        // Atualiza também a cópia local do PDF para refletir os anexos enviados.
-        document.getElementById('pdf-answers').innerHTML = Object.entries(formData).map(([label, value]) => `
-          <div style="margin-bottom: 25px; page-break-inside: avoid;">
-            <p style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: #888888; font-weight: 700; margin: 0 0 8px;">${escapeHtml(label)}</p>
-            <p style="font-size: 1rem; line-height: 1.6; color: #ffffff; margin: 0; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 4px; border-left: 3px solid #ffffff; white-space: pre-wrap;">${escapeHtml(value)}</p>
-          </div>
-        `).join('');
-      }
+    document.getElementById('pdf-answers').innerHTML = renderAnswers();
 
-      const { error: adminEmailError } = await supabaseClient.functions.invoke('notify-admin-briefing', {
-        body: { briefing_id: briefingRow.id }
-      });
-      if (adminEmailError) console.error('Erro no email para o administrador:', adminEmailError);
+    const contactIsEmail = looksLikeEmail(clientContact);
+    const serviceType = SERVICE_TYPE_SLUGS[typeName] || 'branding';
 
-      let clientEmailError = null;
-      if (contactIsEmail) {
-        const result = await supabaseClient.functions.invoke('send-welcome-pdf', {
-          body: { briefing_id: briefingRow.id }
+    const { data: briefingRow, error: briefingError } = await supabaseClient
+      .from('briefings')
+      .insert({
+        service_type: serviceType,
+        client_name: clientName || 'Não especificado',
+        client_contact: clientContact || 'Não especificado',
+        contact_is_email: contactIsEmail,
+        form_data: formData,
+        status: 'novo'
+      })
+      .select()
+      .single();
+
+    if (briefingError || !briefingRow) {
+      throw new Error(`Não foi possível guardar o briefing: ${briefingError?.message || 'resposta vazia'}`);
+    }
+
+    const selectedFiles = fileInputs.flatMap(input => Array.from(input.files || []));
+    const referenceLinks = [];
+
+    if (selectedFiles.length) {
+      const fileNames = [];
+
+      for (const file of selectedFiles) {
+        const safeName = file.name.normalize('NFD').replace(/[\\u0300-\\u036f]/g, '').replace(/[^a-zA-Z0-9._-]+/g, '_');
+        const storagePath = `${briefingRow.id}/${crypto.randomUUID()}-${safeName}`;
+        const upload = await supabaseClient.storage.from('briefing-references').upload(storagePath, file, {
+          cacheControl: '3600',
+          upsert: false,
+          contentType: file.type || 'application/octet-stream'
         });
-        clientEmailError = result.error;
-        if (clientEmailError) console.error('Erro no email para o cliente:', clientEmailError);
+
+        if (upload.error) throw new Error(`Não foi possível anexar ${file.name}: ${upload.error.message}`);
+
+        const attachmentInsert = await supabaseClient.from('briefing_attachments').insert({
+          briefing_id: briefingRow.id,
+          file_name: file.name,
+          storage_path: storagePath,
+          mime_type: file.type || null,
+          file_size: file.size
+        });
+
+        if (attachmentInsert.error) {
+          throw new Error(`O ficheiro ${file.name} foi enviado, mas não ficou associado ao briefing.`);
+        }
+
+        const signed = await supabaseClient.storage.from('briefing-references').createSignedUrl(storagePath, 60 * 60 * 24 * 7);
+        if (signed.data?.signedUrl) {
+          referenceLinks.push({ name: file.name, url: signed.data.signedUrl });
+        }
+        fileNames.push(file.name);
       }
 
-      // Definições de compilação do html2pdf
-      const element = document.getElementById('pdf-template');
-      const safeClientName = (clientName || 'Cliente').replace(/\s+/g, '_');
-
-      // Espera as fontes carregarem antes de medir/capturar — evita texto a
-      // mudar de tamanho/posição a meio da captura (uma das causas do PDF
-      // sair com aspeto incompleto ou desalinhado).
-      if (document.fonts && document.fonts.ready) {
-        await document.fonts.ready;
+      formData['Ficheiros de referência anexados'] = fileNames.join(', ');
+      const updateData = await supabaseClient.from('briefings').update({ form_data: formData }).eq('id', briefingRow.id);
+      if (updateData.error) {
+        throw new Error(`O briefing foi guardado, mas não foi possível atualizar os nomes dos anexos: ${updateData.error.message}`);
       }
+      document.getElementById('pdf-answers').innerHTML = renderAnswers();
+    }
 
-      // Mede a altura real do conteúdo e usa-a como tamanho exato da página do PDF.
-      // Isto evita a paginação automática do html2pdf, que corta imagens e texto
-      // ao meio sempre que o conteúdo é mais alto do que uma página A4.
-      const elementWidth = element.offsetWidth;
-      const elementHeight = element.scrollHeight;
+    const wrapper = document.getElementById('pdf-template-wrapper');
+    const element = document.getElementById('pdf-template');
+    const safeClientName = (clientName || 'Cliente').replace(/\\s+/g, '_');
+    const pdfFileName = `Briefing_${typeName.replace(/\\s+/g, '_')}_${safeClientName}.pdf`;
+    const previousWrapperStyle = {
+      position: wrapper.style.position,
+      left: wrapper.style.left,
+      top: wrapper.style.top,
+      zIndex: wrapper.style.zIndex
+    };
+
+    wrapper.style.position = 'absolute';
+    wrapper.style.left = '0';
+    wrapper.style.top = '0';
+    wrapper.style.zIndex = '9999';
+
+    let pdfBlob;
+    try {
+      if (document.fonts && document.fonts.ready) await document.fonts.ready;
+      await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
 
       const opt = {
-        margin: 0,
-        filename: `Briefing_${typeName.replace(/\s+/g, '_')}_${safeClientName}.pdf`,
-        image: { type: 'jpeg', quality: 1 },
+        margin: [10, 10, 10, 10],
+        filename: pdfFileName,
+        image: { type: 'jpeg', quality: 0.96 },
         html2canvas: {
           scale: 2,
           useCORS: true,
           letterRendering: true,
           backgroundColor: '#000000',
           logging: false,
-          windowWidth: elementWidth,
-          windowHeight: elementHeight
+          scrollX: 0,
+          scrollY: 0,
+          windowWidth: element.scrollWidth,
+          windowHeight: element.scrollHeight
         },
-        jsPDF: { unit: 'px', format: [elementWidth, elementHeight], orientation: 'portrait' },
-        pagebreak: { mode: ['avoid-all'] }
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        pagebreak: { mode: ['css', 'legacy'] }
       };
 
-      // Executa a compilação local do PDF (fica com uma cópia local do briefing).
-      // O documento oficial enviado por email é gerado no servidor a partir de form_data.
-      await html2pdf().from(element).set(opt).save();
+      pdfBlob = await html2pdf().set(opt).from(element).toPdf().outputPdf('blob');
 
-      const successEl = document.getElementById('successMessage');
-      const adminOk = !adminEmailError;
-      const clientOk = !contactIsEmail || !clientEmailError;
-      successEl.textContent = adminOk && clientOk
-        ? 'Briefing enviado com sucesso! O PDF foi descarregado e o briefing completo foi enviado por email.'
-        : 'Briefing guardado e PDF descarregado, mas pelo menos um email não foi enviado. Verifica o painel e o console para mais detalhes.';
-      successEl.style.display = 'block';
-      successEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      const downloadUrl = URL.createObjectURL(pdfBlob);
+      const downloadLink = document.createElement('a');
+      downloadLink.href = downloadUrl;
+      downloadLink.download = pdfFileName;
+      document.body.appendChild(downloadLink);
+      downloadLink.click();
+      downloadLink.remove();
+      setTimeout(() => URL.revokeObjectURL(downloadUrl), 2000);
+    } finally {
+      wrapper.style.position = previousWrapperStyle.position;
+      wrapper.style.left = previousWrapperStyle.left;
+      wrapper.style.top = previousWrapperStyle.top;
+      wrapper.style.zIndex = previousWrapperStyle.zIndex;
+    }
 
-        submitBtn.disabled = false;
-        submitBtn.textContent = originalBtnText;
-      } catch (error) {
-        console.error('Erro ao processar o briefing:', error);
-        alert(error?.message || 'Ocorreu um erro ao processar o briefing. Por favor tente novamente.');
-        submitBtn.disabled = false;
-        submitBtn.textContent = originalBtnText;
+    if (!pdfBlob) throw new Error('Não foi possível gerar o PDF.');
+
+    const pdfBase64 = await blobToBase64(pdfBlob);
+    const payload = {
+      token: GMAIL_WEB_APP_TOKEN,
+      serviceName: typeName,
+      modeName: modeLabel(selectedMode),
+      clientName: clientName || 'Não especificado',
+      clientEmail: contactIsEmail ? clientContact : '',
+      formData,
+      referenceLinks,
+      pdfFileName,
+      pdfBase64
+    };
+
+    if (!GMAIL_WEB_APP_URL || GMAIL_WEB_APP_URL.includes('COLE_AQUI')) {
+      throw new Error('Ainda falta configurar o URL do Google Apps Script no briefing.html.');
+    }
+
+    // text/plain evita o preflight CORS; o Apps Script lê o JSON em e.postData.contents.
+    await fetch(GMAIL_WEB_APP_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(payload)
+    });
+
+    const successEl = document.getElementById('successMessage');
+    successEl.classList.remove('error');
+    successEl.textContent = contactIsEmail
+      ? 'Briefing enviado. Receberás o email e o cliente receberá o PDF no endereço indicado.'
+      : 'Briefing enviado para o teu email. O cliente não forneceu um email válido.';
+    successEl.style.display = 'block';
+    successEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+    submitBtn.disabled = false;
+    submitBtn.textContent = originalBtnText;
+  } catch (error) {
+    console.error('Erro ao processar o briefing:', error);
+    alert(error?.message || 'Ocorreu um erro ao processar o briefing. Por favor tenta novamente.');
+    submitBtn.disabled = false;
+    submitBtn.textContent = originalBtnText;
+  }
+}
+
+async function blobToBase64(blob) {
+  const buffer = await blob.arrayBuffer();
+  const bytes = new Uint8Array(buffer);
+  let binary = '';
+  const chunkSize = 0x8000;
+  for (let index = 0; index < bytes.length; index += chunkSize) {
+    binary += String.fromCharCode(...bytes.subarray(index, index + chunkSize));
+  }
+  return btoa(binary);
+}
+
+    async function describeFunctionError(error) {
+      const response = error?.context;
+      if (response && typeof response.clone === 'function') {
+        try {
+          const payload = await response.clone().json();
+          const detail = payload?.details || payload?.error || payload?.message;
+          if (detail) return String(detail).replace(/\s+/g, ' ').slice(0, 260);
+        } catch (_) {
+          try {
+            const text = await response.clone().text();
+            if (text) return text.replace(/\s+/g, ' ').slice(0, 260);
+          } catch (_) {
+            // Mantém a mensagem genérica do erro abaixo.
+          }
+        }
       }
+      return error?.message || 'erro desconhecido';
     }
 
     function escapeHtml(value) {
