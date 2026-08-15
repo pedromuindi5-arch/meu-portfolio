@@ -242,11 +242,22 @@ async function updateBriefingStatus(id, status) {
 ═══════════════════════════ */
 
 async function getBriefingQuestions(serviceType = 'identidade-visual', includeInactive = true) {
-  let query = supabaseClient.from('briefing_questions').select('*').eq('service_type', serviceType).order('sort_order', { ascending: true });
+  const normalizedServiceType = String(serviceType || '').trim();
+  if (!normalizedServiceType) throw new Error('Serviço de briefing inválido.');
+
+  let query = supabaseClient
+    .from('briefing_questions')
+    .select('*')
+    .eq('service_type', normalizedServiceType)
+    .order('sort_order', { ascending: true });
   if (!includeInactive) query = query.eq('is_active', true);
+
   const { data, error } = await query;
-  if (error) { console.error('Erro ao carregar perguntas:', error); return []; }
-  return data || [];
+  if (error) {
+    console.error(`Erro ao carregar perguntas de ${normalizedServiceType}:`, error);
+    throw error;
+  }
+  return Array.isArray(data) ? data : [];
 }
 
 async function createBriefingQuestion(payload) {

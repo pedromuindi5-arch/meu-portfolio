@@ -1136,6 +1136,9 @@ input, select, textarea, button { font-family: inherit; font-size: inherit; }
 .question-check input { accent-color:#111; }
 .questions-editor-actions { justify-content:flex-end; gap:.6rem; margin-top:1.2rem; padding-top:1rem; border-top:1px solid var(--border); }
 .questions-empty { padding:2rem 1rem; text-align:center; background:#fff; border:1px dashed var(--border); border-radius:18px; color:var(--text-muted); font-size:.85rem; }
+.questions-empty.questions-error { border-color:#d8a2a2; background:#fffafa; color:#8e3f3f; line-height:1.65; }
+.questions-empty.questions-error small { display:inline-block; max-width:620px; margin-top:.35rem; color:#a05a5a; overflow-wrap:anywhere; }
+.questions-empty.questions-error .question-action { margin-top:.7rem; border-color:#c98888; color:#8e3f3f; }
 @media (max-width: 1000px) { .questions-preview { width:260px; } }
 @media (max-width: 760px) { .questions-workspace-head, .questions-workspace-grid { display:block; } .questions-add-main { margin-top:1rem; } .questions-preview { width:auto; position:static; margin-top:1rem; } .questions-editor-grid { grid-template-columns:1fr; } .questions-editor-grid .full { grid-column:auto; } .questions-search { margin-left:0; max-width:none; flex:1; } .question-card { grid-template-columns:18px 1fr; } .question-card-actions { grid-column:2; justify-content:flex-start; } }
 

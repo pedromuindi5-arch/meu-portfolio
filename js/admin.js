@@ -149,16 +149,39 @@
      AUTH (Supabase Auth)
   ══════════════════════════════════════════════════════ */
   let isPanelOpen = false;
+  const ADMIN_STATE_KEY = 'lucas-muindi-admin-state-v2';
+
+  function readAdminState() {
+    try {
+      const raw = window.localStorage.getItem(ADMIN_STATE_KEY);
+      const parsed = raw ? JSON.parse(raw) : {};
+      return parsed && typeof parsed === 'object' ? parsed : {};
+    } catch (error) {
+      console.warn('Não foi possível ler o estado guardado do painel:', error);
+      return {};
+    }
+  }
+
+  function writeAdminState(patch = {}) {
+    try {
+      window.localStorage.setItem(ADMIN_STATE_KEY, JSON.stringify({ ...readAdminState(), ...patch }));
+    } catch (error) {
+      console.warn('Não foi possível guardar o estado do painel:', error);
+    }
+  }
+
+  function getInitialAdminView() {
+    const savedView = readAdminState().view;
+    return savedView && Object.prototype.hasOwnProperty.call(views, savedView) ? savedView : 'dashboard';
+  }
 
   function authorize() {
     loginScreen.style.display = 'none';
     adminPanel.style.display  = 'flex';
     if (!isPanelOpen) {
-      // Só reinicia para o Dashboard na transição real de "sem sessão" para "com sessão"
-      // (login inicial). Reconfirmações de sessão (troca de aba, refresh de token,
-      // voltar de um seletor de ficheiros) NÃO devem reiniciar a vista atual.
+      // Recupera a última vista depois de um refresh, em vez de forçar o Dashboard.
       isPanelOpen = true;
-      showView('dashboard');
+      showView(getInitialAdminView());
     }
   }
 
@@ -221,8 +244,10 @@
   };
 
   async function showView(viewName) {
+    if (!Object.prototype.hasOwnProperty.call(views, viewName)) viewName = 'dashboard';
+    writeAdminState({ view: viewName });
     Object.entries(views).forEach(([name, el]) => {
-      el.style.display = name === viewName ? 'block' : 'none';
+      if (el) el.style.display = name === viewName ? 'block' : 'none';
     });
     sidebarLinks.forEach(link => {
       link.classList.toggle('active', link.dataset.view === viewName);
@@ -243,6 +268,10 @@
     }
     if (viewName === 'questions') {
       questionEditorWrap.style.display = 'none';
+      const savedState = readAdminState();
+      if (questionServiceFilter && QUESTION_SERVICE_LABELS[savedState.questionService]) {
+        questionServiceFilter.value = savedState.questionService;
+      }
       await renderQuestionsTable();
     }
   }
@@ -1328,6 +1357,7 @@
      PERGUNTAS EDITÁVEIS DO BRIEFING — WORKSPACE VISUAL
   ══════════════════════════════════════════════════════ */
   let questionsCache = [];
+  let questionsRequestToken = 0;
 
   const QUESTION_SERVICE_LABELS = {
     branding: 'Branding',
@@ -1402,18 +1432,42 @@
         <small>${value === current ? `${questionsCache.length} perguntas` : 'abrir'}</small>
       </button>`).join('');
     questionServicePicker.querySelectorAll('[data-service]').forEach(button => {
-      button.addEventListener('click', () => {
-        questionServiceFilter.value = button.dataset.service;
-        closeQuestionForm();
-        renderQuestionsTable();
-      });
+      button.addEventListener('click', () => selectQuestionService(button.dataset.service));
     });
+  }
+
+  async function selectQuestionService(serviceType) {
+    if (!QUESTION_SERVICE_LABELS[serviceType]) return;
+    if (questionServiceFilter) questionServiceFilter.value = serviceType;
+    writeAdminState({ questionService: serviceType, view: 'questions' });
+    closeQuestionForm();
+    await renderQuestionsTable();
   }
 
   async function renderQuestionsTable() {
     ensureQuestionServiceOptions();
     const serviceType = questionServiceFilter?.value || 'identidade-visual';
-    questionsCache = await getBriefingQuestions(serviceType, true);
+    const requestToken = ++questionsRequestToken;
+    writeAdminState({ view: 'questions', questionService: serviceType });
+    if (questionsTableBody) questionsTableBody.innerHTML = '<div class="questions-empty">A carregar perguntas…</div>';
+    if (questionCount) questionCount.textContent = 'A carregar…';
+
+    try {
+      const loadedQuestions = await getBriefingQuestions(serviceType, true);
+      if (requestToken !== questionsRequestToken) return;
+      questionsCache = Array.isArray(loadedQuestions) ? loadedQuestions : [];
+    } catch (error) {
+      if (requestToken !== questionsRequestToken) return;
+      questionsCache = [];
+      if (questionCount) questionCount.textContent = 'Erro ao carregar';
+      if (questionsTableBody) {
+        questionsTableBody.innerHTML = `<div class="questions-empty questions-error">Não foi possível carregar as perguntas deste serviço.<br><small>${escapeHtmlAdmin(error?.message || 'Verifica a ligação ao Supabase e tenta novamente.')}</small><br><button type="button" class="question-action" id="retryQuestionsBtn">Tentar novamente</button></div>`;
+        document.getElementById('retryQuestionsBtn')?.addEventListener('click', () => renderQuestionsTable());
+      }
+      showToast(`Erro ao carregar perguntas: ${error?.message || 'tenta novamente.'}`, true);
+      return;
+    }
+
     const list = visibleQuestions().sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
     if (!questionsTableBody) return;
     questionsTableBody.innerHTML = '';
@@ -1610,7 +1664,7 @@
   addQuestionBtn?.addEventListener('click', () => openQuestionForm());
   cancelQuestionForm?.addEventListener('click', closeQuestionForm);
   if (cancelQuestionFormBottom) cancelQuestionFormBottom.addEventListener('click', closeQuestionForm);
-  questionServiceFilter?.addEventListener('change', () => { closeQuestionForm(); renderQuestionsTable(); });
+  questionServiceFilter?.addEventListener('change', () => selectQuestionService(questionServiceFilter.value));
   if (questionSearch) questionSearch.addEventListener('input', renderQuestionsTable);
   if (questionInputType) questionInputType.addEventListener('change', syncQuestionOptionsVisibility);
   [questionLabel, questionHelp, questionPlaceholder, questionOptions].forEach(field => field?.addEventListener('input', () => renderQuestionPreview()));
