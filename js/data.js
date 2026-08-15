@@ -238,6 +238,45 @@ async function updateBriefingStatus(id, status) {
 }
 
 /* ═══════════════════════════
+   BRIEFING QUESTIONS + ATTACHMENTS
+═══════════════════════════ */
+
+async function getBriefingQuestions(serviceType = 'identidade-visual', includeInactive = true) {
+  let query = supabaseClient.from('briefing_questions').select('*').eq('service_type', serviceType).order('sort_order', { ascending: true });
+  if (!includeInactive) query = query.eq('is_active', true);
+  const { data, error } = await query;
+  if (error) { console.error('Erro ao carregar perguntas:', error); return []; }
+  return data || [];
+}
+
+async function createBriefingQuestion(payload) {
+  const { data, error } = await supabaseClient.from('briefing_questions').insert(payload).select().single();
+  if (error) throw error;
+  return data;
+}
+
+async function updateBriefingQuestion(id, payload) {
+  const { data, error } = await supabaseClient.from('briefing_questions').update(payload).eq('id', id).select().single();
+  if (error) throw error;
+  return data;
+}
+
+async function deleteBriefingQuestion(id) {
+  const { error } = await supabaseClient.from('briefing_questions').delete().eq('id', id);
+  if (error) throw error;
+}
+
+async function getBriefingAttachments(briefingId) {
+  const { data, error } = await supabaseClient.from('briefing_attachments').select('*').eq('briefing_id', briefingId).order('created_at', { ascending: true });
+  if (error) { console.error('Erro ao carregar anexos:', error); return []; }
+  const attachments = data || [];
+  return Promise.all(attachments.map(async attachment => {
+    const { data: signed } = await supabaseClient.storage.from('briefing-references').createSignedUrl(attachment.storage_path, 3600);
+    return { ...attachment, signed_url: signed?.signedUrl || null };
+  }));
+}
+
+/* ═══════════════════════════
    SERVICE DOCUMENTS (conteúdo dos PDFs de boas-vindas)
 ═══════════════════════════ */
 

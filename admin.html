@@ -65,6 +65,10 @@
           <span class="sidebar-icon">✉</span>
           Briefings
         </button>
+        <button class="sidebar-link" data-view="questions" id="navQuestions">
+          <span class="sidebar-icon">?</span>
+          Perguntas do Briefing
+        </button>
       </nav>
 
       <div class="sidebar-footer">
@@ -387,6 +391,53 @@
         </div>
       </div>
 
+      <!-- ═══════ VIEW: PERGUNTAS DO BRIEFING ═══════ -->
+      <div id="viewQuestions" class="admin-view" style="display:none;">
+        <div class="view-toolbar">
+          <select id="questionServiceFilter" class="select-input">
+            <option value="identidade-visual">Identidade Visual</option>
+          </select>
+          <button type="button" class="btn-admin-primary" id="addQuestionBtn">+ Adicionar pergunta</button>
+        </div>
+        <div class="projects-table-wrap">
+          <table class="projects-table" id="questionsTable">
+            <thead>
+              <tr>
+                <th>Ordem</th>
+                <th>Pergunta</th>
+                <th>Secção</th>
+                <th>Tipo</th>
+                <th>Obrigatória</th>
+                <th>Estado</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="questionsTableBody"></tbody>
+          </table>
+        </div>
+        <div id="questionEditorWrap" class="form-panel" style="display:none; margin-top:1.5rem;">
+          <div class="form-panel-header">
+            <h3 id="questionEditorTitle">Adicionar pergunta</h3>
+          </div>
+          <form id="questionForm" class="admin-form">
+            <input type="hidden" id="questionId">
+            <div class="form-grid two-cols">
+              <div class="form-field"><label for="questionSectionKey">Chave da secção</label><input class="text-input" id="questionSectionKey" required placeholder="projeto"></div>
+              <div class="form-field"><label for="questionSectionTitle">Título da secção</label><input class="text-input" id="questionSectionTitle" required placeholder="Sobre o projeto"></div>
+              <div class="form-field full"><label for="questionLabel">Pergunta apresentada ao cliente</label><textarea class="textarea-input" id="questionLabel" required placeholder="Escreve a pergunta de forma simples"></textarea></div>
+              <div class="form-field full"><label for="questionHelp">Ajuda opcional</label><textarea class="textarea-input" id="questionHelp" placeholder="Exemplo ou explicação curta, se necessário"></textarea></div>
+              <div class="form-field"><label for="questionPlaceholder">Texto dentro do campo</label><input class="text-input" id="questionPlaceholder" placeholder="Escreve a tua resposta"></div>
+              <div class="form-field"><label for="questionInputType">Tipo de resposta</label><select class="select-input" id="questionInputType"><option value="textarea">Resposta longa</option><option value="text">Resposta curta</option><option value="email">Email</option><option value="file">Anexo</option></select></div>
+              <div class="form-field"><label for="questionSortOrder">Ordem</label><input class="text-input" id="questionSortOrder" type="number" min="1" value="1" required></div>
+              <div class="form-field"><label for="questionMode">Quando mostrar</label><select class="select-input" id="questionMode"><option value="all">Sempre mostrar</option><option value="basic">Essencial</option><option value="complete">Completo</option></select></div>
+              <div class="form-field"><label><input type="checkbox" id="questionRequired"> Resposta obrigatória</label></div>
+              <div class="form-field"><label for="questionRole">Uso interno</label><select class="select-input" id="questionRole"><option value="none">Resposta normal</option><option value="client_name">Nome do cliente</option><option value="client_contact">Contacto/email do cliente</option></select></div>
+            </div>
+            <div class="form-actions"><button type="button" class="btn-admin-ghost" id="cancelQuestionForm">Cancelar</button><button type="submit" class="btn-admin-primary">Guardar pergunta</button></div>
+          </form>
+        </div>
+      </div>
+
     </main>
   </div>
 
@@ -407,6 +458,7 @@
     <div class="dialog" style="max-width:560px; max-height:80vh; overflow-y:auto;">
       <h3 class="dialog-title" id="briefingDetailsTitle">Detalhes do Briefing</h3>
       <div id="briefingDetailsBody" style="text-align:left; font-size:0.85rem; line-height:1.6;"></div>
+      <div id="briefingAttachmentList" style="margin-top:1rem;text-align:left;"></div>
       <div class="dialog-actions">
         <button class="btn-admin-ghost" id="briefingDetailsClose">Fechar</button>
       </div>
