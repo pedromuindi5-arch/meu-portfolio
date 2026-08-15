@@ -354,6 +354,98 @@
         transform: translateY(0);
       }
     }
+
+    /* Modal de confirmação após a submissão */
+    .submission-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 20000;
+      display: grid;
+      place-items: center;
+      padding: 1.25rem;
+      background: rgba(0, 0, 0, .72);
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transition: opacity .28s ease, visibility .28s ease;
+    }
+
+    .submission-modal.is-open {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+    }
+
+    .submission-modal-card {
+      width: min(100%, 460px);
+      padding: clamp(2rem, 6vw, 3.5rem) clamp(1.5rem, 5vw, 3rem);
+      border-radius: 40px;
+      background: #ffffff;
+      color: #111111;
+      text-align: center;
+      box-shadow: 0 28px 90px rgba(0, 0, 0, .38);
+      transform: translateY(18px) scale(.96);
+      transition: transform .38s cubic-bezier(.2, .8, .2, 1);
+    }
+
+    .submission-modal.is-open .submission-modal-card {
+      transform: translateY(0) scale(1);
+    }
+
+    .submission-modal-mark {
+      display: grid;
+      place-items: center;
+      width: 68px;
+      height: 68px;
+      margin: 0 auto 1.35rem;
+      border-radius: 50%;
+      background: #111111;
+      color: #ffffff;
+      font-size: 1.65rem;
+      animation: submissionPulse 1.8s ease-in-out infinite;
+    }
+
+    .submission-modal-card h2 {
+      margin: 0 0 .75rem;
+      color: #111111;
+      font-size: clamp(1.35rem, 4vw, 1.8rem);
+      line-height: 1.15;
+    }
+
+    .submission-modal-card p {
+      margin: 0 auto 1.6rem;
+      max-width: 34ch;
+      color: #626262;
+      font-size: .92rem;
+      line-height: 1.65;
+    }
+
+    .submission-modal-close {
+      min-width: 150px;
+      border: 1px solid #111111;
+      border-radius: 999px;
+      padding: .78rem 1.2rem;
+      background: #111111;
+      color: #ffffff;
+      cursor: pointer;
+      font: inherit;
+      font-size: .78rem;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      transition: background .2s ease, color .2s ease, transform .2s ease;
+    }
+
+    .submission-modal-close:hover {
+      background: #ffffff;
+      color: #111111;
+      transform: translateY(-1px);
+    }
+
+    @keyframes submissionPulse {
+      0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(17, 17, 17, .18); }
+      50% { transform: scale(1.06); box-shadow: 0 0 0 12px rgba(17, 17, 17, 0); }
+    }
   </style>
 </head>
 
@@ -424,10 +516,7 @@
 
         <div class="briefing-container">
 
-      <div class="success-message" id="successMessage">
-        Briefing enviado com sucesso! Uma cópia em PDF foi descarregada para o teu dispositivo, e o Lucas já foi
-        notificado.
-      </div>
+      <div class="success-message" id="successMessage" aria-live="polite"></div>
 
       <!-- FORMULÁRIO 1: BRANDING (MARCA) -->
       <form id="form-branding" class="briefing-form active" data-briefing-mode="basic" onsubmit="handleBriefingSubmit(event, 'Branding')">
@@ -517,36 +606,43 @@
     </section>
   </main>
 
+  <!-- MODAL DE CONFIRMAÇÃO PARA O CLIENTE -->
+  <div class="submission-modal" id="submissionModal" role="dialog" aria-modal="true" aria-labelledby="submissionModalTitle" aria-hidden="true">
+    <div class="submission-modal-card">
+      <div class="submission-modal-mark" aria-hidden="true">✓</div>
+      <h2 id="submissionModalTitle">Respostas submetidas</h2>
+      <p id="submissionModalText">As tuas respostas foram submetidas com sucesso. Obrigado por partilhares a tua visão.</p>
+      <button type="button" class="submission-modal-close" id="submissionModalClose">Fechar</button>
+    </div>
+  </div>
+
   <!-- TEMPLATE EDITORIAL EXCLUSIVO DO PDF GERADO -->
   <div id="pdf-template-wrapper">
     <div id="pdf-template"
-      style="width: 800px; padding: 60px; font-family: 'Inter', sans-serif; color: #ffffff; background: #000000; position: relative;">
-      <!-- Degradê de Fundo do PDF -->
-      <div style="position: absolute; inset: 0; background-color: #000000; z-index: -1;"></div>
-      <div
-        style="position: absolute; inset: 0; background-image: url('assets/backgroundsession.png'); background-size: cover; background-position: center; opacity: 0.6; z-index: 0;">
-      </div>
+      style="width: 794px; box-sizing: border-box; padding: 48px; font-family: 'Inter', Arial, sans-serif; color: #171717; background: #ffffff; position: relative;">
+      <!-- Fundo claro para garantir leitura e impressão do PDF -->
+      <div style="position: absolute; inset: 0; background: #ffffff; z-index: 0;"></div>
 
       <div style="position: relative; z-index: 1;">
         <!-- Cabeçalho Estilizado -->
         <div
-          style="border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 30px; margin-bottom: 40px; display: flex; justify-content: space-between; align-items: flex-end;">
+          style="border-bottom: 1px solid #e5e5e5; padding-bottom: 24px; margin-bottom: 34px; display: flex; justify-content: space-between; align-items: flex-end;">
           <div>
             <h1
-              style="font-family: 'DM Serif Display', serif; font-size: 3rem; margin: 0 0 5px; color: #ffffff; letter-spacing: -0.02em;">
+              style="font-family: Georgia, 'Times New Roman', serif; font-size: 2.5rem; margin: 0 0 5px; color: #171717; letter-spacing: -0.02em;">
               Lucas Muindi</h1>
-            <p style="text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.15em; color: #aaaaaa; margin: 0;">
+            <p style="text-transform: uppercase; font-size: 0.72rem; letter-spacing: 0.15em; color: #707070; margin: 0;">
               Designer Gráfico<sup>®</sup></p>
           </div>
           <div style="text-align: right;">
-            <p style="font-size: 0.9rem; font-weight: 600; color: #ffffff; margin: 0;" id="pdf-date"></p>
-            <p style="font-size: 0.7rem; color: #888888; margin: 3px 0 0;">BRIEFING DE PROJETO OFICIAL</p>
+            <p style="font-size: 0.85rem; font-weight: 700; color: #171717; margin: 0;" id="pdf-date"></p>
+            <p style="font-size: 0.68rem; color: #777777; margin: 3px 0 0;">BRIEFING DE PROJETO OFICIAL</p>
           </div>
         </div>
 
         <!-- Título do Documento -->
         <h2
-          style="font-family: 'DM Serif Display', serif; font-size: 2rem; margin-top: 0; margin-bottom: 40px; color: #ffffff; font-style: italic; font-weight: 400;"
+          style="font-family: Georgia, 'Times New Roman', serif; font-size: 1.9rem; margin-top: 0; margin-bottom: 30px; color: #171717; font-style: italic; font-weight: 400;"
           id="pdf-type-title"></h2>
 
         <!-- Respostas do Questionário -->
@@ -556,8 +652,8 @@
 
         <!-- Rodapé do PDF -->
         <div
-          style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 30px; margin-top: 60px; text-align: center; color: #aaaaaa; font-size: 0.8rem;">
-          <p style="margin: 0; font-weight: 600; color: #ffffff;">Design que comunica, conecta e converte.</p>
+          style="border-top: 1px solid #e5e5e5; padding-top: 24px; margin-top: 42px; text-align: center; color: #707070; font-size: 0.72rem;">
+          <p style="margin: 0; font-weight: 700; color: #171717;">Design que comunica, conecta e converte.</p>
           <p style="margin: 8px 0 0;">pedromuindi5@gmail.com • +244 923 224 383 • www.lucasmuindi.vercel.app</p>
         </div>
       </div>
@@ -578,6 +674,37 @@
     const mobileOverlay = document.getElementById('mobileOverlay');
     const mobileClose = document.getElementById('mobileClose');
     const mobileLinks = document.querySelectorAll('[data-mobile-link]');
+    const submissionModal = document.getElementById('submissionModal');
+    const submissionModalClose = document.getElementById('submissionModalClose');
+    const submissionModalText = document.getElementById('submissionModalText');
+
+    function openSubmissionModal(clientEmailWasProvided) {
+      if (!submissionModal) return;
+      if (submissionModalText) {
+        submissionModalText.textContent = clientEmailWasProvided
+          ? 'As tuas respostas foram submetidas com sucesso. Receberás uma confirmação no email indicado.'
+          : 'As tuas respostas foram submetidas com sucesso. Obrigado por partilhares a tua visão.';
+      }
+      submissionModal.classList.add('is-open');
+      submissionModal.setAttribute('aria-hidden', 'false');
+      document.body.style.overflow = 'hidden';
+      submissionModalClose?.focus();
+    }
+
+    function closeSubmissionModal() {
+      if (!submissionModal) return;
+      submissionModal.classList.remove('is-open');
+      submissionModal.setAttribute('aria-hidden', 'true');
+      document.body.style.overflow = '';
+    }
+
+    submissionModalClose?.addEventListener('click', closeSubmissionModal);
+    submissionModal?.addEventListener('click', (event) => {
+      if (event.target === submissionModal) closeSubmissionModal();
+    });
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && submissionModal?.classList.contains('is-open')) closeSubmissionModal();
+    });
 
     /* ─── NAVBAR SCROLL ────────────────────────────────── */
     const onScroll = () => {
@@ -845,7 +972,7 @@ async function handleBriefingSubmit(event, typeName) {
     const renderAnswers = () => Object.entries(formData).map(([label, value]) => `
       <div style="margin-bottom:25px;page-break-inside:avoid;">
         <p style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.1em;color:#888;font-weight:700;margin:0 0 8px;">${escapeHtml(label)}</p>
-        <p style="font-size:1rem;line-height:1.6;color:#fff;margin:0;background:rgba(255,255,255,0.05);padding:15px;border-radius:4px;border-left:3px solid #fff;white-space:pre-wrap;">${escapeHtml(value)}</p>
+        <p style="font-size:0.94rem;line-height:1.65;color:#171717;margin:0;background:#f7f7f7;padding:16px 18px;border:1px solid #e5e5e5;border-left:4px solid #171717;border-radius:16px;white-space:pre-wrap;">${escapeHtml(value)}</p>
       </div>
     `).join('');
 
@@ -944,7 +1071,7 @@ async function handleBriefingSubmit(event, typeName) {
           scale: 2,
           useCORS: true,
           letterRendering: true,
-          backgroundColor: '#000000',
+          backgroundColor: '#ffffff',
           logging: false,
           scrollX: 0,
           scrollY: 0,
@@ -957,14 +1084,8 @@ async function handleBriefingSubmit(event, typeName) {
 
       pdfBlob = await html2pdf().set(opt).from(element).toPdf().outputPdf('blob');
 
-      const downloadUrl = URL.createObjectURL(pdfBlob);
-      const downloadLink = document.createElement('a');
-      downloadLink.href = downloadUrl;
-      downloadLink.download = pdfFileName;
-      document.body.appendChild(downloadLink);
-      downloadLink.click();
-      downloadLink.remove();
-      setTimeout(() => URL.revokeObjectURL(downloadUrl), 2000);
+              // O PDF é enviado como anexo ao administrador; não é descarregado pelo cliente.
+
     } finally {
       wrapper.style.position = previousWrapperStyle.position;
       wrapper.style.left = previousWrapperStyle.left;
@@ -1001,11 +1122,9 @@ async function handleBriefingSubmit(event, typeName) {
 
     const successEl = document.getElementById('successMessage');
     successEl.classList.remove('error');
-    successEl.textContent = contactIsEmail
-      ? 'Briefing enviado. Receberás o email e o cliente receberá o PDF no endereço indicado.'
-      : 'Briefing enviado para o teu email. O cliente não forneceu um email válido.';
+    successEl.textContent = 'Briefing submetido com sucesso.';
     successEl.style.display = 'block';
-    successEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    openSubmissionModal(contactIsEmail);
 
     submitBtn.disabled = false;
     submitBtn.textContent = originalBtnText;
