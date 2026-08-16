@@ -1,37 +1,33 @@
-# Correção do erro dos PDFs no Gmail
+# Correção visual dos PDFs — Welcome Pack e Briefing
 
-## Causa
+## O que foi corrigido
 
-O erro aparecia porque o Apps Script alterado exigia simultaneamente `pdfBase64` e `welcomePdfBase64`, enquanto o briefing que estava publicado no Vercel era uma versão antiga e não enviava o segundo campo.
+O problema observado no `Boas-vindas_Branding_Cliente.pdf` vinha da geometria do wrapper de exportação: o conteúdo era capturado numa área mais estreita do que a página A4, ficando comprimido à esquerda e gerando páginas extra. O wrapper foi normalizado para ocupar a largura total da página, com margens internas consistentes e sem a combinação de quebras que duplicava páginas.
 
-O briefing atualizado já gera os dois ficheiros:
+O Welcome Pack continua com sete páginas A4 e agora mantém a mancha gráfica centrada. O PDF interno do briefing foi redesenhado para usar a mesma identidade editorial: capa preta, página de respostas clara, tipografia hierárquica, cartões arredondados, rótulos em caixa alta, linhas finas e rodapés consistentes.
 
-- `pdfBase64`: PDF interno com as respostas, enviado apenas para `pedromuindi5@gmail.com`.
-- `welcomePdfBase64`: PDF de boas-vindas, enviado apenas para o cliente.
+## Ficheiros a substituir no projeto Vercel
 
-## Atualização do Google Apps Script
+Copiar os ficheiros preservando as pastas:
 
-1. Abre o projeto do Google Apps Script.
-2. Abre o ficheiro `Código.gs`.
-3. Apaga todo o conteúdo antigo.
-4. Copia e cola o ficheiro `Code-gmail-welcome-and-briefing-fixed.gs` desta entrega.
-5. Clica em **Guardar**.
-6. Clica em **Implementar > Gerir implementações**.
-7. Edita a implementação da Web App.
-8. Escolhe **Nova versão**.
-9. Mantém a execução como **Eu** e o acesso como **Qualquer pessoa**.
-10. Clica em **Implementar**.
+```text
+briefing.html                         -> raiz do projeto
+js/welcome-pack-defaults.js           -> js/welcome-pack-defaults.js
+```
 
-Não é necessário mudar o URL da Web App se estiveres a editar a mesma implementação.
+Não é necessário alterar o Google Apps Script para esta correção de layout. O contrato de envio continua a ser o mesmo: `pdfBase64` é o briefing interno para o administrador e `welcomePdfBase64` é o Welcome Pack para o cliente.
 
-## Atualização do Vercel
+## Publicação
 
-Substitui o `briefing.html` pelo ficheiro desta entrega e publica-o no Vercel. Este passo é obrigatório, porque é o briefing atualizado que cria e envia os dois PDFs.
+Depois de substituir os ficheiros no repositório ligado ao Vercel, fazer commit e push normalmente. Quando o deployment ficar concluído, abrir o briefing em janela anónima ou fazer `Ctrl + Shift + R` para eliminar a versão antiga em cache.
 
-Depois da publicação, faz `Ctrl + Shift + R` ou testa numa janela anónima.
+## Validação local
 
-## Comportamento corrigido
+Os previews validados são:
 
-Se o cliente tiver email, o sistema exige o Welcome PDF atualizado e mostra uma mensagem clara caso o Vercel ainda esteja a servir o briefing antigo. Nunca utiliza o PDF interno como substituto e nunca envia as respostas internas para o cliente.
+```text
+welcome-preview-v3.pdf             7 páginas A4
+briefing-content-preview-v3.pdf    2 páginas A4 com respostas preenchidas
+```
 
-Se não existir email de cliente, o administrador pode receber o PDF interno sem que seja enviado um email ao cliente.
+O preview do briefing com conteúdo de demonstração confirma que os cartões de respostas ocupam a grelha completa sem cortes laterais. Os PDFs anexados ao email continuarão a ser produzidos pelo navegador do cliente usando o mesmo template atualizado.

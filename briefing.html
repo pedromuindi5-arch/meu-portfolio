@@ -306,27 +306,36 @@
     .dynamic-question-section.is-hidden { display: none; }
     @media (max-width: 600px) { .briefing-container { border-radius: 28px; padding: 1.25rem; } .briefing-mode-panel { border-radius: 20px; } }
 
-    /* Template oculto para geração do PDF estilo editorial */
+    /* Área de exportação: fica fora do fluxo normal e é mostrada apenas durante a captura. */
     #pdf-template-wrapper {
       position: fixed;
-      top: 0;
-      left: -10000px;
-      opacity: 1;
-      visibility: visible;
+      inset: 0;
+      display: none;
+      width: 100vw;
+      min-height: 100vh;
+      overflow: auto;
+      background: #fff;
       pointer-events: none;
       z-index: 9999;
     }
 
-    /* O html2canvas precisa de um elemento dentro da área renderizável durante a captura. */
-    #pdf-template {
+    #pdf-template-wrapper.is-pdf-rendering {
+      display: block;
+    }
+
+    #pdf-template,
+    #welcome-pdf-template {
       box-sizing: border-box;
       width: 794px !important;
+      max-width: 794px !important;
+      margin: 0 auto;
+    }
+
+    #pdf-template {
       min-height: 1123px;
     }
 
     #welcome-pdf-template {
-      box-sizing: border-box;
-      width: 794px !important;
       min-height: 1123px;
     }
 
@@ -622,48 +631,43 @@
     </div>
   </div>
 
-  <!-- TEMPLATE EDITORIAL EXCLUSIVO DO PDF GERADO -->
-  <div id="pdf-template-wrapper">
-    <div id="pdf-template"
-      style="width: 794px; box-sizing: border-box; padding: 48px; font-family: 'Inter', Arial, sans-serif; color: #171717; background: #ffffff; position: relative;">
-      <!-- Fundo claro para garantir leitura e impressão do PDF -->
-      <div style="position: absolute; inset: 0; background: #ffffff; z-index: 0;"></div>
-
-      <div style="position: relative; z-index: 1;">
-        <!-- Cabeçalho Estilizado -->
-        <div
-          style="border-bottom: 1px solid #e5e5e5; padding-bottom: 24px; margin-bottom: 34px; display: flex; justify-content: space-between; align-items: flex-end;">
-          <div>
-            <h1
-              style="font-family: Georgia, 'Times New Roman', serif; font-size: 2.5rem; margin: 0 0 5px; color: #171717; letter-spacing: -0.02em;">
-              Lucas Muindi</h1>
-            <p style="text-transform: uppercase; font-size: 0.72rem; letter-spacing: 0.15em; color: #707070; margin: 0;">
-              Designer Gráfico<sup>®</sup></p>
+    <!-- TEMPLATE EDITORIAL DO PDF DE RESPOSTAS — MESMA LINGUAGEM DO WELCOME PACK -->
+    <div id="pdf-template-wrapper">
+      <div id="pdf-template" class="briefing-pdf-document">
+        <section class="briefing-pdf-cover">
+          <div class="briefing-pdf-topline">
+            <span>LUCAS MUINDI / DESIGN GRÁFICO</span>
+            <span>BRIEFING RECEBIDO</span>
           </div>
-          <div style="text-align: right;">
-            <p style="font-size: 0.85rem; font-weight: 700; color: #171717; margin: 0;" id="pdf-date"></p>
-            <p style="font-size: 0.68rem; color: #777777; margin: 3px 0 0;">BRIEFING DE PROJETO OFICIAL</p>
+          <div class="briefing-pdf-cover-content">
+            <span class="briefing-pdf-eyebrow">DOCUMENTO INTERNO</span>
+            <h1>BRIEFING<br><em>DE PROJETO.</em></h1>
+            <div class="briefing-pdf-rule"></div>
+            <p id="pdf-type-title">Briefing de Projeto</p>
           </div>
-        </div>
+          <div class="briefing-pdf-cover-meta">
+            <div><span>CLIENTE</span><strong id="pdf-client-name">—</strong></div>
+            <div><span>DATA</span><strong id="pdf-date">—</strong></div>
+          </div>
+        </section>
 
-        <!-- Título do Documento -->
-        <h2
-          style="font-family: Georgia, 'Times New Roman', serif; font-size: 1.9rem; margin-top: 0; margin-bottom: 30px; color: #171717; font-style: italic; font-weight: 400;"
-          id="pdf-type-title"></h2>
-
-        <!-- Respostas do Questionário -->
-        <div id="pdf-answers" style="margin-bottom: 50px;">
-          <!-- Injetado Dinamicamente -->
-        </div>
-
-        <!-- Rodapé do PDF -->
-        <div
-          style="border-top: 1px solid #e5e5e5; padding-top: 24px; margin-top: 42px; text-align: center; color: #707070; font-size: 0.72rem;">
-          <p style="margin: 0; font-weight: 700; color: #171717;">Design que comunica, conecta e converte.</p>
-          <p style="margin: 8px 0 0;">pedromuindi5@gmail.com • +244 923 224 383 • www.lucasmuindi.vercel.app</p>
-        </div>
+        <section class="briefing-pdf-content">
+          <div class="briefing-pdf-section-heading">
+            <div>
+              <span class="briefing-pdf-eyebrow">RESPOSTAS RECEBIDAS</span>
+              <h2>Informação para<br><em>dar direção.</em></h2>
+            </div>
+            <span class="briefing-pdf-page-label">01 / RESPOSTAS</span>
+          </div>
+          <div id="pdf-answers" class="briefing-pdf-answers">
+            <!-- Injetado dinamicamente -->
+          </div>
+          <div class="briefing-pdf-footer">
+            <span>LUCAS MUINDI / BRIEFING INTERNO</span>
+            <span>pedromuindi5@gmail.com • www.lucasmuindi.vercel.app</span>
+          </div>
+        </section>
       </div>
-    </div>
 
     <!-- TEMPLATE EDITORIAL DO PDF DE BOAS-VINDAS — BRAND BOOK MONOCROMÁTICO -->
     <div id="welcome-pdf-template" style="width:794px; box-sizing:border-box; font-family:'Plus Jakarta Sans',Arial,sans-serif; color:#000; background:#fff; position:relative;">
@@ -805,9 +809,38 @@
       </section>
     </div>
     <style>
+      #pdf-template{font-family:'Plus Jakarta Sans',Arial,sans-serif;background:#fff;color:#000;}
+      .briefing-pdf-document{width:794px;box-sizing:border-box;background:#fff;color:#000;font-family:'Plus Jakarta Sans',Arial,sans-serif;}
+      .briefing-pdf-cover,.briefing-pdf-content{width:794px;min-height:1123px;box-sizing:border-box;padding:70px 72px 62px;position:relative;display:flex;flex-direction:column;break-after:page;page-break-after:always;}
+      .briefing-pdf-cover{background:#000;color:#fff;overflow:hidden;}
+      .briefing-pdf-content{background:#fff;color:#000;overflow:visible;}
+      .briefing-pdf-content:last-child{break-after:auto;page-break-after:auto;}
+      .briefing-pdf-topline,.briefing-pdf-footer{display:flex;justify-content:space-between;align-items:center;gap:18px;font-size:9px;line-height:1.35;letter-spacing:.14em;text-transform:uppercase;}
+      .briefing-pdf-topline{padding-bottom:18px;border-bottom:1px solid #333;font-weight:700;}
+      .briefing-pdf-cover-content{margin-top:auto;margin-bottom:auto;}
+      .briefing-pdf-eyebrow{display:block;font-size:10px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#777;}
+      .briefing-pdf-cover .briefing-pdf-eyebrow{color:#aaa;}
+      .briefing-pdf-cover h1,.briefing-pdf-section-heading h2{font-size:64px;line-height:.98;letter-spacing:-.075em;font-weight:500;margin:22px 0 34px;}
+      .briefing-pdf-cover h1 em,.briefing-pdf-section-heading h2 em{font-weight:300;}
+      .briefing-pdf-rule{height:1px;width:100%;background:currentColor;opacity:.55;margin-bottom:20px;}
+      .briefing-pdf-cover-content p{font-size:14px;letter-spacing:.04em;margin:0;color:#aaa;}
+      .briefing-pdf-cover-meta{display:grid;grid-template-columns:1fr 1fr;gap:18px;border-top:1px solid #333;padding-top:18px;}
+      .briefing-pdf-cover-meta span,.briefing-pdf-footer span{font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:#777;}
+      .briefing-pdf-cover-meta strong{display:block;font-size:14px;margin-top:9px;color:#fff;}
+      .briefing-pdf-section-heading{display:flex;justify-content:space-between;align-items:flex-start;gap:30px;margin-top:28px;margin-bottom:48px;}
+      .briefing-pdf-section-heading h2{font-size:48px;margin:18px 0 0;}
+      .briefing-pdf-page-label{font-size:9px;letter-spacing:.14em;color:#777;padding-top:4px;white-space:nowrap;}
+      .briefing-pdf-answers{display:grid;gap:14px;}
+      .briefing-pdf-answer{display:grid;grid-template-columns:48px 1fr;gap:18px;border-top:1px solid #dedede;padding:16px 0 0;}
+      .briefing-pdf-answer-index{font-size:13px;font-weight:700;color:#aaa;letter-spacing:.08em;}
+      .briefing-pdf-answer-label{font-size:9px;text-transform:uppercase;letter-spacing:.14em;color:#777;font-weight:700;margin:0 0 8px;}
+      .briefing-pdf-answer-value{font-size:12px;line-height:1.6;color:#222;margin:0;background:#f5f5f5;border:1px solid #e0e0e0;border-radius:14px;padding:14px 16px;white-space:pre-wrap;}
+      .briefing-pdf-footer{margin-top:auto;padding-top:17px;border-top:1px solid #d9d9d9;color:#666;}
+      .briefing-pdf-content .briefing-pdf-footer span:last-child{text-align:right;}
+
       #welcome-pdf-template{font-family:'Plus Jakarta Sans',Arial,sans-serif;}
-      .welcome-page{width:794px;height:1123px;box-sizing:border-box;padding:70px 72px 62px;position:relative;overflow:hidden;page-break-after:always;break-after:page;display:flex;flex-direction:column;}
-      .welcome-page:last-child{page-break-after:auto;break-after:auto;}
+      .welcome-page{width:794px;height:1123px;box-sizing:border-box;padding:70px 72px 62px;position:relative;overflow:hidden;break-after:page;display:flex;flex-direction:column;}
+      .welcome-page:last-child{break-after:auto;}
       .welcome-page-dark{background:#000;color:#fff;}.welcome-page-light{background:#fff;color:#000;}.welcome-page-gray{background:#f5f5f5;color:#000;}
       .welcome-page-top,.welcome-page-bottom{display:flex;justify-content:space-between;align-items:center;font-size:9px;letter-spacing:.14em;text-transform:uppercase;line-height:1.3;}.welcome-page-top{padding-bottom:18px;border-bottom:1px solid #333;}.welcome-page-top-dark{border-bottom-color:#e0e0e0;}.welcome-brand-mark{font-weight:700;}.welcome-page-number{font-weight:600;color:#999;}.welcome-page-dark .welcome-page-number{color:#777;}.welcome-page-bottom{margin-top:auto;padding-top:17px;border-top:1px solid #d9d9d9;color:#666;}.welcome-page-bottom-inverse{border-top-color:#333;color:#aaa;}.welcome-page-bottom-dark{border-top-color:#d9d9d9;color:#666;}
       .welcome-eyebrow{font-size:10px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#666;}.welcome-eyebrow-inverse{color:#aaa;}.welcome-cover-content{margin-top:auto;margin-bottom:auto;}.welcome-wordmark{font-size:92px;font-weight:300;letter-spacing:-.08em;line-height:.9;margin:18px 0 34px;}.welcome-cover-rule{height:1px;background:currentColor;width:100%;opacity:.55;margin-bottom:21px;}.welcome-cover-client{font-size:31px;font-weight:600;letter-spacing:-.035em;}.welcome-cover-service{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#aaa;margin-top:10px;}.welcome-section-intro{margin-top:100px;max-width:630px;}.welcome-section-intro-compact{margin-top:68px;}.welcome-section-intro h1{font-size:52px;line-height:1.01;letter-spacing:-.065em;margin:18px 0 24px;font-weight:500;}.welcome-section-intro h1 em{font-weight:300;}.welcome-section-intro p{font-size:15px;line-height:1.7;color:#666;max-width:585px;margin:0;}.welcome-section-intro-inverse p{color:#aaa;}.welcome-section-intro strong{color:#000;}.welcome-summary-card{margin-top:55px;border-radius:16px;background:#f5f5f5;border:1px solid #e0e0e0;padding:24px 25px;}.welcome-card-kicker,.welcome-summary-grid span,.welcome-need-card span,.welcome-schedule-card span,.welcome-contact-strip span,.welcome-close-meta span{font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:#666;font-weight:700;}.welcome-summary-title{font-size:25px;font-weight:700;letter-spacing:-.03em;margin:10px 0 24px;}.welcome-summary-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;border-top:1px solid #e0e0e0;padding-top:18px;}.welcome-summary-grid strong{display:block;font-size:13px;margin-top:8px;font-weight:600;}.welcome-page-note{display:grid;grid-template-columns:120px 1fr;gap:20px;border-top:1px solid #e0e0e0;margin-top:56px;padding-top:18px;}.welcome-page-note span{font-size:9px;letter-spacing:.15em;font-weight:700;color:#999;}.welcome-page-note p{font-size:11px;line-height:1.6;color:#666;margin:0;}.welcome-steps-grid{display:grid;grid-template-columns:1fr 1fr;gap:13px;margin-top:48px;}.welcome-step-card{min-height:153px;border:1px solid #dcdcdc;border-radius:16px;padding:21px;display:flex;flex-direction:column;justify-content:space-between;background:#fff;}.welcome-step-number{font-size:27px;font-weight:700;color:#c9c9c9;letter-spacing:-.04em;}.welcome-step-card h2{font-size:17px;margin:13px 0 6px;letter-spacing:-.03em;}.welcome-step-card p{font-size:11px;line-height:1.55;color:#666;margin:0;}.welcome-process-page .welcome-section-intro{margin-top:72px;}.welcome-principles-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:25px;margin-top:57px;}.welcome-principles-grid>div{border-top:1px solid #444;padding-top:16px;}.welcome-principles-grid span{font-size:11px;color:#777;font-weight:700;}.welcome-principles-grid h2{font-size:19px;margin:27px 0 10px;letter-spacing:-.035em;}.welcome-principles-grid p{font-size:11px;line-height:1.6;color:#aaa;margin:0;}.welcome-timeline{display:grid;grid-template-columns:repeat(4,1fr);gap:13px;position:relative;margin-top:76px;}.welcome-timeline-line{position:absolute;top:6px;left:4px;right:4px;height:1px;background:#555;}.welcome-timeline>div:not(.welcome-timeline-line){position:relative;z-index:1;}.welcome-timeline span{display:block;width:12px;height:12px;border:1px solid #fff;border-radius:50%;background:#000;margin-bottom:15px;}.welcome-timeline strong{font-size:9px;letter-spacing:.12em;color:#aaa;}.welcome-needs-grid{display:grid;grid-template-columns:1fr 1fr;gap:13px;margin-top:47px;}.welcome-need-card{min-height:143px;border:1px solid #dcdcdc;border-radius:16px;padding:20px;background:#fff;}.welcome-need-index{display:block;color:#999!important;font-size:11px!important;letter-spacing:.08em!important;}.welcome-need-card h2{font-size:18px;margin:18px 0 7px;letter-spacing:-.03em;}.welcome-need-card p{font-size:11px;line-height:1.55;color:#666;margin:0;}.welcome-callout{border-radius:16px;background:#000;color:#fff;padding:20px 22px;margin-top:20px;}.welcome-callout span{display:block;font-size:9px;letter-spacing:.15em;color:#aaa;font-weight:700;}.welcome-callout strong{display:block;margin-top:9px;font-size:15px;}.welcome-callout p{font-size:11px;color:#aaa;margin:7px 0 0;line-height:1.5;}.welcome-schedule-grid{display:grid;grid-template-columns:1fr 1fr;gap:13px;margin-top:48px;}.welcome-schedule-card{min-height:151px;border:1px solid #d2d2d2;border-radius:16px;background:#fff;padding:20px;}.welcome-schedule-card-dark{background:#000;color:#fff;border-color:#000;}.welcome-schedule-card span{color:#666;}.welcome-schedule-card-dark span{color:#aaa;}.welcome-schedule-card strong{display:block;font-size:18px;line-height:1.12;letter-spacing:-.035em;margin:17px 0 9px;}.welcome-schedule-card p{font-size:11px;line-height:1.5;color:#666;margin:0;}.welcome-schedule-card-dark p{color:#aaa;}.welcome-contact-strip{display:flex;justify-content:space-between;gap:15px;align-items:center;border-top:1px solid #d0d0d0;border-bottom:1px solid #d0d0d0;padding:17px 0;margin-top:30px;font-size:10px;}.welcome-contact-strip strong{font-size:12px;}.welcome-close-content{margin-top:auto;margin-bottom:auto;}.welcome-close-wordmark{font-size:61px;line-height:.98;letter-spacing:-.07em;font-weight:500;margin:22px 0 34px;}.welcome-close-wordmark em{font-weight:300;}.welcome-close-content p{font-size:14px;line-height:1.65;color:#aaa;max-width:430px;margin:0;}.welcome-close-meta{display:grid;grid-template-columns:1fr 1fr;gap:20px;border-top:1px solid #333;padding-top:20px;margin-bottom:38px;}.welcome-close-meta span{color:#777;}.welcome-close-meta strong{display:block;color:#fff;font-size:14px;margin-top:9px;}.welcome-close-page .welcome-cover-rule{width:85%;}
@@ -1179,24 +1212,28 @@
     }
 
     async function renderPdfBlob(element, fileName) {
-      const isWelcomePdf = element?.id === 'welcome-pdf-template';
+      const pageWidth = 794;
+      const elementWidth = Math.max(element?.offsetWidth || 0, pageWidth);
+      const elementHeight = Math.max(element?.scrollHeight || 0, 1123);
       const opt = {
-        margin: isWelcomePdf ? 0 : [10, 10, 10, 10],
+        margin: 0,
         filename: fileName,
         image: { type: 'jpeg', quality: 0.96 },
         html2canvas: {
           scale: 2,
+          width: elementWidth,
+          height: elementHeight,
           useCORS: true,
           letterRendering: true,
           backgroundColor: '#ffffff',
           logging: false,
           scrollX: 0,
           scrollY: 0,
-          windowWidth: element.scrollWidth,
-          windowHeight: element.scrollHeight
+          windowWidth: pageWidth,
+          windowHeight: elementHeight
         },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-        pagebreak: { mode: ['css', 'legacy'] }
+        pagebreak: { mode: ['css'] }
       };
       return html2pdf().set(opt).from(element).toPdf().outputPdf('blob');
     }
@@ -1213,6 +1250,7 @@ async function handleBriefingSubmit(event, typeName) {
     const dateString = new Date().toLocaleDateString('pt-PT');
     document.getElementById('pdf-date').textContent = dateString;
     document.getElementById('pdf-type-title').textContent = `Briefing de Projeto — ${typeName}`;
+    document.getElementById('pdf-client-name').textContent = 'A preencher após leitura do briefing';
 
     const formData = {};
     const activeForm = event.target;
@@ -1252,11 +1290,16 @@ async function handleBriefingSubmit(event, typeName) {
       storeAnswer(input, label, input.value);
     });
 
-    const renderAnswers = () => Object.entries(formData).map(([label, value]) => `
-      <div style="margin-bottom:25px;page-break-inside:avoid;">
-        <p style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.1em;color:#888;font-weight:700;margin:0 0 8px;">${escapeHtml(label)}</p>
-        <p style="font-size:0.94rem;line-height:1.65;color:#171717;margin:0;background:#f7f7f7;padding:16px 18px;border:1px solid #e5e5e5;border-left:4px solid #171717;border-radius:16px;white-space:pre-wrap;">${escapeHtml(value)}</p>
-      </div>
+    document.getElementById('pdf-client-name').textContent = clientName || 'Não especificado';
+
+    const renderAnswers = () => Object.entries(formData).map(([label, value], index) => `
+      <article class="briefing-pdf-answer" style="page-break-inside:avoid;break-inside:avoid;">
+        <div class="briefing-pdf-answer-index">${String(index + 1).padStart(2, '0')}</div>
+        <div class="briefing-pdf-answer-body">
+          <p class="briefing-pdf-answer-label">${escapeHtml(label)}</p>
+          <p class="briefing-pdf-answer-value">${escapeHtml(value)}</p>
+        </div>
+      </article>
     `).join('');
 
     document.getElementById('pdf-answers').innerHTML = renderAnswers();
@@ -1337,14 +1380,21 @@ async function handleBriefingSubmit(event, typeName) {
 
     const previousWrapperStyle = {
       position: wrapper.style.position,
-      left: wrapper.style.left,
-      top: wrapper.style.top,
+      inset: wrapper.style.inset,
+      display: wrapper.style.display,
+      width: wrapper.style.width,
+      minHeight: wrapper.style.minHeight,
+      overflow: wrapper.style.overflow,
       zIndex: wrapper.style.zIndex
     };
 
-    wrapper.style.position = 'absolute';
-    wrapper.style.left = '0';
-    wrapper.style.top = '0';
+    wrapper.classList.add('is-pdf-rendering');
+    wrapper.style.position = 'fixed';
+    wrapper.style.inset = '0';
+    wrapper.style.display = 'block';
+    wrapper.style.width = '100vw';
+    wrapper.style.minHeight = '100vh';
+    wrapper.style.overflow = 'auto';
     wrapper.style.zIndex = '9999';
 
     let pdfBlob;
@@ -1355,9 +1405,13 @@ async function handleBriefingSubmit(event, typeName) {
       pdfBlob = await renderPdfBlob(element, pdfFileName);
       welcomePdfBlob = await renderPdfBlob(welcomeElement, welcomePdfFileName);
     } finally {
+      wrapper.classList.remove('is-pdf-rendering');
       wrapper.style.position = previousWrapperStyle.position;
-      wrapper.style.left = previousWrapperStyle.left;
-      wrapper.style.top = previousWrapperStyle.top;
+      wrapper.style.inset = previousWrapperStyle.inset;
+      wrapper.style.display = previousWrapperStyle.display;
+      wrapper.style.width = previousWrapperStyle.width;
+      wrapper.style.minHeight = previousWrapperStyle.minHeight;
+      wrapper.style.overflow = previousWrapperStyle.overflow;
       wrapper.style.zIndex = previousWrapperStyle.zIndex;
     }
 
