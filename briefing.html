@@ -306,15 +306,17 @@
     .dynamic-question-section.is-hidden { display: none; }
     @media (max-width: 600px) { .briefing-container { border-radius: 28px; padding: 1.25rem; } .briefing-mode-panel { border-radius: 20px; } }
 
-    /* Área de exportação: fica fora do fluxo normal e é mostrada apenas durante a captura. */
+    /* Área de exportação: mantém exatamente a largura de uma página A4 em CSS pixels. */
     #pdf-template-wrapper {
       position: fixed;
-      inset: 0;
+      top: 0;
+      left: 0;
       display: none;
-      width: 100vw;
-      min-height: 100vh;
-      overflow: auto;
-      background: #fff;
+      width: 794px;
+      min-width: 794px;
+      min-height: 1123px;
+      overflow: visible;
+      background: transparent;
       pointer-events: none;
       z-index: 9999;
     }
@@ -327,8 +329,8 @@
     #welcome-pdf-template {
       box-sizing: border-box;
       width: 794px !important;
-      max-width: 794px !important;
-      margin: 0 auto;
+      max-width: none !important;
+      margin: 0;
     }
 
     #pdf-template {
@@ -848,7 +850,8 @@
   </div>
 
   <!-- DEPENDÊNCIAS: GERAÇÃO DE PDF -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/supabase-client.js"></script>
   <script src="js/welcome-pack-defaults.js?v=20260815-welcome-pack-v1"></script>
@@ -1212,30 +1215,74 @@
     }
 
     async function renderPdfBlob(element, fileName) {
-      const pageWidth = 794;
-      const elementWidth = Math.max(element?.offsetWidth || 0, pageWidth);
-      const elementHeight = Math.max(element?.scrollHeight || 0, 1123);
-      const opt = {
-        margin: 0,
-        filename: fileName,
-        image: { type: 'jpeg', quality: 0.96 },
-        html2canvas: {
-          scale: 2,
-          width: elementWidth,
-          height: elementHeight,
+      const CSS_PAGE_WIDTH = 794;
+      const CSS_PAGE_HEIGHT = 1123;
+      const PDF_PAGE_WIDTH = 210;
+      const PDF_PAGE_HEIGHT = 297;
+      const SCALE = 2;
+      const pageElements = Array.from(element.children).filter(child => child.nodeType === 1);
+      const pages = pageElements.length ? pageElements : [element];
+      const { jsPDF } = window.jspdf;
+      const pdf = new jsPDF({
+        unit: 'mm',
+        format: 'a4',
+        orientation: 'portrait',
+        compress: true
+      });
+      let pdfPageIndex = 0;
+
+      for (const page of pages) {
+        const captureHeight = Math.max(
+          CSS_PAGE_HEIGHT,
+          Math.ceil(page.scrollHeight || 0),
+          Math.ceil(page.getBoundingClientRect().height || 0)
+        );
+        const canvas = await window.html2canvas(page, {
+          scale: SCALE,
+          width: CSS_PAGE_WIDTH,
+          height: captureHeight,
           useCORS: true,
-          letterRendering: true,
-          backgroundColor: '#ffffff',
+          allowTaint: false,
+          backgroundColor: getComputedStyle(page).backgroundColor || '#ffffff',
           logging: false,
           scrollX: 0,
           scrollY: 0,
-          windowWidth: pageWidth,
-          windowHeight: elementHeight
-        },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-        pagebreak: { mode: ['css'] }
-      };
-      return html2pdf().set(opt).from(element).toPdf().outputPdf('blob');
+          windowWidth: CSS_PAGE_WIDTH,
+          windowHeight: captureHeight
+        });
+
+        const sliceHeight = CSS_PAGE_HEIGHT * SCALE;
+        for (let top = 0; top < canvas.height; top += sliceHeight) {
+          const currentSliceHeight = Math.min(sliceHeight, canvas.height - top);
+          const sliceCanvas = document.createElement('canvas');
+          sliceCanvas.width = canvas.width;
+          sliceCanvas.height = currentSliceHeight;
+          const context = sliceCanvas.getContext('2d');
+          context.fillStyle = getComputedStyle(page).backgroundColor || '#ffffff';
+          context.fillRect(0, 0, sliceCanvas.width, sliceCanvas.height);
+          context.drawImage(
+            canvas,
+            0, top, canvas.width, currentSliceHeight,
+            0, 0, sliceCanvas.width, sliceCanvas.height
+          );
+
+          if (pdfPageIndex > 0) pdf.addPage('a4', 'portrait');
+          const renderedHeightMm = PDF_PAGE_HEIGHT * (currentSliceHeight / sliceHeight);
+          pdf.addImage(
+            sliceCanvas.toDataURL('image/jpeg', 0.96),
+            'JPEG',
+            0,
+            0,
+            PDF_PAGE_WIDTH,
+            renderedHeightMm,
+            undefined,
+            'FAST'
+          );
+          pdfPageIndex += 1;
+        }
+      }
+
+      return pdf.output('blob');
     }
 
 async function handleBriefingSubmit(event, typeName) {
@@ -1380,9 +1427,13 @@ async function handleBriefingSubmit(event, typeName) {
 
     const previousWrapperStyle = {
       position: wrapper.style.position,
-      inset: wrapper.style.inset,
+      top: wrapper.style.top,
+      left: wrapper.style.left,
+      right: wrapper.style.right,
+      bottom: wrapper.style.bottom,
       display: wrapper.style.display,
       width: wrapper.style.width,
+      minWidth: wrapper.style.minWidth,
       minHeight: wrapper.style.minHeight,
       overflow: wrapper.style.overflow,
       zIndex: wrapper.style.zIndex
@@ -1390,11 +1441,15 @@ async function handleBriefingSubmit(event, typeName) {
 
     wrapper.classList.add('is-pdf-rendering');
     wrapper.style.position = 'fixed';
-    wrapper.style.inset = '0';
+    wrapper.style.top = '0';
+    wrapper.style.left = '0';
+    wrapper.style.right = 'auto';
+    wrapper.style.bottom = 'auto';
     wrapper.style.display = 'block';
-    wrapper.style.width = '100vw';
-    wrapper.style.minHeight = '100vh';
-    wrapper.style.overflow = 'auto';
+    wrapper.style.width = '794px';
+    wrapper.style.minWidth = '794px';
+    wrapper.style.minHeight = '1123px';
+    wrapper.style.overflow = 'visible';
     wrapper.style.zIndex = '9999';
 
     let pdfBlob;
@@ -1407,9 +1462,13 @@ async function handleBriefingSubmit(event, typeName) {
     } finally {
       wrapper.classList.remove('is-pdf-rendering');
       wrapper.style.position = previousWrapperStyle.position;
-      wrapper.style.inset = previousWrapperStyle.inset;
+      wrapper.style.top = previousWrapperStyle.top;
+      wrapper.style.left = previousWrapperStyle.left;
+      wrapper.style.right = previousWrapperStyle.right;
+      wrapper.style.bottom = previousWrapperStyle.bottom;
       wrapper.style.display = previousWrapperStyle.display;
       wrapper.style.width = previousWrapperStyle.width;
+      wrapper.style.minWidth = previousWrapperStyle.minWidth;
       wrapper.style.minHeight = previousWrapperStyle.minHeight;
       wrapper.style.overflow = previousWrapperStyle.overflow;
       wrapper.style.zIndex = previousWrapperStyle.zIndex;
