@@ -463,6 +463,24 @@
       transform: translateY(0) scale(1);
     }
 
+    .submission-modal.is-processing .submission-modal-close {
+      display: none;
+    }
+
+    .submission-modal-mark.is-processing {
+      animation: none;
+    }
+
+    .submission-processing-spinner {
+      display: block;
+      width: 28px;
+      height: 28px;
+      border: 3px solid rgba(255, 255, 255, .32);
+      border-top-color: #ffffff;
+      border-radius: 50%;
+      animation: submissionSpinner .8s linear infinite;
+    }
+
     .submission-modal-mark {
       display: grid;
       place-items: center;
@@ -516,6 +534,10 @@
     @keyframes submissionPulse {
       0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(17, 17, 17, .18); }
       50% { transform: scale(1.06); box-shadow: 0 0 0 12px rgba(17, 17, 17, 0); }
+    }
+
+    @keyframes submissionSpinner {
+      to { transform: rotate(360deg); }
     }
   </style>
 </head>
@@ -680,7 +702,7 @@
   <!-- MODAL DE CONFIRMAÇÃO PARA O CLIENTE -->
   <div class="submission-modal" id="submissionModal" role="dialog" aria-modal="true" aria-labelledby="submissionModalTitle" aria-hidden="true">
     <div class="submission-modal-card">
-      <div class="submission-modal-mark" aria-hidden="true">✓</div>
+      <div class="submission-modal-mark" id="submissionModalMark" aria-hidden="true">✓</div>
       <h2 id="submissionModalTitle">Respostas submetidas</h2>
       <p id="submissionModalText">As tuas respostas foram submetidas com sucesso. Obrigado por partilhares a tua visão.</p>
       <button type="button" class="submission-modal-close" id="submissionModalClose">Fechar</button>
@@ -955,25 +977,52 @@
     const mobileLinks = document.querySelectorAll('[data-mobile-link]');
     const submissionModal = document.getElementById('submissionModal');
     const submissionModalClose = document.getElementById('submissionModalClose');
+    const submissionModalMark = document.getElementById('submissionModalMark');
+    const submissionModalTitle = document.getElementById('submissionModalTitle');
     const submissionModalText = document.getElementById('submissionModalText');
+
+    function openSubmissionProcessingModal() {
+      if (!submissionModal) return;
+      submissionModal.classList.add('is-open', 'is-processing');
+      submissionModal.setAttribute('aria-hidden', 'false');
+      if (submissionModalMark) {
+        submissionModalMark.classList.add('is-processing');
+        submissionModalMark.innerHTML = '<span class="submission-processing-spinner" aria-label="A processar"></span>';
+      }
+      if (submissionModalTitle) submissionModalTitle.textContent = 'A enviar as respostas';
+      if (submissionModalText) submissionModalText.textContent = 'Estamos a preparar o briefing e os documentos. Aguarda apenas um momento.';
+      document.body.style.overflow = 'hidden';
+    }
 
     function openSubmissionModal(clientEmailWasProvided) {
       if (!submissionModal) return;
+      submissionModal.classList.add('is-open');
+      submissionModal.classList.remove('is-processing');
+      submissionModal.setAttribute('aria-hidden', 'false');
+      if (submissionModalMark) {
+        submissionModalMark.classList.remove('is-processing');
+        submissionModalMark.innerHTML = '✓';
+      }
+      if (submissionModalTitle) submissionModalTitle.textContent = 'Respostas submetidas';
       if (submissionModalText) {
         submissionModalText.textContent = clientEmailWasProvided
           ? 'As tuas respostas foram submetidas com sucesso. Receberás uma confirmação no email indicado.'
           : 'As tuas respostas foram submetidas com sucesso. Obrigado por partilhares a tua visão.';
       }
-      submissionModal.classList.add('is-open');
-      submissionModal.setAttribute('aria-hidden', 'false');
       document.body.style.overflow = 'hidden';
       submissionModalClose?.focus();
     }
 
     function closeSubmissionModal() {
       if (!submissionModal) return;
-      submissionModal.classList.remove('is-open');
+      submissionModal.classList.remove('is-open', 'is-processing');
       submissionModal.setAttribute('aria-hidden', 'true');
+      if (submissionModalMark) {
+        submissionModalMark.classList.remove('is-processing');
+        submissionModalMark.innerHTML = '✓';
+      }
+      if (submissionModalTitle) submissionModalTitle.textContent = 'Respostas submetidas';
+      if (submissionModalText) submissionModalText.textContent = 'As tuas respostas foram submetidas com sucesso. Obrigado por partilhares a tua visão.';
       document.body.style.overflow = '';
     }
 
@@ -1150,7 +1199,9 @@
           : '';
         currentSection = question.section_key;
         const id = `briefing-question-${question.id}`;
-        const required = question.required ? ' required' : '';
+        const isMultipleChoice = question.input_type === 'choice_multiple';
+        const isRequired = Boolean(question.required) && !isMultipleChoice;
+        const required = isRequired ? ' required' : '';
         const role = question.role && question.role !== 'none' ? ` data-role="${escapeHtml(question.role)}"` : '';
         const help = question.help_text ? `<span class="dynamic-question-help">${escapeHtml(question.help_text)}</span>` : '';
         const placeholder = escapeHtml(question.placeholder || 'Escreve a tua resposta');
@@ -1161,7 +1212,7 @@
         } else if (question.input_type === 'choice_single' || question.input_type === 'choice_multiple') {
           const multiple = question.input_type === 'choice_multiple';
           const choiceHint = `<span class="dynamic-choice-hint">${multiple ? 'Podes escolher mais do que uma opção.' : 'Escolhe uma opção.'}</span>`;
-          field = `${choiceHint}<div class="dynamic-choice-list" data-choice-wrapper="${escapeHtml(question.question_key)}" data-choice-mode="${multiple ? 'multiple' : 'single'}">${questionOptions(question).map((option, index) => `<label class="dynamic-choice-option"><input type="${multiple ? 'checkbox' : 'radio'}" name="${id}" value="${escapeHtml(option.value)}" data-choice-key="${escapeHtml(question.question_key)}" data-question="${escapeHtml(question.label)}"${role}${required && index === 0 ? ' required' : ''}><span>${escapeHtml(option.label)}</span></label>`).join('')}</div>`;
+          field = `${choiceHint}<div class="dynamic-choice-list" data-choice-wrapper="${escapeHtml(question.question_key)}" data-choice-mode="${multiple ? 'multiple' : 'single'}">${questionOptions(question).map((option, index) => `<label class="dynamic-choice-option"><input type="${multiple ? 'checkbox' : 'radio'}" name="${id}" value="${escapeHtml(option.value)}" data-choice-key="${escapeHtml(question.question_key)}" data-question="${escapeHtml(question.label)}"${role}${!multiple && isRequired && index === 0 ? ' required' : ''}><span>${escapeHtml(option.label)}</span></label>`).join('')}</div>`;
         } else if (question.input_type === 'email') {
           field = `<input class="field-input" type="email" id="${id}" data-question="${escapeHtml(question.label)}" data-question-key="${escapeHtml(question.question_key)}" placeholder="${placeholder}"${role}${required}>`;
         } else if (question.input_type === 'text') {
@@ -1170,7 +1221,7 @@
           field = `<textarea class="field-textarea" id="${id}" data-question="${escapeHtml(question.label)}" data-question-key="${escapeHtml(question.question_key)}" placeholder="${placeholder}"${role}${required}></textarea>`;
         }
 
-        return `${section}<div class="dynamic-question-section"><label class="dynamic-question-label" for="${id}">${escapeHtml(question.label)}${question.required ? ' *' : ''}</label>${help}${field}</div>`;
+        return `${section}<div class="dynamic-question-section"><label class="dynamic-question-label" for="${id}">${escapeHtml(question.label)}${isRequired ? ' *' : ''}</label>${help}${field}</div>`;
       }).join('');
     }
 
@@ -1536,6 +1587,8 @@ async function handleBriefingSubmit(event, typeName) {
 
     const contactIsEmail = looksLikeEmail(clientContact);
     const serviceType = SERVICE_TYPE_SLUGS[typeName] || 'branding';
+    openSubmissionProcessingModal();
+    const welcomePackForSnapshot = await loadWelcomePack(serviceType);
 
     const briefingId = (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function')
       ? crypto.randomUUID()
@@ -1554,6 +1607,18 @@ async function handleBriefingSubmit(event, typeName) {
         client_contact: clientContact || 'Não especificado',
         contact_is_email: contactIsEmail,
         form_data: formData,
+        welcome_pack_snapshot: {
+          service_type: serviceType,
+          title: welcomePackForSnapshot.title,
+          welcome_message: welcomePackForSnapshot.welcomeMessage,
+          includes: welcomePackForSnapshot.includes || [],
+          delivery_time: welcomePackForSnapshot.deliveryTime,
+          revisions: welcomePackForSnapshot.revisions,
+          payment_method: welcomePackForSnapshot.paymentMethod,
+          next_steps: (welcomePackForSnapshot.page3?.steps || []).map(step => step.title).filter(Boolean),
+          content: welcomePackForSnapshot
+        },
+        welcome_pack_snapshot_at: new Date().toISOString(),
         status: 'novo'
       });
 
@@ -1606,7 +1671,7 @@ async function handleBriefingSubmit(event, typeName) {
     const safeServiceName = typeName.replace(/\s+/g, '_');
     const pdfFileName = `Briefing_${safeServiceName}_${safeClientName}.pdf`;
     const welcomePdfFileName = `Boas-vindas_${safeServiceName}_${safeClientName}.pdf`;
-    const welcomePack = await loadWelcomePack(serviceType);
+    const welcomePack = welcomePackForSnapshot;
     setWelcomePdfContent(dateString, typeName, clientName, modeLabel(selectedMode), welcomePack);
 
     const previousWrapperStyle = {
@@ -1695,6 +1760,7 @@ async function handleBriefingSubmit(event, typeName) {
     submitBtn.textContent = originalBtnText;
   } catch (error) {
     console.error('Erro ao processar o briefing:', error);
+    closeSubmissionModal();
     alert(error?.message || 'Ocorreu um erro ao processar o briefing. Por favor tenta novamente.');
     submitBtn.disabled = false;
     submitBtn.textContent = originalBtnText;
