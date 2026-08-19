@@ -1534,3 +1534,51 @@ input, select, textarea, button { font-family: inherit; font-size: inherit; }
   .briefing-welcome-preview-header { display: block; }
   .briefing-welcome-preview-header > span { display: block; max-width: none; margin-top: .45rem; text-align: left; }
 }
+
+
+/* Welcome Pack PDF actions */
+.briefing-welcome-preview-header {
+  gap: 18px;
+}
+
+.briefing-welcome-preview-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.briefing-welcome-preview-actions .btn-welcome-pdf {
+  min-height: 36px;
+  padding: 8px 13px;
+  border-radius: 999px;
+  font-size: 11px;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.briefing-welcome-preview-actions .btn-welcome-pdf[disabled] {
+  opacity: .55;
+  cursor: wait;
+}
+
+.briefing-welcome-preview-source {
+  flex-basis: 100%;
+  text-align: right;
+}
+
+@media (max-width: 720px) {
+  .briefing-welcome-preview-header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .briefing-welcome-preview-actions {
+    justify-content: flex-start;
+  }
+
+  .briefing-welcome-preview-source {
+    text-align: left;
+  }
+}
