@@ -1425,6 +1425,13 @@ async function handleBriefingSubmit(event, typeName) {
     if (!clientName) {
       throw new Error('Indica o nome do cliente antes de submeter o briefing.');
     }
+
+    const selectedFiles = fileInputs.flatMap(input => Array.from(input.files || []));
+    const selectedFileNames = selectedFiles.map(file => file.name);
+    if (selectedFileNames.length) {
+      formData['Ficheiros de referência anexados'] = selectedFileNames.join(', ');
+    }
+
     document.getElementById('pdf-client-name').textContent = clientName;
 
     const renderAnswers = () => Object.entries(formData).map(([label, value], index) => `
@@ -1442,24 +1449,31 @@ async function handleBriefingSubmit(event, typeName) {
     const contactIsEmail = looksLikeEmail(clientContact);
     const serviceType = SERVICE_TYPE_SLUGS[typeName] || 'branding';
 
-    const { data: briefingRow, error: briefingError } = await supabaseClient
+    const briefingId = (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function')
+      ? crypto.randomUUID()
+      : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, character => {
+          const random = Math.random() * 16 | 0;
+          const value = character === 'x' ? random : (random & 0x3 | 0x8);
+          return value.toString(16);
+        });
+
+    const { error: briefingError } = await supabaseClient
       .from('briefings')
       .insert({
+        id: briefingId,
         service_type: serviceType,
         client_name: clientName || 'Não especificado',
         client_contact: clientContact || 'Não especificado',
         contact_is_email: contactIsEmail,
         form_data: formData,
         status: 'novo'
-      })
-      .select()
-      .single();
+      });
 
-    if (briefingError || !briefingRow) {
-      throw new Error(`Não foi possível guardar o briefing: ${briefingError?.message || 'resposta vazia'}`);
+    const briefingRow = { id: briefingId };
+    if (briefingError) {
+      throw new Error(`Não foi possível guardar o briefing: ${briefingError.message}`);
     }
 
-    const selectedFiles = fileInputs.flatMap(input => Array.from(input.files || []));
     const referenceLinks = [];
 
     if (selectedFiles.length) {
@@ -1495,12 +1509,6 @@ async function handleBriefingSubmit(event, typeName) {
         fileNames.push(file.name);
       }
 
-      formData['Ficheiros de referência anexados'] = fileNames.join(', ');
-      const updateData = await supabaseClient.from('briefings').update({ form_data: formData }).eq('id', briefingRow.id);
-      if (updateData.error) {
-        throw new Error(`O briefing foi guardado, mas não foi possível atualizar os nomes dos anexos: ${updateData.error.message}`);
-      }
-      document.getElementById('pdf-answers').innerHTML = renderAnswers();
     }
 
     const wrapper = document.getElementById('pdf-template-wrapper');
