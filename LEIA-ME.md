@@ -1,33 +1,45 @@
-# Correção visual dos PDFs — Welcome Pack e Briefing
+# Correção: nome do cliente em todos os briefings
 
-## O que foi corrigido
+## O que foi alterado
 
-O problema observado no `Boas-vindas_Branding_Cliente.pdf` vinha da geometria do wrapper de exportação: o conteúdo era capturado numa área mais estreita do que a página A4, ficando comprimido à esquerda e gerando páginas extra. O wrapper foi normalizado para ocupar a largura total da página, com margens internas consistentes e sem a combinação de quebras que duplicava páginas.
+O `briefing.html` agora cria automaticamente um campo obrigatório **Nome do cliente** em todos os sete serviços:
 
-O Welcome Pack continua com sete páginas A4 e agora mantém a mancha gráfica centrada. O PDF interno do briefing foi redesenhado para usar a mesma identidade editorial: capa preta, página de respostas clara, tipografia hierárquica, cartões arredondados, rótulos em caixa alta, linhas finas e rodapés consistentes.
+- Branding
+- Identidade Visual
+- Social Media
+- Flyer / Design Publicitário
+- Evento / Design de Eventos
+- Web Design
+- Materiais Gráficos
 
-## Ficheiros a substituir no projeto Vercel
+O campo é comum a todos os serviços e não depende das perguntas configuradas no painel admin. Assim, mesmo que as perguntas de um serviço sejam alteradas, o nome continua disponível.
 
-Copiar os ficheiros preservando as pastas:
+A pergunta antiga de nome da Identidade Visual é ocultada quando existe, para evitar que o cliente veja o mesmo campo duas vezes.
 
-```text
-briefing.html                         -> raiz do projeto
-js/welcome-pack-defaults.js           -> js/welcome-pack-defaults.js
-```
+## Onde o nome aparece
 
-Não é necessário alterar o Google Apps Script para esta correção de layout. O contrato de envio continua a ser o mesmo: `pdfBase64` é o briefing interno para o administrador e `welcomePdfBase64` é o Welcome Pack para o cliente.
+O valor preenchido pelo cliente é usado automaticamente em:
+
+1. capa do PDF do briefing recebido pelo administrador;
+2. capa, página de boas-vindas e encerramento do Welcome Pack enviado ao cliente;
+3. nome dos ficheiros PDF anexados ao email.
+
+O valor também continua a ser guardado em `briefings.client_name` e no conjunto de respostas do briefing.
 
 ## Publicação
 
-Depois de substituir os ficheiros no repositório ligado ao Vercel, fazer commit e push normalmente. Quando o deployment ficar concluído, abrir o briefing em janela anónima ou fazer `Ctrl + Shift + R` para eliminar a versão antiga em cache.
+Substitui apenas o ficheiro `briefing.html` no projeto do Vercel. Não é necessário alterar o Google Apps Script nem executar nova migração no Supabase.
+
+Depois do deployment:
+
+1. abre `https://lucasmuindi.vercel.app/briefing.html`;
+2. faz `Ctrl + Shift + R`;
+3. testa pelo menos dois serviços diferentes;
+4. confirma que o campo aparece antes das perguntas;
+5. preenche um nome, submete e verifica o nome nos dois PDFs.
+
+O campo é obrigatório. Se ficar vazio, o briefing não é enviado e aparece a mensagem para indicar o nome do cliente.
 
 ## Validação local
 
-Os previews validados são:
-
-```text
-welcome-preview-v3.pdf             7 páginas A4
-briefing-content-preview-v3.pdf    2 páginas A4 com respostas preenchidas
-```
-
-O preview do briefing com conteúdo de demonstração confirma que os cartões de respostas ocupam a grelha completa sem cortes laterais. Os PDFs anexados ao email continuarão a ser produzidos pelo navegador do cliente usando o mesmo template atualizado.
+Foram validados os sete formulários, a obrigatoriedade do campo, a passagem do valor aos dois templates PDF, os campos `pdfBase64` e `welcomePdfBase64` e a exportação A4 determinística que corrige o corte lateral dos anexos.

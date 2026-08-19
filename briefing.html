@@ -290,6 +290,12 @@
     .dynamic-questions-status { margin-bottom: 1.4rem; color: #777777; font-size: .78rem; }
     .dynamic-questions-status.error { color: #a02222; }
 
+    /* Identificação comum a todos os serviços; o PDF usa este valor como nome do cliente. */
+    .client-identity-fields { display: grid; gap: .55rem; margin: 0 0 1.65rem; padding: 1rem 1.1rem; border: 1px solid #e4e4e4; border-radius: 24px; background: #fafafa; }
+    .client-identity-fields label { color: #555; font-size: .7rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
+    .client-identity-fields input { width: 100%; box-sizing: border-box; }
+    .client-identity-fields small { color: #777; font-size: .76rem; line-height: 1.5; }
+
     /* Seletor de nível: simples para o cliente, mas ligado aos modos do painel admin. */
     .briefing-mode-panel { display: grid; gap: .55rem; margin: 0 0 1.65rem; padding: 1rem 1.1rem; border: 1px solid #e4e4e4; border-radius: 24px; background: #fafafa; }
     .briefing-mode-label { color: #555; font-size: .7rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
@@ -306,17 +312,18 @@
     .dynamic-question-section.is-hidden { display: none; }
     @media (max-width: 600px) { .briefing-container { border-radius: 28px; padding: 1.25rem; } .briefing-mode-panel { border-radius: 20px; } }
 
-    /* Área de exportação: mantém exatamente a largura de uma página A4 em CSS pixels. */
+    /* Área A4 isolada: o exportador nunca deve depender da largura do viewport. */
     #pdf-template-wrapper {
       position: fixed;
-      top: 0;
       left: 0;
+      top: 0;
+      inset: auto;
       display: none;
       width: 794px;
-      min-width: 794px;
+      height: 1123px;
       min-height: 1123px;
       overflow: visible;
-      background: transparent;
+      background: #fff;
       pointer-events: none;
       z-index: 9999;
     }
@@ -329,8 +336,8 @@
     #welcome-pdf-template {
       box-sizing: border-box;
       width: 794px !important;
-      max-width: none !important;
-      margin: 0;
+      max-width: 794px !important;
+      margin: 0 !important;
     }
 
     #pdf-template {
@@ -813,7 +820,7 @@
     <style>
       #pdf-template{font-family:'Plus Jakarta Sans',Arial,sans-serif;background:#fff;color:#000;}
       .briefing-pdf-document{width:794px;box-sizing:border-box;background:#fff;color:#000;font-family:'Plus Jakarta Sans',Arial,sans-serif;}
-      .briefing-pdf-cover,.briefing-pdf-content{width:794px;min-height:1123px;box-sizing:border-box;padding:70px 72px 62px;position:relative;display:flex;flex-direction:column;break-after:page;page-break-after:always;}
+      .briefing-pdf-cover,.briefing-pdf-content{width:794px;height:1123px;min-height:1123px;box-sizing:border-box;padding:70px 72px 62px;position:relative;display:flex;flex-direction:column;break-after:page;page-break-after:always;}
       .briefing-pdf-cover{background:#000;color:#fff;overflow:hidden;}
       .briefing-pdf-content{background:#fff;color:#000;overflow:visible;}
       .briefing-pdf-content:last-child{break-after:auto;page-break-after:auto;}
@@ -841,8 +848,8 @@
       .briefing-pdf-content .briefing-pdf-footer span:last-child{text-align:right;}
 
       #welcome-pdf-template{font-family:'Plus Jakarta Sans',Arial,sans-serif;}
-      .welcome-page{width:794px;height:1123px;box-sizing:border-box;padding:70px 72px 62px;position:relative;overflow:hidden;break-after:page;display:flex;flex-direction:column;}
-      .welcome-page:last-child{break-after:auto;}
+      .welcome-page{width:794px;height:1123px;min-height:1123px;box-sizing:border-box;padding:70px 72px 62px;position:relative;overflow:hidden;break-after:page;page-break-after:always;display:flex;flex-direction:column;}
+      .welcome-page:last-child{break-after:auto;page-break-after:auto;}
       .welcome-page-dark{background:#000;color:#fff;}.welcome-page-light{background:#fff;color:#000;}.welcome-page-gray{background:#f5f5f5;color:#000;}
       .welcome-page-top,.welcome-page-bottom{display:flex;justify-content:space-between;align-items:center;font-size:9px;letter-spacing:.14em;text-transform:uppercase;line-height:1.3;}.welcome-page-top{padding-bottom:18px;border-bottom:1px solid #333;}.welcome-page-top-dark{border-bottom-color:#e0e0e0;}.welcome-brand-mark{font-weight:700;}.welcome-page-number{font-weight:600;color:#999;}.welcome-page-dark .welcome-page-number{color:#777;}.welcome-page-bottom{margin-top:auto;padding-top:17px;border-top:1px solid #d9d9d9;color:#666;}.welcome-page-bottom-inverse{border-top-color:#333;color:#aaa;}.welcome-page-bottom-dark{border-top-color:#d9d9d9;color:#666;}
       .welcome-eyebrow{font-size:10px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#666;}.welcome-eyebrow-inverse{color:#aaa;}.welcome-cover-content{margin-top:auto;margin-bottom:auto;}.welcome-wordmark{font-size:92px;font-weight:300;letter-spacing:-.08em;line-height:.9;margin:18px 0 34px;}.welcome-cover-rule{height:1px;background:currentColor;width:100%;opacity:.55;margin-bottom:21px;}.welcome-cover-client{font-size:31px;font-weight:600;letter-spacing:-.035em;}.welcome-cover-service{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#aaa;margin-top:10px;}.welcome-section-intro{margin-top:100px;max-width:630px;}.welcome-section-intro-compact{margin-top:68px;}.welcome-section-intro h1{font-size:52px;line-height:1.01;letter-spacing:-.065em;margin:18px 0 24px;font-weight:500;}.welcome-section-intro h1 em{font-weight:300;}.welcome-section-intro p{font-size:15px;line-height:1.7;color:#666;max-width:585px;margin:0;}.welcome-section-intro-inverse p{color:#aaa;}.welcome-section-intro strong{color:#000;}.welcome-summary-card{margin-top:55px;border-radius:16px;background:#f5f5f5;border:1px solid #e0e0e0;padding:24px 25px;}.welcome-card-kicker,.welcome-summary-grid span,.welcome-need-card span,.welcome-schedule-card span,.welcome-contact-strip span,.welcome-close-meta span{font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:#666;font-weight:700;}.welcome-summary-title{font-size:25px;font-weight:700;letter-spacing:-.03em;margin:10px 0 24px;}.welcome-summary-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;border-top:1px solid #e0e0e0;padding-top:18px;}.welcome-summary-grid strong{display:block;font-size:13px;margin-top:8px;font-weight:600;}.welcome-page-note{display:grid;grid-template-columns:120px 1fr;gap:20px;border-top:1px solid #e0e0e0;margin-top:56px;padding-top:18px;}.welcome-page-note span{font-size:9px;letter-spacing:.15em;font-weight:700;color:#999;}.welcome-page-note p{font-size:11px;line-height:1.6;color:#666;margin:0;}.welcome-steps-grid{display:grid;grid-template-columns:1fr 1fr;gap:13px;margin-top:48px;}.welcome-step-card{min-height:153px;border:1px solid #dcdcdc;border-radius:16px;padding:21px;display:flex;flex-direction:column;justify-content:space-between;background:#fff;}.welcome-step-number{font-size:27px;font-weight:700;color:#c9c9c9;letter-spacing:-.04em;}.welcome-step-card h2{font-size:17px;margin:13px 0 6px;letter-spacing:-.03em;}.welcome-step-card p{font-size:11px;line-height:1.55;color:#666;margin:0;}.welcome-process-page .welcome-section-intro{margin-top:72px;}.welcome-principles-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:25px;margin-top:57px;}.welcome-principles-grid>div{border-top:1px solid #444;padding-top:16px;}.welcome-principles-grid span{font-size:11px;color:#777;font-weight:700;}.welcome-principles-grid h2{font-size:19px;margin:27px 0 10px;letter-spacing:-.035em;}.welcome-principles-grid p{font-size:11px;line-height:1.6;color:#aaa;margin:0;}.welcome-timeline{display:grid;grid-template-columns:repeat(4,1fr);gap:13px;position:relative;margin-top:76px;}.welcome-timeline-line{position:absolute;top:6px;left:4px;right:4px;height:1px;background:#555;}.welcome-timeline>div:not(.welcome-timeline-line){position:relative;z-index:1;}.welcome-timeline span{display:block;width:12px;height:12px;border:1px solid #fff;border-radius:50%;background:#000;margin-bottom:15px;}.welcome-timeline strong{font-size:9px;letter-spacing:.12em;color:#aaa;}.welcome-needs-grid{display:grid;grid-template-columns:1fr 1fr;gap:13px;margin-top:47px;}.welcome-need-card{min-height:143px;border:1px solid #dcdcdc;border-radius:16px;padding:20px;background:#fff;}.welcome-need-index{display:block;color:#999!important;font-size:11px!important;letter-spacing:.08em!important;}.welcome-need-card h2{font-size:18px;margin:18px 0 7px;letter-spacing:-.03em;}.welcome-need-card p{font-size:11px;line-height:1.55;color:#666;margin:0;}.welcome-callout{border-radius:16px;background:#000;color:#fff;padding:20px 22px;margin-top:20px;}.welcome-callout span{display:block;font-size:9px;letter-spacing:.15em;color:#aaa;font-weight:700;}.welcome-callout strong{display:block;margin-top:9px;font-size:15px;}.welcome-callout p{font-size:11px;color:#aaa;margin:7px 0 0;line-height:1.5;}.welcome-schedule-grid{display:grid;grid-template-columns:1fr 1fr;gap:13px;margin-top:48px;}.welcome-schedule-card{min-height:151px;border:1px solid #d2d2d2;border-radius:16px;background:#fff;padding:20px;}.welcome-schedule-card-dark{background:#000;color:#fff;border-color:#000;}.welcome-schedule-card span{color:#666;}.welcome-schedule-card-dark span{color:#aaa;}.welcome-schedule-card strong{display:block;font-size:18px;line-height:1.12;letter-spacing:-.035em;margin:17px 0 9px;}.welcome-schedule-card p{font-size:11px;line-height:1.5;color:#666;margin:0;}.welcome-schedule-card-dark p{color:#aaa;}.welcome-contact-strip{display:flex;justify-content:space-between;gap:15px;align-items:center;border-top:1px solid #d0d0d0;border-bottom:1px solid #d0d0d0;padding:17px 0;margin-top:30px;font-size:10px;}.welcome-contact-strip strong{font-size:12px;}.welcome-close-content{margin-top:auto;margin-bottom:auto;}.welcome-close-wordmark{font-size:61px;line-height:.98;letter-spacing:-.07em;font-weight:500;margin:22px 0 34px;}.welcome-close-wordmark em{font-weight:300;}.welcome-close-content p{font-size:14px;line-height:1.65;color:#aaa;max-width:430px;margin:0;}.welcome-close-meta{display:grid;grid-template-columns:1fr 1fr;gap:20px;border-top:1px solid #333;padding-top:20px;margin-bottom:38px;}.welcome-close-meta span{color:#777;}.welcome-close-meta strong{display:block;color:#fff;font-size:14px;margin-top:9px;}.welcome-close-page .welcome-cover-rule{width:85%;}
@@ -850,8 +857,10 @@
   </div>
 
   <!-- DEPENDÊNCIAS: GERAÇÃO DE PDF -->
+  <!-- html2canvas e jsPDF explícitos: a exportação A4 não depende dos internos do bundle. -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/supabase-client.js"></script>
   <script src="js/welcome-pack-defaults.js?v=20260815-welcome-pack-v1"></script>
@@ -974,7 +983,7 @@
       const config = BRIEFING_SERVICE_MOUNTS.find(item => item.form === form.id);
       if (config && briefingQuestionsByService.has(config.service)) {
         const questions = briefingQuestionsByService.get(config.service) || [];
-        const visibleCount = questions.filter(question => question.mode === 'all' || !question.mode || question.mode === selectedMode).length;
+        const visibleCount = questions.filter(question => !isUniversalClientNameQuestion(question) && (question.mode === 'all' || !question.mode || question.mode === selectedMode)).length;
         const mount = document.getElementById(config.mount);
         const status = document.getElementById(config.status);
         if (mount) mount.innerHTML = renderServiceQuestions(questions, selectedMode);
@@ -1047,7 +1056,7 @@
       briefingQuestionsByService.set(config.service, data || []);
       const form = document.getElementById(config.form);
       const mode = form?.dataset.briefingMode || 'basic';
-      const visibleQuestions = (data || []).filter(question => question.mode === 'all' || !question.mode || question.mode === mode);
+      const visibleQuestions = (data || []).filter(question => !isUniversalClientNameQuestion(question) && (question.mode === 'all' || !question.mode || question.mode === mode));
       mount.innerHTML = renderServiceQuestions(data || [], mode);
       status.textContent = visibleQuestions.length ? '' : 'Ainda não existem perguntas para este modo neste serviço.';
       status.style.display = visibleQuestions.length ? 'none' : 'block';
@@ -1089,7 +1098,31 @@
       return Promise.all(BRIEFING_SERVICE_MOUNTS.map(loadServiceQuestions));
     }
 
-    loadAllServiceQuestions().then(() => setupBriefingModeControls()).catch(error => console.error('Erro ao inicializar os modos do briefing:', error));
+    function isUniversalClientNameQuestion(question) {
+      return question?.role === 'client_name' || question?.question_key === 'client_name';
+    }
+
+    function ensureClientIdentityFields() {
+      document.querySelectorAll('.briefing-form').forEach(form => {
+        if (form.querySelector('[data-client-name-field="true"]')) return;
+        const intro = form.querySelector('.service-form-intro, .identity-intro');
+        if (!intro) return;
+        const block = document.createElement('div');
+        block.className = 'client-identity-fields';
+        block.innerHTML = `
+          <label for="client-name-${form.id}">Nome do cliente *</label>
+          <input class="field-input" type="text" id="client-name-${form.id}" name="client_name" data-client-name-field="true" data-role="client_name" data-question="Nome do cliente" data-question-key="client_name" autocomplete="name" placeholder="Ex.: Ana Silva ou Nome da empresa" required>
+          <small>Este nome será usado no Welcome Pack e no PDF do briefing.</small>`;
+        intro.insertAdjacentElement('afterend', block);
+      });
+    }
+
+    loadAllServiceQuestions()
+      .then(() => {
+        ensureClientIdentityFields();
+        setupBriefingModeControls();
+      })
+      .catch(error => console.error('Erro ao inicializar os modos do briefing:', error));
 
     /* ─── MAPEIA O NOME DO TIPO DE SERVIÇO PARA O SLUG USADO NA BASE DE DADOS ─── */
     const SERVICE_TYPE_SLUGS = {
@@ -1214,71 +1247,122 @@
       });
     }
 
+    /*
+     * Exportação A4 determinística.
+     *
+     * A versão anterior entregava o documento completo ao html2pdf enquanto o
+     * elemento estava dentro de um wrapper com largura de viewport. Em alguns
+     * browsers isso fazia o canvas usar a posição/largura do wrapper: o PDF
+     * chegava deslocado para a esquerda, com espaço branco à direita e páginas
+     * extra. Aqui cada página é clonada para um palco de 794 x 1123 px e é
+     * inserida manualmente num A4 de 595.28 x 841.89 pt.
+     */
     async function renderPdfBlob(element, fileName) {
-      const CSS_PAGE_WIDTH = 794;
-      const CSS_PAGE_HEIGHT = 1123;
-      const PDF_PAGE_WIDTH = 210;
-      const PDF_PAGE_HEIGHT = 297;
-      const SCALE = 2;
-      const pageElements = Array.from(element.children).filter(child => child.nodeType === 1);
-      const pages = pageElements.length ? pageElements : [element];
-      const { jsPDF } = window.jspdf;
-      const pdf = new jsPDF({
-        unit: 'mm',
-        format: 'a4',
-        orientation: 'portrait',
-        compress: true
-      });
-      let pdfPageIndex = 0;
+      const cssPageWidth = 794;
+      const cssPageHeight = 1123;
+      const rasterScale = 2;
+      const pdfPageWidth = 595.28;
+      const pdfPageHeight = 841.89;
+      const html2canvasFn = window.html2canvas;
+      const JsPDF = window.jspdf?.jsPDF || window.jsPDF;
 
-      for (const page of pages) {
-        const captureHeight = Math.max(
-          CSS_PAGE_HEIGHT,
-          Math.ceil(page.scrollHeight || 0),
-          Math.ceil(page.getBoundingClientRect().height || 0)
-        );
-        const canvas = await window.html2canvas(page, {
-          scale: SCALE,
-          width: CSS_PAGE_WIDTH,
-          height: captureHeight,
-          useCORS: true,
-          allowTaint: false,
-          backgroundColor: getComputedStyle(page).backgroundColor || '#ffffff',
-          logging: false,
-          scrollX: 0,
-          scrollY: 0,
-          windowWidth: CSS_PAGE_WIDTH,
-          windowHeight: captureHeight
+      if (typeof html2canvasFn !== 'function') {
+        throw new Error('A biblioteca de captura do PDF não foi carregada.');
+      }
+      if (typeof JsPDF !== 'function') {
+        throw new Error('A biblioteca A4 do PDF não foi carregada.');
+      }
+
+      const pageNodes = Array.from(element?.children || []).filter((node) => (
+        node.classList?.contains('welcome-page') ||
+        node.classList?.contains('briefing-pdf-cover') ||
+        node.classList?.contains('briefing-pdf-content')
+      ));
+      const pages = pageNodes.length ? pageNodes : [element];
+      const pdf = new JsPDF({ unit: 'pt', format: 'a4', orientation: 'portrait', compress: true });
+      let hasWrittenPage = false;
+
+      for (const pageNode of pages) {
+        const stage = document.createElement('div');
+        const clone = pageNode.cloneNode(true);
+        const isDark = pageNode.classList?.contains('welcome-page-dark') || pageNode.classList?.contains('briefing-pdf-cover');
+        const stageBackground = isDark ? '#000000' : '#ffffff';
+        const captureHeight = Math.max(cssPageHeight, pageNode.scrollHeight || cssPageHeight);
+
+        stage.setAttribute('aria-hidden', 'true');
+        stage.dataset.pdfCaptureStage = 'true';
+        Object.assign(stage.style, {
+          position: 'fixed',
+          left: '0px',
+          top: '0px',
+          width: `${cssPageWidth}px`,
+          height: `${captureHeight}px`,
+          margin: '0',
+          padding: '0',
+          overflow: 'visible',
+          background: stageBackground,
+          pointerEvents: 'none',
+          zIndex: '-1'
         });
+        clone.removeAttribute('id');
+        Object.assign(clone.style, {
+          display: 'flex',
+          position: 'relative',
+          left: '0px',
+          top: '0px',
+          inset: 'auto',
+          width: `${cssPageWidth}px`,
+          maxWidth: `${cssPageWidth}px`,
+          minWidth: `${cssPageWidth}px`,
+          height: `${captureHeight}px`,
+          minHeight: `${captureHeight}px`,
+          margin: '0',
+          transform: 'none',
+          boxSizing: 'border-box',
+          fontFamily: "'Plus Jakarta Sans', Arial, sans-serif",
+          background: stageBackground
+        });
+        stage.appendChild(clone);
+        document.body.appendChild(stage);
 
-        const sliceHeight = CSS_PAGE_HEIGHT * SCALE;
-        for (let top = 0; top < canvas.height; top += sliceHeight) {
-          const currentSliceHeight = Math.min(sliceHeight, canvas.height - top);
-          const sliceCanvas = document.createElement('canvas');
-          sliceCanvas.width = canvas.width;
-          sliceCanvas.height = currentSliceHeight;
-          const context = sliceCanvas.getContext('2d');
-          context.fillStyle = getComputedStyle(page).backgroundColor || '#ffffff';
-          context.fillRect(0, 0, sliceCanvas.width, sliceCanvas.height);
-          context.drawImage(
-            canvas,
-            0, top, canvas.width, currentSliceHeight,
-            0, 0, sliceCanvas.width, sliceCanvas.height
-          );
+        try {
+          await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+          const canvas = await html2canvasFn(clone, {
+            scale: rasterScale,
+            width: cssPageWidth,
+            height: captureHeight,
+            windowWidth: cssPageWidth,
+            windowHeight: captureHeight,
+            useCORS: true,
+            allowTaint: false,
+            backgroundColor: stageBackground,
+            logging: false,
+            letterRendering: true,
+            scrollX: 0,
+            scrollY: 0
+          });
+          const sliceHeight = cssPageHeight * rasterScale;
+          const sliceCount = Math.max(1, Math.ceil(canvas.height / sliceHeight));
 
-          if (pdfPageIndex > 0) pdf.addPage('a4', 'portrait');
-          const renderedHeightMm = PDF_PAGE_HEIGHT * (currentSliceHeight / sliceHeight);
-          pdf.addImage(
-            sliceCanvas.toDataURL('image/jpeg', 0.96),
-            'JPEG',
-            0,
-            0,
-            PDF_PAGE_WIDTH,
-            renderedHeightMm,
-            undefined,
-            'FAST'
-          );
-          pdfPageIndex += 1;
+          for (let sliceIndex = 0; sliceIndex < sliceCount; sliceIndex += 1) {
+            const sourceY = sliceIndex * sliceHeight;
+            const currentHeight = Math.min(sliceHeight, canvas.height - sourceY);
+            const pageCanvas = document.createElement('canvas');
+            pageCanvas.width = canvas.width;
+            pageCanvas.height = currentHeight;
+            const context = pageCanvas.getContext('2d');
+            context.fillStyle = stageBackground;
+            context.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
+            context.drawImage(canvas, 0, sourceY, canvas.width, currentHeight, 0, 0, canvas.width, currentHeight);
+
+            if (hasWrittenPage) pdf.addPage();
+            const imageData = pageCanvas.toDataURL('image/jpeg', 0.96);
+            const renderedHeight = pdfPageHeight * (currentHeight / sliceHeight);
+            pdf.addImage(imageData, 'JPEG', 0, 0, pdfPageWidth, renderedHeight, undefined, 'FAST');
+            hasWrittenPage = true;
+          }
+        } finally {
+          stage.remove();
         }
       }
 
@@ -1311,11 +1395,12 @@ async function handleBriefingSubmit(event, typeName) {
     formData['Nível do briefing'] = modeLabel(selectedMode);
 
     const storeAnswer = (input, label, value) => {
-      const cleanValue = String(value || '').trim() || 'Não especificado';
+      const rawValue = String(value || '').trim();
+      const cleanValue = rawValue || 'Não especificado';
       formData[label] = cleanValue;
       const role = input?.dataset?.role || '';
       const lowerLabel = label.toLowerCase();
-      if (role === 'client_name' || lowerLabel.includes('cliente') || lowerLabel.includes('organização')) clientName = cleanValue;
+      if (input?.dataset?.clientNameField === 'true' || role === 'client_name' || (!clientName && (lowerLabel.includes('cliente') || lowerLabel.includes('organização')))) clientName = rawValue;
       if (role === 'client_contact' || lowerLabel.includes('contacto') || lowerLabel.includes('email')) clientContact = cleanValue;
     };
 
@@ -1337,7 +1422,10 @@ async function handleBriefingSubmit(event, typeName) {
       storeAnswer(input, label, input.value);
     });
 
-    document.getElementById('pdf-client-name').textContent = clientName || 'Não especificado';
+    if (!clientName) {
+      throw new Error('Indica o nome do cliente antes de submeter o briefing.');
+    }
+    document.getElementById('pdf-client-name').textContent = clientName;
 
     const renderAnswers = () => Object.entries(formData).map(([label, value], index) => `
       <article class="briefing-pdf-answer" style="page-break-inside:avoid;break-inside:avoid;">
@@ -1427,13 +1515,12 @@ async function handleBriefingSubmit(event, typeName) {
 
     const previousWrapperStyle = {
       position: wrapper.style.position,
-      top: wrapper.style.top,
+      inset: wrapper.style.inset,
       left: wrapper.style.left,
-      right: wrapper.style.right,
-      bottom: wrapper.style.bottom,
+      top: wrapper.style.top,
       display: wrapper.style.display,
       width: wrapper.style.width,
-      minWidth: wrapper.style.minWidth,
+      height: wrapper.style.height,
       minHeight: wrapper.style.minHeight,
       overflow: wrapper.style.overflow,
       zIndex: wrapper.style.zIndex
@@ -1441,13 +1528,12 @@ async function handleBriefingSubmit(event, typeName) {
 
     wrapper.classList.add('is-pdf-rendering');
     wrapper.style.position = 'fixed';
-    wrapper.style.top = '0';
+    wrapper.style.inset = 'auto';
     wrapper.style.left = '0';
-    wrapper.style.right = 'auto';
-    wrapper.style.bottom = 'auto';
+    wrapper.style.top = '0';
     wrapper.style.display = 'block';
     wrapper.style.width = '794px';
-    wrapper.style.minWidth = '794px';
+    wrapper.style.height = '1123px';
     wrapper.style.minHeight = '1123px';
     wrapper.style.overflow = 'visible';
     wrapper.style.zIndex = '9999';
@@ -1462,13 +1548,12 @@ async function handleBriefingSubmit(event, typeName) {
     } finally {
       wrapper.classList.remove('is-pdf-rendering');
       wrapper.style.position = previousWrapperStyle.position;
-      wrapper.style.top = previousWrapperStyle.top;
+      wrapper.style.inset = previousWrapperStyle.inset;
       wrapper.style.left = previousWrapperStyle.left;
-      wrapper.style.right = previousWrapperStyle.right;
-      wrapper.style.bottom = previousWrapperStyle.bottom;
+      wrapper.style.top = previousWrapperStyle.top;
       wrapper.style.display = previousWrapperStyle.display;
       wrapper.style.width = previousWrapperStyle.width;
-      wrapper.style.minWidth = previousWrapperStyle.minWidth;
+      wrapper.style.height = previousWrapperStyle.height;
       wrapper.style.minHeight = previousWrapperStyle.minHeight;
       wrapper.style.overflow = previousWrapperStyle.overflow;
       wrapper.style.zIndex = previousWrapperStyle.zIndex;
