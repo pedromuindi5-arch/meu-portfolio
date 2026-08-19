@@ -103,6 +103,7 @@
   const briefingDetailsBody   = document.getElementById('briefingDetailsBody');
   const briefingDetailsClose  = document.getElementById('briefingDetailsClose');
   const briefingAttachmentList = document.getElementById('briefingAttachmentList');
+  const briefingWelcomePackPreview = document.getElementById('briefingWelcomePackPreview');
 
   // Perguntas editáveis do briefing
   const questionServiceFilter = document.getElementById('questionServiceFilter');
@@ -1875,8 +1876,55 @@
     }
   });
 
+  function renderWelcomePackPreview(briefing) {
+    const serviceType = briefing?.service_type || 'identidade-visual';
+    const snapshot = briefing?.welcome_pack_snapshot && typeof briefing.welcome_pack_snapshot === 'object'
+      ? briefing.welcome_pack_snapshot
+      : { service_type: serviceType };
+    const content = getWelcomeContent(snapshot, serviceType) || {};
+    const page = (number, eyebrow, title, text, extra = '') => `
+      <article class="briefing-welcome-page">
+        <div class="briefing-welcome-page-number">${escapeHtmlAdmin(String(number).padStart(2, '0'))}</div>
+        <div class="briefing-welcome-page-content">
+          <div class="briefing-welcome-eyebrow">${escapeHtmlAdmin(eyebrow || `Página ${number}`)}</div>
+          <h4>${escapeHtmlAdmin(title || 'Sem título')}</h4>
+          ${text ? `<p>${escapeHtmlAdmin(text)}</p>` : ''}
+          ${extra}
+        </div>
+      </article>`;
+    const list = values => (Array.isArray(values) ? values : []).filter(Boolean);
+    const includes = list(content.includes);
+    const steps = list(content.page3?.steps).map(step => `<li><strong>${escapeHtmlAdmin(step.title || '')}</strong>${step.text ? ` — ${escapeHtmlAdmin(step.text)}` : ''}</li>`).join('');
+    const schedule = list(content.page6?.schedule).map(item => `<li><strong>${escapeHtmlAdmin(item.title || '')}</strong>${item.text ? ` — ${escapeHtmlAdmin(item.text)}` : ''}</li>`).join('');
+    const includesMarkup = includes.length ? `<ul>${includes.map(item => `<li>${escapeHtmlAdmin(item)}</li>`).join('')}</ul>` : '';
+    const stepsMarkup = steps ? `<ul>${steps}</ul>` : '';
+    const scheduleMarkup = schedule ? `<ul>${schedule}</ul>` : '';
+    const sourceLabel = briefing?.welcome_pack_snapshot
+      ? `Snapshot guardado em ${briefing.welcome_pack_snapshot_at ? new Date(briefing.welcome_pack_snapshot_at).toLocaleDateString('pt-PT') : '—'}`
+      : 'Conteúdo atual do serviço (briefing anterior sem snapshot)';
+
+    return `
+      <div class="briefing-welcome-preview-header">
+        <div>
+          <div class="briefing-welcome-preview-label">WELCOME PACK DO CLIENTE</div>
+          <h3>${escapeHtmlAdmin(content.title || WELCOME_SERVICE_LABELS[serviceType] || serviceType)}</h3>
+        </div>
+        <span>${escapeHtmlAdmin(sourceLabel)}</span>
+      </div>
+      <div class="briefing-welcome-pages">
+        ${page(1, content.page1?.eyebrow, content.page1?.slogan || content.title, content.page1?.subtitle || '')}
+        ${page(2, 'Boas-vindas', `${content.page2?.titleLine1 || 'O ponto de partida'} ${content.page2?.titleEmphasis || ''}`.trim(), content.welcomeMessage || content.page2?.intro || '')}
+        ${page(3, 'Próximos passos', `${content.page3?.titleLine1 || 'Como vamos trabalhar'} ${content.page3?.titleEmphasis || ''}`.trim(), content.page3?.intro || '', stepsMarkup)}
+        ${page(4, 'O que está incluído', content.page4?.title || 'Âmbito do projeto', content.page4?.intro || '', includesMarkup)}
+        ${page(5, 'Direção do projeto', content.page5?.title || 'Uma direção com intenção', content.page5?.intro || content.page5?.text || '')}
+        ${page(6, 'Calendário', content.page6?.title || 'Ritmo de trabalho', content.deliveryTime || '', scheduleMarkup)}
+        ${page(7, 'Fecho', `${content.page7?.titleLine1 || 'Vamos começar'} ${content.page7?.titleEmphasis || ''}`.trim(), content.page7?.closeText || content.page7?.text || '')}
+      </div>`;
+  }
+
   async function openBriefingDetails(b) {
     briefingDetailsTitle.textContent = `${b.client_name} — ${getCategoryLabel(b.service_type)}`;
+    if (briefingWelcomePackPreview) briefingWelcomePackPreview.innerHTML = renderWelcomePackPreview(b);
     const entries = Object.entries(b.form_data || {});
     briefingDetailsBody.innerHTML = entries.map(([label, value]) => `
       <div style="margin-bottom:0.85rem;">
@@ -1894,6 +1942,7 @@
 
   briefingDetailsClose.addEventListener('click', () => {
     briefingDetailsDialog.style.display = 'none';
+    if (briefingWelcomePackPreview) briefingWelcomePackPreview.innerHTML = '';
   });
 
   function escapeHtmlAdmin(str) {
