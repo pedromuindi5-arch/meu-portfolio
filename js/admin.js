@@ -1904,43 +1904,140 @@
   }
 
   /* ══════════════════════════════════════════════════════
-     COMPRIMIR IMAGENS EXISTENTES (correr uma vez, em lotes)
+     COMPRIMIR IMAGENS EXISTENTES NO NAVEGADOR
+     A transformação nativa do Storage não está disponível neste tenant.
+     Cada imagem é processada uma de cada vez e reenviada para o mesmo path.
   ══════════════════════════════════════════════════════ */
-  compressImagesBtn.addEventListener('click', async () => {
-    if (!confirm('Isto vai percorrer todas as imagens já enviadas e comprimi-las, mantendo os mesmos links (nada quebra). Pode demorar alguns minutos consoante a quantidade de imagens — não feches esta página enquanto estiver a correr. Continuar?')) {
-      return;
+  const MAX_IMAGE_DIMENSION = 2200;
+  const WEBP_QUALITY = 0.84;
+
+  function canvasToBlob(canvas, type, quality) {
+    return new Promise((resolve, reject) => {
+      canvas.toBlob(blob => {
+        if (blob) resolve(blob);
+        else reject(new Error('O navegador não conseguiu gerar a imagem comprimida.'));
+      }, type, quality);
+    });
+  }
+
+  async function decodeImageForCompression(blob) {
+    if ('createImageBitmap' in window) {
+      const bitmap = await createImageBitmap(blob, { imageOrientation: 'from-image' });
+      return {
+        source: bitmap,
+        width: bitmap.width,
+        height: bitmap.height,
+        close: () => bitmap.close(),
+      };
     }
-    compressImagesBtn.disabled = true;
+
+    const objectUrl = URL.createObjectURL(blob);
+    const image = new Image();
+    image.decoding = 'async';
+    image.src = objectUrl;
+    await image.decode();
+    return {
+      source: image,
+      width: image.naturalWidth,
+      height: image.naturalHeight,
+      close: () => URL.revokeObjectURL(objectUrl),
+    };
+  }
+
+  async function compressExistingImagesInBrowser() {
+    const { data: files, error: listError } = await supabaseClient
+      .storage
+      .from('project-images')
+      .list('', { limit: 1000, sortBy: { column: 'name', order: 'asc' } });
+
+    if (listError) throw listError;
+
+    const eligible = (files || []).filter(file => {
+      const extension = (file.name.split('.').pop() || '').toLowerCase();
+      return ['jpg', 'jpeg', 'png', 'webp'].includes(extension);
+    });
 
     const totals = { processed: 0, skipped: 0, failed: 0, bytesBefore: 0, bytesAfter: 0 };
-    let offset = 0;
-    let done = false;
+    compressImagesBtn.textContent = `A preparar... 0/${eligible.length}`;
 
-    try {
-      while (!done) {
-        const { data, error } = await supabaseClient.functions.invoke('compress-existing-images', {
-          body: { offset }
-        });
-        if (error) throw error;
+    for (let index = 0; index < eligible.length; index += 1) {
+      const file = eligible[index];
+      const path = file.name;
+      let decoded = null;
+      let canvas = null;
 
-        totals.processed += data.processed;
-        totals.skipped += data.skipped;
-        totals.failed += data.failed;
-        totals.bytesBefore += data.bytesBefore;
-        totals.bytesAfter += data.bytesAfter;
-        console.log('Detalhes do lote:', data.details);
+      try {
+        const { data: sourceBlob, error: downloadError } = await supabaseClient
+          .storage
+          .from('project-images')
+          .download(path);
+        if (downloadError || !sourceBlob) throw downloadError || new Error('download vazio');
 
-        offset = data.nextOffset;
-        done = data.done;
+        const originalBytes = sourceBlob.size;
+        decoded = await decodeImageForCompression(sourceBlob);
+        const scale = Math.min(1, MAX_IMAGE_DIMENSION / Math.max(decoded.width, decoded.height));
+        const targetWidth = Math.max(1, Math.round(decoded.width * scale));
+        const targetHeight = Math.max(1, Math.round(decoded.height * scale));
 
-        compressImagesBtn.textContent = `A comprimir... ${Math.min(offset, data.total)}/${data.total}`;
+        canvas = document.createElement('canvas');
+        canvas.width = targetWidth;
+        canvas.height = targetHeight;
+        const context = canvas.getContext('2d', { alpha: true });
+        context.imageSmoothingEnabled = true;
+        context.imageSmoothingQuality = 'high';
+        context.drawImage(decoded.source, 0, 0, targetWidth, targetHeight);
+
+        const compressedBlob = await canvasToBlob(canvas, 'image/webp', WEBP_QUALITY);
+        if (compressedBlob.size >= originalBytes) {
+          totals.skipped += 1;
+          console.log(`${path}: mantido (${(originalBytes / 1024).toFixed(0)}KB; WebP não reduziu)`);
+          continue;
+        }
+
+        const { error: uploadError } = await supabaseClient
+          .storage
+          .from('project-images')
+          .update(path, compressedBlob, {
+            cacheControl: '3600',
+            contentType: 'image/webp',
+          });
+        if (uploadError) throw uploadError;
+
+        totals.processed += 1;
+        totals.bytesBefore += originalBytes;
+        totals.bytesAfter += compressedBlob.size;
+        console.log(`${path}: ${(originalBytes / 1024).toFixed(0)}KB → ${(compressedBlob.size / 1024).toFixed(0)}KB`);
+      } catch (error) {
+        totals.failed += 1;
+        console.error(`${path}: erro`, error);
+      } finally {
+        if (decoded) decoded.close();
+        if (canvas) {
+          canvas.width = 1;
+          canvas.height = 1;
+        }
+        compressImagesBtn.textContent = `A comprimir... ${index + 1}/${eligible.length}`;
+        // Liberta o ciclo de eventos entre imagens e reduz a pressão de memória.
+        await new Promise(resolve => setTimeout(resolve, 0));
       }
+    }
 
-      const savedMB = ((totals.bytesBefore - totals.bytesAfter) / (1024 * 1024)).toFixed(1);
-      showToast(`Concluído! ${totals.processed} imagens comprimidas, ${savedMB}MB poupados. (${totals.skipped} já otimizadas, ${totals.failed} falhas)`);
-    } catch (err) {
-      console.error(err);
-      showToast('Erro ao comprimir imagens. Vê a consola para detalhes.', true);
+    return { totals, total: eligible.length };
+  }
+
+  compressImagesBtn.addEventListener('click', async () => {
+    if (!confirm('Isto vai percorrer todas as imagens já enviadas, comprimi-las no teu navegador e guardá-las nos mesmos caminhos. Pode demorar vários minutos — não feches esta página. Continuar?')) {
+      return;
+    }
+
+    compressImagesBtn.disabled = true;
+    try {
+      const { totals, total } = await compressExistingImagesInBrowser();
+      const savedMB = Math.max(0, (totals.bytesBefore - totals.bytesAfter) / (1024 * 1024)).toFixed(1);
+      showToast(`Concluído! ${totals.processed} imagens comprimidas, ${savedMB}MB poupados. (${totals.skipped} mantidas, ${totals.failed} falhas de ${total})`);
+    } catch (error) {
+      console.error(error);
+      showToast('Erro ao listar ou comprimir imagens. Vê a consola para detalhes.', true);
     } finally {
       compressImagesBtn.disabled = false;
       compressImagesBtn.textContent = '🗜 Comprimir Imagens';
