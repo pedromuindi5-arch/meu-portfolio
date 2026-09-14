@@ -103,6 +103,7 @@
   const briefingDetailsBody   = document.getElementById('briefingDetailsBody');
   const briefingDetailsClose  = document.getElementById('briefingDetailsClose');
   const briefingAttachmentList = document.getElementById('briefingAttachmentList');
+  const briefingWelcomePackPreview = document.getElementById('briefingWelcomePackPreview');
 
   // Perguntas editáveis do briefing
   const questionServiceFilter = document.getElementById('questionServiceFilter');
@@ -1875,8 +1876,331 @@
     }
   });
 
+  function renderWelcomePackPreview(briefing) {
+    const serviceType = briefing?.service_type || 'identidade-visual';
+    const snapshot = briefing?.welcome_pack_snapshot && typeof briefing.welcome_pack_snapshot === 'object'
+      ? briefing.welcome_pack_snapshot
+      : { service_type: serviceType };
+    const content = getWelcomeContent(snapshot, serviceType) || {};
+    const page = (number, eyebrow, title, text, extra = '') => `
+      <article class="briefing-welcome-page">
+        <div class="briefing-welcome-page-number">${escapeHtmlAdmin(String(number).padStart(2, '0'))}</div>
+        <div class="briefing-welcome-page-content">
+          <div class="briefing-welcome-eyebrow">${escapeHtmlAdmin(eyebrow || `Página ${number}`)}</div>
+          <h4>${escapeHtmlAdmin(title || 'Sem título')}</h4>
+          ${text ? `<p>${escapeHtmlAdmin(text)}</p>` : ''}
+          ${extra}
+        </div>
+      </article>`;
+    const list = values => (Array.isArray(values) ? values : []).filter(Boolean);
+    const includes = list(content.includes);
+    const steps = list(content.page3?.steps).map(step => `<li><strong>${escapeHtmlAdmin(step.title || '')}</strong>${step.text ? ` — ${escapeHtmlAdmin(step.text)}` : ''}</li>`).join('');
+    const schedule = list(content.page6?.schedule).map(item => `<li><strong>${escapeHtmlAdmin(item.title || '')}</strong>${item.text ? ` — ${escapeHtmlAdmin(item.text)}` : ''}</li>`).join('');
+    const includesMarkup = includes.length ? `<ul>${includes.map(item => `<li>${escapeHtmlAdmin(item)}</li>`).join('')}</ul>` : '';
+    const stepsMarkup = steps ? `<ul>${steps}</ul>` : '';
+    const scheduleMarkup = schedule ? `<ul>${schedule}</ul>` : '';
+    const sourceLabel = briefing?.welcome_pack_snapshot
+      ? `Snapshot guardado em ${briefing.welcome_pack_snapshot_at ? new Date(briefing.welcome_pack_snapshot_at).toLocaleDateString('pt-PT') : '—'}`
+      : 'Conteúdo atual do serviço (briefing anterior sem snapshot)';
+
+    return `
+      <div class="briefing-welcome-preview-header">
+        <div>
+          <div class="briefing-welcome-preview-label">WELCOME PACK DO CLIENTE</div>
+          <h3>${escapeHtmlAdmin(content.title || WELCOME_SERVICE_LABELS[serviceType] || serviceType)}</h3>
+        </div>
+        <div class="briefing-welcome-preview-actions">
+          <button type="button" class="btn-admin-ghost btn-welcome-pdf" data-welcome-pdf-action="open">Abrir PDF</button>
+          <button type="button" class="btn-admin-primary btn-welcome-pdf" data-welcome-pdf-action="download">Descarregar PDF</button>
+          <span class="briefing-welcome-preview-source">${escapeHtmlAdmin(sourceLabel)}</span>
+        </div>
+      </div>
+      <div class="briefing-welcome-pages">
+        ${page(1, content.page1?.eyebrow, content.page1?.slogan || content.title, content.page1?.subtitle || '')}
+        ${page(2, 'Boas-vindas', `${content.page2?.titleLine1 || 'O ponto de partida'} ${content.page2?.titleEmphasis || ''}`.trim(), content.welcomeMessage || content.page2?.intro || '')}
+        ${page(3, 'Próximos passos', `${content.page3?.titleLine1 || 'Como vamos trabalhar'} ${content.page3?.titleEmphasis || ''}`.trim(), content.page3?.intro || '', stepsMarkup)}
+        ${page(4, 'O que está incluído', content.page4?.title || 'Âmbito do projeto', content.page4?.intro || '', includesMarkup)}
+        ${page(5, 'Direção do projeto', content.page5?.title || 'Uma direção com intenção', content.page5?.intro || content.page5?.text || '')}
+        ${page(6, 'Calendário', content.page6?.title || 'Ritmo de trabalho', content.deliveryTime || '', scheduleMarkup)}
+        ${page(7, 'Fecho', `${content.page7?.titleLine1 || 'Vamos começar'} ${content.page7?.titleEmphasis || ''}`.trim(), content.page7?.closeText || content.page7?.text || '')}
+      </div>`;
+  }
+
+  let welcomePdfFramePromise = null;
+
+  function welcomePdfSafePart(value, fallback = 'cliente') {
+    return String(value || fallback)
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-zA-Z0-9]+/g, '_')
+      .replace(/^_+|_+$/g, '')
+      .slice(0, 80) || fallback;
+  }
+
+  function welcomePdfFileName(briefing) {
+    const service = getCategoryLabel(briefing?.service_type) || briefing?.service_type || 'Projeto';
+    const client = briefing?.client_name || 'Cliente';
+    return `Welcome_Pack_${welcomePdfSafePart(service, 'projeto')}_${welcomePdfSafePart(client)}.pdf`;
+  }
+
+  async function getWelcomePdfFrame() {
+    if (welcomePdfFramePromise) return welcomePdfFramePromise;
+    welcomePdfFramePromise = new Promise((resolve, reject) => {
+      const iframe = document.createElement('iframe');
+      iframe.setAttribute('aria-hidden', 'true');
+      Object.assign(iframe.style, {
+        position: 'fixed',
+        left: '-10000px',
+        top: '0',
+        width: '794px',
+        height: '1123px',
+        border: '0',
+        visibility: 'hidden',
+        pointerEvents: 'none'
+      });
+      iframe.onload = () => {
+        const frameDocument = iframe.contentDocument;
+        const template = frameDocument?.getElementById('welcome-pdf-template');
+        if (!template) {
+          iframe.remove();
+          reject(new Error('Não foi possível carregar o template do Welcome Pack.'));
+          return;
+        }
+        if (frameDocument.body) {
+          frameDocument.body.style.margin = '0';
+          frameDocument.body.style.padding = '0';
+        }
+        resolve({ iframe, frameDocument, template });
+      };
+      iframe.onerror = () => {
+        iframe.remove();
+        reject(new Error('Não foi possível abrir o template do Welcome Pack.'));
+      };
+      iframe.src = `briefing.html?welcome-pdf-render=${Date.now()}`;
+      document.body.appendChild(iframe);
+    }).catch(error => {
+      welcomePdfFramePromise = null;
+      throw error;
+    });
+    return welcomePdfFramePromise;
+  }
+
+  function fillWelcomePdfTemplate(frameDocument, briefing) {
+    const serviceType = briefing?.service_type || 'identidade-visual';
+    const serviceName = getCategoryLabel(serviceType) || serviceType;
+    const clientName = String(briefing?.client_name || 'Cliente').trim() || 'Cliente';
+    const dateString = briefing?.created_at
+      ? new Date(briefing.created_at).toLocaleDateString('pt-PT')
+      : new Date().toLocaleDateString('pt-PT');
+    const modeName = briefing?.form_data?.['Nível do briefing'] || 'Essencial';
+    const snapshot = briefing?.welcome_pack_snapshot && typeof briefing.welcome_pack_snapshot === 'object'
+      ? briefing.welcome_pack_snapshot
+      : { service_type: serviceType };
+    const pack = getWelcomeContent(snapshot, serviceType) || {};
+    const setText = (id, value) => {
+      const element = frameDocument.getElementById(id);
+      if (element) element.textContent = value == null ? '' : String(value);
+    };
+    const setMultiline = (id, value) => {
+      const element = frameDocument.getElementById(id);
+      if (!element) return;
+      element.innerHTML = escapeHtmlAdmin(value == null ? '' : String(value)).replace(/\\n/g, '<br>');
+    };
+    const setValues = values => Object.entries(values).forEach(([id, value]) => setText(id, value));
+    const setList = (prefix, items, count) => {
+      for (let index = 0; index < count; index += 1) {
+        const item = Array.isArray(items) ? (items[index] || {}) : {};
+        setText(`${prefix}-${index + 1}-title`, item.title || '');
+        setMultiline(`${prefix}-${index + 1}-text`, item.text || '');
+      }
+    };
+
+    setValues({
+      'welcome-date': dateString,
+      'welcome-date-cover': dateString,
+      'welcome-date-close': dateString,
+      'welcome-received-date': dateString,
+      'welcome-service-kicker': `PROJETO ${serviceName}`.toUpperCase(),
+      'welcome-service-name': serviceName,
+      'welcome-service-cover': serviceName,
+      'welcome-service-close': serviceName,
+      'welcome-received-service': serviceName,
+      'welcome-client-name': clientName,
+      'welcome-client-name-cover': clientName,
+      'welcome-client-name-close': clientName.toUpperCase(),
+      'welcome-mode': modeName,
+      'welcome-cover-eyebrow': pack.page1?.eyebrow || 'WELCOME PACK',
+      'welcome-cover-bottom': pack.page1?.slogan || '',
+      'welcome-page2-eyebrow': pack.page2?.eyebrow || 'BOAS-VINDAS',
+      'welcome-page2-title-line1': pack.page2?.titleLine1 || '',
+      'welcome-page2-title-emphasis': pack.page2?.titleEmphasis || '',
+      'welcome-page2-intro-text': pack.welcomeMessage || pack.page2?.intro || '',
+      'welcome-page2-note-label': pack.page2?.noteLabel || 'NOTA / 01',
+      'welcome-page2-note-text': pack.page2?.noteText || '',
+      'welcome-page3-eyebrow': pack.page3?.eyebrow || 'A PARTIR DE AGORA',
+      'welcome-page3-title-line1': pack.page3?.titleLine1 || '',
+      'welcome-page3-title-emphasis': pack.page3?.titleEmphasis || '',
+      'welcome-page3-intro': pack.page3?.intro || '',
+      'welcome-page4-eyebrow': pack.page4?.eyebrow || 'UMA FORMA DE TRABALHAR',
+      'welcome-page4-title-line1': pack.page4?.titleLine1 || '',
+      'welcome-page4-title-emphasis': pack.page4?.titleEmphasis || '',
+      'welcome-page4-intro': pack.page4?.intro || '',
+      'welcome-page5-eyebrow': pack.page5?.eyebrow || 'PARA AVANÇAR COM RITMO',
+      'welcome-page5-title-line1': pack.page5?.titleLine1 || '',
+      'welcome-page5-title-emphasis': pack.page5?.titleEmphasis || '',
+      'welcome-page5-intro': pack.page5?.intro || '',
+      'welcome-callout-label': pack.page5?.calloutLabel || '',
+      'welcome-callout-title': pack.page5?.calloutTitle || '',
+      'welcome-callout-text': pack.page5?.calloutText || '',
+      'welcome-page6-eyebrow': pack.page6?.eyebrow || 'PARA MANTER O PROJETO EM MOVIMENTO',
+      'welcome-page6-title-line1': pack.page6?.titleLine1 || '',
+      'welcome-page6-title-emphasis': pack.page6?.titleEmphasis || '',
+      'welcome-page6-intro': pack.page6?.intro || '',
+      'welcome-contact-label': pack.page6?.contactLabel || 'CONTACTO DIRETO',
+      'welcome-contact-email': pack.page6?.contactEmail || pack.shared?.contactEmail || '',
+      'welcome-contact-url': pack.page6?.contactUrl || pack.shared?.portfolioUrl || '',
+      'welcome-page7-title-line1': pack.page7?.closeHeadlineLine1 || '',
+      'welcome-page7-title-emphasis': pack.page7?.closeHeadlineEmphasis || '',
+      'welcome-page7-close-text': pack.page7?.closeText || '',
+      'welcome-footer-email': pack.page7?.footerEmail || pack.shared?.contactEmail || '',
+      'welcome-footer-url': pack.page7?.footerUrl || pack.shared?.portfolioUrl || ''
+    });
+
+    setList('welcome-step', pack.page3?.steps, 4);
+    setList('welcome-principle', pack.page4?.principles, 3);
+    setList('welcome-need', pack.page5?.needs, 4);
+    (Array.isArray(pack.page4?.timeline) ? pack.page4.timeline : []).slice(0, 4)
+      .forEach((label, index) => setText(`welcome-timeline-${index + 1}`, label));
+    (Array.isArray(pack.page6?.schedule) ? pack.page6.schedule : []).slice(0, 4)
+      .forEach((item, index) => {
+        setText(`welcome-schedule-${index + 1}-label`, item.label || '');
+        setMultiline(`welcome-schedule-${index + 1}-title`, item.title || '');
+        setMultiline(`welcome-schedule-${index + 1}-text`, item.text || '');
+      });
+  }
+
+  async function renderWelcomePdfBlob(briefing) {
+    const html2canvasFn = window.html2canvas;
+    const JsPDF = window.jspdf?.jsPDF || window.jsPDF;
+    if (typeof html2canvasFn !== 'function') throw new Error('A biblioteca de captura do PDF não foi carregada.');
+    if (typeof JsPDF !== 'function') throw new Error('A biblioteca A4 do PDF não foi carregada.');
+
+    const { iframe, frameDocument, template } = await getWelcomePdfFrame();
+    fillWelcomePdfTemplate(frameDocument, briefing);
+
+    const cssPageWidth = 794;
+    const cssPageHeight = 1123;
+    const rasterScale = 2;
+    const pdfPageWidth = 595.28;
+    const pdfPageHeight = 841.89;
+    const pageNodes = Array.from(template.children).filter(node => node.classList?.contains('welcome-page'));
+    const pages = pageNodes.length ? pageNodes : [template];
+    const pdf = new JsPDF({ unit: 'pt', format: 'a4', orientation: 'portrait', compress: true });
+    let hasWrittenPage = false;
+
+    for (const pageNode of pages) {
+      const stage = frameDocument.createElement('div');
+      const clone = pageNode.cloneNode(true);
+      const isDark = pageNode.classList?.contains('welcome-page-dark');
+      const stageBackground = isDark ? '#000000' : '#ffffff';
+      const captureHeight = Math.max(cssPageHeight, pageNode.scrollHeight || cssPageHeight);
+      stage.setAttribute('aria-hidden', 'true');
+      Object.assign(stage.style, {
+        position: 'fixed', left: '0px', top: '0px', width: `${cssPageWidth}px`,
+        height: `${captureHeight}px`, margin: '0', padding: '0', overflow: 'visible',
+        background: stageBackground, pointerEvents: 'none', zIndex: '-1'
+      });
+      clone.removeAttribute('id');
+      Object.assign(clone.style, {
+        display: 'flex', position: 'relative', left: '0px', top: '0px', inset: 'auto',
+        width: `${cssPageWidth}px`, maxWidth: `${cssPageWidth}px`, minWidth: `${cssPageWidth}px`,
+        height: `${captureHeight}px`, minHeight: `${captureHeight}px`, margin: '0', transform: 'none',
+        boxSizing: 'border-box', fontFamily: "'Plus Jakarta Sans', Arial, sans-serif", background: stageBackground
+      });
+      stage.appendChild(clone);
+      frameDocument.body.appendChild(stage);
+
+      try {
+        await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+        const canvas = await html2canvasFn(clone, {
+          scale: rasterScale, width: cssPageWidth, height: captureHeight,
+          windowWidth: cssPageWidth, windowHeight: captureHeight, useCORS: true,
+          allowTaint: false, backgroundColor: stageBackground, logging: false,
+          letterRendering: true, scrollX: 0, scrollY: 0
+        });
+        const sliceHeight = cssPageHeight * rasterScale;
+        const sliceCount = Math.max(1, Math.ceil(canvas.height / sliceHeight));
+        for (let sliceIndex = 0; sliceIndex < sliceCount; sliceIndex += 1) {
+          const sourceY = sliceIndex * sliceHeight;
+          const currentHeight = Math.min(sliceHeight, canvas.height - sourceY);
+          const pageCanvas = document.createElement('canvas');
+          pageCanvas.width = canvas.width;
+          pageCanvas.height = currentHeight;
+          const context = pageCanvas.getContext('2d');
+          context.fillStyle = stageBackground;
+          context.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
+          context.drawImage(canvas, 0, sourceY, canvas.width, currentHeight, 0, 0, canvas.width, currentHeight);
+          if (hasWrittenPage) pdf.addPage();
+          const imageData = pageCanvas.toDataURL('image/jpeg', 0.96);
+          const renderedHeight = pdfPageHeight * (currentHeight / sliceHeight);
+          pdf.addImage(imageData, 'JPEG', 0, 0, pdfPageWidth, renderedHeight, undefined, 'FAST');
+          hasWrittenPage = true;
+        }
+      } finally {
+        stage.remove();
+      }
+    }
+
+    return pdf.output('blob');
+  }
+
+  async function handleWelcomePdfAction(briefing, action, clickedButton) {
+    const popup = action === 'open' ? window.open('about:blank', '_blank') : null;
+    const buttons = briefingWelcomePackPreview?.querySelectorAll('[data-welcome-pdf-action]') || [];
+    buttons.forEach(button => {
+      button.disabled = true;
+      button.setAttribute('aria-busy', 'true');
+    });
+    if (clickedButton) clickedButton.textContent = 'A gerar PDF…';
+    try {
+      showToast('A preparar o PDF do Welcome Pack…');
+      const blob = await renderWelcomePdfBlob(briefing);
+      const url = URL.createObjectURL(blob);
+      if (action === 'open' && popup) {
+        popup.location.href = url;
+        setTimeout(() => URL.revokeObjectURL(url), 60000);
+      } else {
+        if (action === 'open' && !popup) showToast('O navegador bloqueou a nova janela. O PDF será descarregado.');
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = welcomePdfFileName(briefing);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 60000);
+      }
+      showToast('Welcome Pack PDF pronto.');
+    } catch (error) {
+      console.error('Erro ao gerar Welcome Pack PDF:', error);
+      if (popup && !popup.closed) popup.close();
+      showToast(`Não foi possível gerar o PDF: ${error.message || 'tenta novamente.'}`, true);
+    } finally {
+      buttons.forEach(button => {
+        button.disabled = false;
+        button.removeAttribute('aria-busy');
+      });
+      if (clickedButton) clickedButton.textContent = clickedButton.dataset.welcomePdfAction === 'open' ? 'Abrir PDF' : 'Descarregar PDF';
+    }
+  }
+
   async function openBriefingDetails(b) {
     briefingDetailsTitle.textContent = `${b.client_name} — ${getCategoryLabel(b.service_type)}`;
+    if (briefingWelcomePackPreview) {
+      briefingWelcomePackPreview.innerHTML = renderWelcomePackPreview(b);
+      briefingWelcomePackPreview.querySelectorAll('[data-welcome-pdf-action]').forEach(button => {
+        button.addEventListener('click', () => handleWelcomePdfAction(b, button.dataset.welcomePdfAction, button));
+      });
+    }
     const entries = Object.entries(b.form_data || {});
     briefingDetailsBody.innerHTML = entries.map(([label, value]) => `
       <div style="margin-bottom:0.85rem;">
@@ -1894,6 +2218,7 @@
 
   briefingDetailsClose.addEventListener('click', () => {
     briefingDetailsDialog.style.display = 'none';
+    if (briefingWelcomePackPreview) briefingWelcomePackPreview.innerHTML = '';
   });
 
   function escapeHtmlAdmin(str) {
@@ -1904,43 +2229,140 @@
   }
 
   /* ══════════════════════════════════════════════════════
-     COMPRIMIR IMAGENS EXISTENTES (correr uma vez, em lotes)
+     COMPRIMIR IMAGENS EXISTENTES NO NAVEGADOR
+     A transformação nativa do Storage não está disponível neste tenant.
+     Cada imagem é processada uma de cada vez e reenviada para o mesmo path.
   ══════════════════════════════════════════════════════ */
-  compressImagesBtn.addEventListener('click', async () => {
-    if (!confirm('Isto vai percorrer todas as imagens já enviadas e comprimi-las, mantendo os mesmos links (nada quebra). Pode demorar alguns minutos consoante a quantidade de imagens — não feches esta página enquanto estiver a correr. Continuar?')) {
-      return;
+  const MAX_IMAGE_DIMENSION = 2200;
+  const WEBP_QUALITY = 0.84;
+
+  function canvasToBlob(canvas, type, quality) {
+    return new Promise((resolve, reject) => {
+      canvas.toBlob(blob => {
+        if (blob) resolve(blob);
+        else reject(new Error('O navegador não conseguiu gerar a imagem comprimida.'));
+      }, type, quality);
+    });
+  }
+
+  async function decodeImageForCompression(blob) {
+    if ('createImageBitmap' in window) {
+      const bitmap = await createImageBitmap(blob, { imageOrientation: 'from-image' });
+      return {
+        source: bitmap,
+        width: bitmap.width,
+        height: bitmap.height,
+        close: () => bitmap.close(),
+      };
     }
-    compressImagesBtn.disabled = true;
+
+    const objectUrl = URL.createObjectURL(blob);
+    const image = new Image();
+    image.decoding = 'async';
+    image.src = objectUrl;
+    await image.decode();
+    return {
+      source: image,
+      width: image.naturalWidth,
+      height: image.naturalHeight,
+      close: () => URL.revokeObjectURL(objectUrl),
+    };
+  }
+
+  async function compressExistingImagesInBrowser() {
+    const { data: files, error: listError } = await supabaseClient
+      .storage
+      .from('project-images')
+      .list('', { limit: 1000, sortBy: { column: 'name', order: 'asc' } });
+
+    if (listError) throw listError;
+
+    const eligible = (files || []).filter(file => {
+      const extension = (file.name.split('.').pop() || '').toLowerCase();
+      return ['jpg', 'jpeg', 'png', 'webp'].includes(extension);
+    });
 
     const totals = { processed: 0, skipped: 0, failed: 0, bytesBefore: 0, bytesAfter: 0 };
-    let offset = 0;
-    let done = false;
+    compressImagesBtn.textContent = `A preparar... 0/${eligible.length}`;
 
-    try {
-      while (!done) {
-        const { data, error } = await supabaseClient.functions.invoke('compress-existing-images', {
-          body: { offset }
-        });
-        if (error) throw error;
+    for (let index = 0; index < eligible.length; index += 1) {
+      const file = eligible[index];
+      const path = file.name;
+      let decoded = null;
+      let canvas = null;
 
-        totals.processed += data.processed;
-        totals.skipped += data.skipped;
-        totals.failed += data.failed;
-        totals.bytesBefore += data.bytesBefore;
-        totals.bytesAfter += data.bytesAfter;
-        console.log('Detalhes do lote:', data.details);
+      try {
+        const { data: sourceBlob, error: downloadError } = await supabaseClient
+          .storage
+          .from('project-images')
+          .download(path);
+        if (downloadError || !sourceBlob) throw downloadError || new Error('download vazio');
 
-        offset = data.nextOffset;
-        done = data.done;
+        const originalBytes = sourceBlob.size;
+        decoded = await decodeImageForCompression(sourceBlob);
+        const scale = Math.min(1, MAX_IMAGE_DIMENSION / Math.max(decoded.width, decoded.height));
+        const targetWidth = Math.max(1, Math.round(decoded.width * scale));
+        const targetHeight = Math.max(1, Math.round(decoded.height * scale));
 
-        compressImagesBtn.textContent = `A comprimir... ${Math.min(offset, data.total)}/${data.total}`;
+        canvas = document.createElement('canvas');
+        canvas.width = targetWidth;
+        canvas.height = targetHeight;
+        const context = canvas.getContext('2d', { alpha: true });
+        context.imageSmoothingEnabled = true;
+        context.imageSmoothingQuality = 'high';
+        context.drawImage(decoded.source, 0, 0, targetWidth, targetHeight);
+
+        const compressedBlob = await canvasToBlob(canvas, 'image/webp', WEBP_QUALITY);
+        if (compressedBlob.size >= originalBytes) {
+          totals.skipped += 1;
+          console.log(`${path}: mantido (${(originalBytes / 1024).toFixed(0)}KB; WebP não reduziu)`);
+          continue;
+        }
+
+        const { error: uploadError } = await supabaseClient
+          .storage
+          .from('project-images')
+          .update(path, compressedBlob, {
+            cacheControl: '3600',
+            contentType: 'image/webp',
+          });
+        if (uploadError) throw uploadError;
+
+        totals.processed += 1;
+        totals.bytesBefore += originalBytes;
+        totals.bytesAfter += compressedBlob.size;
+        console.log(`${path}: ${(originalBytes / 1024).toFixed(0)}KB → ${(compressedBlob.size / 1024).toFixed(0)}KB`);
+      } catch (error) {
+        totals.failed += 1;
+        console.error(`${path}: erro`, error);
+      } finally {
+        if (decoded) decoded.close();
+        if (canvas) {
+          canvas.width = 1;
+          canvas.height = 1;
+        }
+        compressImagesBtn.textContent = `A comprimir... ${index + 1}/${eligible.length}`;
+        // Liberta o ciclo de eventos entre imagens e reduz a pressão de memória.
+        await new Promise(resolve => setTimeout(resolve, 0));
       }
+    }
 
-      const savedMB = ((totals.bytesBefore - totals.bytesAfter) / (1024 * 1024)).toFixed(1);
-      showToast(`Concluído! ${totals.processed} imagens comprimidas, ${savedMB}MB poupados. (${totals.skipped} já otimizadas, ${totals.failed} falhas)`);
-    } catch (err) {
-      console.error(err);
-      showToast('Erro ao comprimir imagens. Vê a consola para detalhes.', true);
+    return { totals, total: eligible.length };
+  }
+
+  compressImagesBtn.addEventListener('click', async () => {
+    if (!confirm('Isto vai percorrer todas as imagens já enviadas, comprimi-las no teu navegador e guardá-las nos mesmos caminhos. Pode demorar vários minutos — não feches esta página. Continuar?')) {
+      return;
+    }
+
+    compressImagesBtn.disabled = true;
+    try {
+      const { totals, total } = await compressExistingImagesInBrowser();
+      const savedMB = Math.max(0, (totals.bytesBefore - totals.bytesAfter) / (1024 * 1024)).toFixed(1);
+      showToast(`Concluído! ${totals.processed} imagens comprimidas, ${savedMB}MB poupados. (${totals.skipped} mantidas, ${totals.failed} falhas de ${total})`);
+    } catch (error) {
+      console.error(error);
+      showToast('Erro ao listar ou comprimir imagens. Vê a consola para detalhes.', true);
     } finally {
       compressImagesBtn.disabled = false;
       compressImagesBtn.textContent = '🗜 Comprimir Imagens';

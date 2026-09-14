@@ -310,7 +310,54 @@
     .dynamic-choice-option input { width: 16px; height: 16px; accent-color: #111; }
     .dynamic-choice-option:has(input:checked) { border-color: #111; background: #f1f1f1; }
     .dynamic-question-section.is-hidden { display: none; }
-    @media (max-width: 600px) { .briefing-container { border-radius: 28px; padding: 1.25rem; } .briefing-mode-panel { border-radius: 20px; } }
+    @media (max-width: 600px) {
+      html { scroll-padding-top: 1rem; }
+      body { min-width: 0; overflow-x: hidden; }
+      .briefing-hero-clean { padding-top: calc(var(--nav-h) + 2.25rem); padding-bottom: 2.75rem; }
+      .briefing-section-clean { min-height: auto; padding: 2rem .75rem 5rem; overflow: clip; }
+      .briefing-tabs {
+        justify-content: flex-start;
+        flex-wrap: nowrap;
+        gap: .45rem;
+        overflow-x: auto;
+        overscroll-behavior-x: contain;
+        scroll-snap-type: x proximity;
+        padding: 0 .25rem .45rem;
+        margin-bottom: 1.5rem !important;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+      }
+      .briefing-tabs::-webkit-scrollbar { display: none; }
+      .briefing-tab { flex: 0 0 auto; min-height: 44px; padding: .7rem 1rem; scroll-snap-align: start; white-space: nowrap; }
+      .briefing-container { width: 100%; box-sizing: border-box; border-radius: 24px; padding: 1.1rem; margin-bottom: 2rem; }
+      .briefing-container .identity-heading { font-size: 1.45rem; }
+      .briefing-container .identity-copy { font-size: .86rem; line-height: 1.6; }
+      .field-input, .field-select, .field-textarea { font-size: 16px; line-height: 1.4; }
+      .briefing-container .field-input, .briefing-container .field-select { min-height: 50px; padding: .78rem 1rem; }
+      .briefing-container .field-textarea { min-height: 124px; padding: .85rem 1rem; }
+      .dynamic-question-section { gap: .45rem; }
+      .dynamic-question-label { font-size: .72rem; line-height: 1.4; }
+      .dynamic-question-help { font-size: .76rem; }
+      .dynamic-choice-hint { display: block; color: #6d6d6d; font-size: .72rem; line-height: 1.4; }
+      .dynamic-choice-list { gap: .5rem; }
+      .dynamic-choice-option { min-height: 48px; border-radius: 18px; padding: .78rem .85rem; line-height: 1.35; }
+      .dynamic-choice-option input { flex: 0 0 auto; width: 18px; height: 18px; }
+      .briefing-mode-panel { border-radius: 20px; padding: .9rem; }
+      .briefing-mode-switch { flex-direction: column; }
+      .briefing-mode-btn { flex: 1 1 auto; min-height: 48px; }
+      .client-identity-fields { border-radius: 20px; padding: .9rem; }
+      .btn-submit { min-height: 52px; margin-top: .5rem; }
+      .submission-modal { align-items: end; padding: .75rem; }
+      .submission-modal-card { width: 100%; border-radius: 28px; padding: 2rem 1.25rem 1.5rem; }
+    }
+
+    @media (max-width: 600px) and (prefers-reduced-motion: no-preference) {
+      .briefing-tab, .dynamic-choice-option, .briefing-mode-btn { transition-duration: .16s; }
+    }
+
+    @media (max-width: 600px) and (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; }
+    }
 
     /* Área A4 isolada: o exportador nunca deve depender da largura do viewport. */
     #pdf-template-wrapper {
@@ -416,6 +463,24 @@
       transform: translateY(0) scale(1);
     }
 
+    .submission-modal.is-processing .submission-modal-close {
+      display: none;
+    }
+
+    .submission-modal-mark.is-processing {
+      animation: none;
+    }
+
+    .submission-processing-spinner {
+      display: block;
+      width: 28px;
+      height: 28px;
+      border: 3px solid rgba(255, 255, 255, .32);
+      border-top-color: #ffffff;
+      border-radius: 50%;
+      animation: submissionSpinner .8s linear infinite;
+    }
+
     .submission-modal-mark {
       display: grid;
       place-items: center;
@@ -469,6 +534,10 @@
     @keyframes submissionPulse {
       0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(17, 17, 17, .18); }
       50% { transform: scale(1.06); box-shadow: 0 0 0 12px rgba(17, 17, 17, 0); }
+    }
+
+    @keyframes submissionSpinner {
+      to { transform: rotate(360deg); }
     }
   </style>
 </head>
@@ -633,7 +702,7 @@
   <!-- MODAL DE CONFIRMAÇÃO PARA O CLIENTE -->
   <div class="submission-modal" id="submissionModal" role="dialog" aria-modal="true" aria-labelledby="submissionModalTitle" aria-hidden="true">
     <div class="submission-modal-card">
-      <div class="submission-modal-mark" aria-hidden="true">✓</div>
+      <div class="submission-modal-mark" id="submissionModalMark" aria-hidden="true">✓</div>
       <h2 id="submissionModalTitle">Respostas submetidas</h2>
       <p id="submissionModalText">As tuas respostas foram submetidas com sucesso. Obrigado por partilhares a tua visão.</p>
       <button type="button" class="submission-modal-close" id="submissionModalClose">Fechar</button>
@@ -868,6 +937,38 @@
   <script>
     'use strict';
 
+    /* ─── ESTABILIDADE DO VIEWPORT NO MOBILE ─────────────── */
+    (function setupMobileKeyboardStability() {
+      const visualViewport = window.visualViewport;
+      let frame = 0;
+
+      const scheduleViewportUpdate = () => {
+        cancelAnimationFrame(frame);
+        frame = requestAnimationFrame(() => {
+          const height = visualViewport?.height || window.innerHeight;
+          document.documentElement.style.setProperty('--briefing-visual-height', `${Math.round(height)}px`);
+          const active = document.activeElement;
+          const isFormField = active && /^(INPUT|TEXTAREA|SELECT)$/.test(active.tagName);
+          const keyboardOpen = Boolean(visualViewport && window.innerHeight - visualViewport.height > 120);
+          document.body.classList.toggle('briefing-keyboard-open', Boolean(isFormField && keyboardOpen));
+        });
+      };
+
+      visualViewport?.addEventListener('resize', scheduleViewportUpdate, { passive: true });
+      visualViewport?.addEventListener('scroll', scheduleViewportUpdate, { passive: true });
+      window.addEventListener('resize', scheduleViewportUpdate, { passive: true });
+      document.addEventListener('focusin', event => {
+        const field = event.target?.closest?.('input, textarea, select');
+        if (!field) return;
+        window.setTimeout(() => {
+          field.scrollIntoView({ block: 'center', inline: 'nearest', behavior: 'auto' });
+          scheduleViewportUpdate();
+        }, 140);
+      }, { passive: true });
+      document.addEventListener('focusout', scheduleViewportUpdate, { passive: true });
+      scheduleViewportUpdate();
+    })();
+
     /* ─── DOM REFS ─────────────────────────────────────── */
     const navbar = document.getElementById('navbar');
     const menuBtn = document.getElementById('menuBtn');
@@ -876,25 +977,52 @@
     const mobileLinks = document.querySelectorAll('[data-mobile-link]');
     const submissionModal = document.getElementById('submissionModal');
     const submissionModalClose = document.getElementById('submissionModalClose');
+    const submissionModalMark = document.getElementById('submissionModalMark');
+    const submissionModalTitle = document.getElementById('submissionModalTitle');
     const submissionModalText = document.getElementById('submissionModalText');
+
+    function openSubmissionProcessingModal() {
+      if (!submissionModal) return;
+      submissionModal.classList.add('is-open', 'is-processing');
+      submissionModal.setAttribute('aria-hidden', 'false');
+      if (submissionModalMark) {
+        submissionModalMark.classList.add('is-processing');
+        submissionModalMark.innerHTML = '<span class="submission-processing-spinner" aria-label="A processar"></span>';
+      }
+      if (submissionModalTitle) submissionModalTitle.textContent = 'A enviar as respostas';
+      if (submissionModalText) submissionModalText.textContent = 'Estamos a preparar o briefing e os documentos. Aguarda apenas um momento.';
+      document.body.style.overflow = 'hidden';
+    }
 
     function openSubmissionModal(clientEmailWasProvided) {
       if (!submissionModal) return;
+      submissionModal.classList.add('is-open');
+      submissionModal.classList.remove('is-processing');
+      submissionModal.setAttribute('aria-hidden', 'false');
+      if (submissionModalMark) {
+        submissionModalMark.classList.remove('is-processing');
+        submissionModalMark.innerHTML = '✓';
+      }
+      if (submissionModalTitle) submissionModalTitle.textContent = 'Respostas submetidas';
       if (submissionModalText) {
         submissionModalText.textContent = clientEmailWasProvided
           ? 'As tuas respostas foram submetidas com sucesso. Receberás uma confirmação no email indicado.'
           : 'As tuas respostas foram submetidas com sucesso. Obrigado por partilhares a tua visão.';
       }
-      submissionModal.classList.add('is-open');
-      submissionModal.setAttribute('aria-hidden', 'false');
       document.body.style.overflow = 'hidden';
       submissionModalClose?.focus();
     }
 
     function closeSubmissionModal() {
       if (!submissionModal) return;
-      submissionModal.classList.remove('is-open');
+      submissionModal.classList.remove('is-open', 'is-processing');
       submissionModal.setAttribute('aria-hidden', 'true');
+      if (submissionModalMark) {
+        submissionModalMark.classList.remove('is-processing');
+        submissionModalMark.innerHTML = '✓';
+      }
+      if (submissionModalTitle) submissionModalTitle.textContent = 'Respostas submetidas';
+      if (submissionModalText) submissionModalText.textContent = 'As tuas respostas foram submetidas com sucesso. Obrigado por partilhares a tua visão.';
       document.body.style.overflow = '';
     }
 
@@ -1071,7 +1199,9 @@
           : '';
         currentSection = question.section_key;
         const id = `briefing-question-${question.id}`;
-        const required = question.required ? ' required' : '';
+        const isMultipleChoice = question.input_type === 'choice_multiple';
+        const isRequired = Boolean(question.required) && !isMultipleChoice;
+        const required = isRequired ? ' required' : '';
         const role = question.role && question.role !== 'none' ? ` data-role="${escapeHtml(question.role)}"` : '';
         const help = question.help_text ? `<span class="dynamic-question-help">${escapeHtml(question.help_text)}</span>` : '';
         const placeholder = escapeHtml(question.placeholder || 'Escreve a tua resposta');
@@ -1081,7 +1211,8 @@
           field = `<input class="field-input" type="file" id="${id}" data-question="${escapeHtml(question.label)}" data-question-key="${escapeHtml(question.question_key)}" data-input-type="file" accept="image/jpeg,image/png,image/webp,image/gif,application/pdf" multiple${required}>`;
         } else if (question.input_type === 'choice_single' || question.input_type === 'choice_multiple') {
           const multiple = question.input_type === 'choice_multiple';
-          field = `<div class="dynamic-choice-list" data-choice-wrapper="${escapeHtml(question.question_key)}">${questionOptions(question).map((option, index) => `<label class="dynamic-choice-option"><input type="${multiple ? 'checkbox' : 'radio'}" name="${id}" value="${escapeHtml(option.value)}" data-choice-key="${escapeHtml(question.question_key)}" data-question="${escapeHtml(question.label)}"${role}${required && index === 0 ? ' required' : ''}><span>${escapeHtml(option.label)}</span></label>`).join('')}</div>`;
+          const choiceHint = `<span class="dynamic-choice-hint">${multiple ? 'Podes escolher mais do que uma opção.' : 'Escolhe uma opção.'}</span>`;
+          field = `${choiceHint}<div class="dynamic-choice-list" data-choice-wrapper="${escapeHtml(question.question_key)}" data-choice-mode="${multiple ? 'multiple' : 'single'}">${questionOptions(question).map((option, index) => `<label class="dynamic-choice-option"><input type="${multiple ? 'checkbox' : 'radio'}" name="${id}" value="${escapeHtml(option.value)}" data-choice-key="${escapeHtml(question.question_key)}" data-question="${escapeHtml(question.label)}"${role}${!multiple && isRequired && index === 0 ? ' required' : ''}><span>${escapeHtml(option.label)}</span></label>`).join('')}</div>`;
         } else if (question.input_type === 'email') {
           field = `<input class="field-input" type="email" id="${id}" data-question="${escapeHtml(question.label)}" data-question-key="${escapeHtml(question.question_key)}" placeholder="${placeholder}"${role}${required}>`;
         } else if (question.input_type === 'text') {
@@ -1090,7 +1221,7 @@
           field = `<textarea class="field-textarea" id="${id}" data-question="${escapeHtml(question.label)}" data-question-key="${escapeHtml(question.question_key)}" placeholder="${placeholder}"${role}${required}></textarea>`;
         }
 
-        return `${section}<div class="dynamic-question-section"><label class="dynamic-question-label" for="${id}">${escapeHtml(question.label)}${question.required ? ' *' : ''}</label>${help}${field}</div>`;
+        return `${section}<div class="dynamic-question-section"><label class="dynamic-question-label" for="${id}">${escapeHtml(question.label)}${isRequired ? ' *' : ''}</label>${help}${field}</div>`;
       }).join('');
     }
 
@@ -1389,6 +1520,7 @@ async function handleBriefingSubmit(event, typeName) {
     const inputs = Array.from(activeForm.querySelectorAll('input:not([type="hidden"]):not([type="file"]), select, textarea'));
     const fileInputs = Array.from(activeForm.querySelectorAll('input[type="file"][data-question-key]'));
     const handledChoiceGroups = new Set();
+    const requiredChoiceGroups = new Map();
 
     let clientName = '';
     let clientContact = '';
@@ -1408,11 +1540,12 @@ async function handleBriefingSubmit(event, typeName) {
       if (input.closest('.identity-complete-only') && selectedMode !== 'complete') return;
 
       if (input.type === 'radio' || input.type === 'checkbox') {
+        const group = inputs.filter(candidate => candidate.type === input.type && candidate.name === input.name);
+        const label = (input.dataset.question || input.name || input.id || 'Escolha').replace(/\\s*\\*\\s*$/, '').trim();
+        if (input.required) requiredChoiceGroups.set(input.name, { label, group });
         if (handledChoiceGroups.has(input.name)) return;
         handledChoiceGroups.add(input.name);
-        const group = inputs.filter(candidate => candidate.type === input.type && candidate.name === input.name);
         const selected = group.filter(candidate => candidate.checked).map(candidate => candidate.value).filter(Boolean);
-        const label = (input.dataset.question || input.name || input.id || 'Escolha').replace(/\\s*\\*\\s*$/, '').trim();
         storeAnswer(group.find(candidate => candidate.checked) || input, label, selected.join(', '));
         return;
       }
@@ -1420,6 +1553,12 @@ async function handleBriefingSubmit(event, typeName) {
       const labelElement = input.previousElementSibling;
       const label = (input.dataset.question || labelElement?.textContent || input.name || input.id || 'Campo').replace(/\\s*\\*\\s*$/, '').trim();
       storeAnswer(input, label, input.value);
+    });
+
+    requiredChoiceGroups.forEach(({ label, group }) => {
+      if (!group.some(input => input.checked)) {
+        throw new Error(`Seleciona pelo menos uma opção em: ${label}`);
+      }
     });
 
     if (!clientName) {
@@ -1448,6 +1587,8 @@ async function handleBriefingSubmit(event, typeName) {
 
     const contactIsEmail = looksLikeEmail(clientContact);
     const serviceType = SERVICE_TYPE_SLUGS[typeName] || 'branding';
+    openSubmissionProcessingModal();
+    const welcomePackForSnapshot = await loadWelcomePack(serviceType);
 
     const briefingId = (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function')
       ? crypto.randomUUID()
@@ -1466,6 +1607,18 @@ async function handleBriefingSubmit(event, typeName) {
         client_contact: clientContact || 'Não especificado',
         contact_is_email: contactIsEmail,
         form_data: formData,
+        welcome_pack_snapshot: {
+          service_type: serviceType,
+          title: welcomePackForSnapshot.title,
+          welcome_message: welcomePackForSnapshot.welcomeMessage,
+          includes: welcomePackForSnapshot.includes || [],
+          delivery_time: welcomePackForSnapshot.deliveryTime,
+          revisions: welcomePackForSnapshot.revisions,
+          payment_method: welcomePackForSnapshot.paymentMethod,
+          next_steps: (welcomePackForSnapshot.page3?.steps || []).map(step => step.title).filter(Boolean),
+          content: welcomePackForSnapshot
+        },
+        welcome_pack_snapshot_at: new Date().toISOString(),
         status: 'novo'
       });
 
@@ -1518,7 +1671,7 @@ async function handleBriefingSubmit(event, typeName) {
     const safeServiceName = typeName.replace(/\s+/g, '_');
     const pdfFileName = `Briefing_${safeServiceName}_${safeClientName}.pdf`;
     const welcomePdfFileName = `Boas-vindas_${safeServiceName}_${safeClientName}.pdf`;
-    const welcomePack = await loadWelcomePack(serviceType);
+    const welcomePack = welcomePackForSnapshot;
     setWelcomePdfContent(dateString, typeName, clientName, modeLabel(selectedMode), welcomePack);
 
     const previousWrapperStyle = {
@@ -1607,6 +1760,7 @@ async function handleBriefingSubmit(event, typeName) {
     submitBtn.textContent = originalBtnText;
   } catch (error) {
     console.error('Erro ao processar o briefing:', error);
+    closeSubmissionModal();
     alert(error?.message || 'Ocorreu um erro ao processar o briefing. Por favor tenta novamente.');
     submitBtn.disabled = false;
     submitBtn.textContent = originalBtnText;
