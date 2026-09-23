@@ -161,7 +161,7 @@
       <div class="behance-project-info-card">
         <div class="behance-owner-box">
           <div class="behance-owner-profile">
-            <img src="assets/about.jpeg" alt="Lucas Muindi" class="behance-owner-avatar" onerror="this.src='assets/hero.jpeg'">
+            <img src="assets/about.jpeg" alt="Lucas Muindi" class="behance-owner-avatar" onerror="this.src='assets/hero.jpg'">
             <div>
               <div class="behance-owner-name">Lucas Muindi</div>
               <div class="behance-owner-loc">Namibe, Angola • Designer Gráfico</div>
