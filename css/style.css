@@ -561,26 +561,48 @@ button {
   letter-spacing: -0.02em;
 }
 
-/* ─── BUTTON ─────────────────────────────────────────── */
+/* ─── BUTTON VAMOS TRABALHAR JUNTOS ─────────────────────────────────────────── */
 .btn-primary {
   display: inline-block;
   margin-top: 2.5rem;
   padding: 0.875rem 2.25rem;
-  background: var(--text);
-  color: var(--bg);
   font-size: 0.875rem;
   font-weight: 600;
   letter-spacing: 0.04em;
-  border: 1px solid var(--text);
+  color: #fff;
+  
+  /* Liquid Glass Apple - Dark Mode */
+  background: rgba(255, 255, 255, 0.10);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  
+  border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: 80px;
-  transition: background var(--transition), color var(--transition), transform var(--transition);
+  
+  /* Brilho interno + sombra do vidro */
+  box-shadow: 
+    inset 0 1px 1px rgba(255, 255, 255, 0.3),
+    inset 0 -1px 1px rgba(0, 0, 0, 0.2),
+    0 4px 20px rgba(0, 0, 0, 0.3);
+
+  transition: all 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
 .btn-primary:hover {
-  background: transparent;
-  color: var(--text);
+  background: rgba(255, 255, 255, 0.16);
+  border-color: rgba(255, 255, 255, 0.28);
   transform: translateY(-2px);
+  box-shadow: 
+    inset 0 1px 1px rgba(255, 255, 255, 0.4),
+    0 8px 32px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(255, 255, 255, 0.1);
 }
+
+.btn-primary:active {
+  transform: translateY(0) scale(0.97);
+  background: rgba(255, 255, 255, 0.06);
+}
+
 
 /* ═══════════════════════════════════════════════════════
    ABOUT
