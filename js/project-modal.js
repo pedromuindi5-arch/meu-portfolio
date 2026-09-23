@@ -167,7 +167,7 @@
               <div class="behance-owner-loc">Namibe, Angola • Designer Gráfico</div>
             </div>
           </div>
-          <a href="briefing.html" class="btn-clean-dark" style="font-size:0.8rem;padding:0.7rem 1.25rem;border-radius:30px;width:fit-content;">Pedir orçamento ↗</a>
+          <a href="index.html#contact" class="btn-clean-dark" style="font-size:0.8rem;padding:0.7rem 1.25rem;border-radius:30px;width:fit-content;">Pedir orçamento ↗</a>
         </div>
 
         <div class="behance-details-box">
