@@ -572,7 +572,7 @@ button {
   font-weight: 600;
   letter-spacing: 0.04em;
   border: 1px solid var(--text);
-  border-radius: 3px;
+  border-radius: 80px;
   transition: background var(--transition), color var(--transition), transform var(--transition);
 }
 
