@@ -563,38 +563,80 @@ button {
 
 /* ─── BUTTON VAMOS TRABALHAR JUNTOS ─────────────────────────────────────────── */
 .btn-primary {
+  position: relative;
   display: inline-block;
   margin-top: 2.5rem;
   padding: 0.875rem 2.25rem;
-  background: rgba(255, 255, 255, 0.08);
   color: var(--text);
   font-size: 0.875rem;
   font-weight: 600;
   letter-spacing: 0.04em;
-  border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: 80px;
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  overflow: hidden;
+  isolation: isolate;
+
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.16) 0%, rgba(255,255,255,0.04) 100%),
+    rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(24px) saturate(200%);
+  -webkit-backdrop-filter: blur(24px) saturate(200%);
+
   box-shadow:
-    0 4px 24px rgba(0, 0, 0, 0.25),
-    inset 0 1px 0 rgba(255, 255, 255, 0.15);
-  transition: background var(--transition), border-color var(--transition), transform var(--transition), box-shadow var(--transition);
+    0 8px 32px rgba(0, 0, 0, 0.35),
+    0 1px 1px rgba(255, 255, 255, 0.1),
+    inset 0 1px 1px rgba(255, 255, 255, 0.35),
+    inset 0 -1px 1px rgba(0, 0, 0, 0.2);
+
+  transition: transform var(--transition), box-shadow var(--transition), background var(--transition);
+}
+
+/* brilho especular que "escorre" no topo, como vidro real */
+.btn-primary::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    115deg,
+    rgba(255,255,255,0.35) 0%,
+    rgba(255,255,255,0) 30%,
+    rgba(255,255,255,0) 70%,
+    rgba(255,255,255,0.15) 100%
+  );
+  opacity: 0.8;
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* reflexo sutil de borda inferior, dá volume ao vidro */
+.btn-primary::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: inset 0 -1px 2px rgba(255,255,255,0.08);
+  pointer-events: none;
+  z-index: -1;
 }
 
 .btn-primary:hover {
-  background: rgba(255, 255, 255, 0.14);
-  border-color: rgba(255, 255, 255, 0.3);
-  transform: translateY(-2px);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0.06) 100%),
+    rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.35);
+  transform: translateY(-2px) scale(1.015);
   box-shadow:
-    0 6px 28px rgba(0, 0, 0, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    0 12px 40px rgba(0, 0, 0, 0.4),
+    0 1px 1px rgba(255, 255, 255, 0.15),
+    inset 0 1px 1px rgba(255, 255, 255, 0.45),
+    inset 0 -1px 1px rgba(0, 0, 0, 0.15);
 }
 
 .btn-primary:active {
-  transform: translateY(0);
-  background: rgba(255, 255, 255, 0.1);
+  transform: translateY(0) scale(0.98);
+  transition-duration: 0.1s;
 }
-
 
 
 /* ═══════════════════════════════════════════════════════
