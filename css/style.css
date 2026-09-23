@@ -71,6 +71,7 @@
 }
 
 .btn-bright {
+  position: relative;
   display: inline-block;
   padding: 0.9rem 2.25rem;
   font-size: 0.875rem;
@@ -78,15 +79,81 @@
   letter-spacing: 0.04em;
   color: var(--text);
   border-radius: 80px;
-  background: var(--gradient-bright);
-  background-size: 160% 160%;
-  border: 1px solid transparent;
-  transition: background-position var(--transition), transform var(--transition);
+  overflow: hidden;
+  isolation: isolate;
+  cursor: pointer;
+  background:
+    radial-gradient(circle at 30% 120%, rgba(0,0,0,0.25) 0%, rgba(0,0,0,0) 55%),
+    var(--gradient-bright);
+  background-size: auto, 160% 160%;
+  background-position: center, 0% 50%;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  box-shadow:
+    0 10px 34px rgba(43, 33, 102, 0.5),
+    0 2px 10px rgba(122, 31, 82, 0.35),
+    inset 0 1px 1px rgba(255, 255, 255, 0.35),
+    inset 0 -2px 2px rgba(0, 0, 0, 0.4);
+  transition: background-position var(--transition), transform var(--transition), box-shadow var(--transition), border-color var(--transition);
+  --mx: 50%;
+  --my: 50%;
+}
+
+.btn-bright::before {
+  content: "";
+  position: absolute;
+  inset: -40%;
+  background: radial-gradient(
+    circle at var(--mx) var(--my),
+    rgba(255,255,255,0.65) 0%,
+    rgba(255,255,255,0.15) 30%,
+    rgba(255,255,255,0) 62%
+  );
+  mix-blend-mode: overlay;
+  opacity: 0;
+  transition: opacity var(--transition);
+  pointer-events: none;
+  z-index: -1;
+}
+
+.btn-bright::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: radial-gradient(
+    circle at var(--mx) var(--my),
+    rgba(255,255,255,0.95) 0%,
+    rgba(255,255,255,0.2) 35%,
+    rgba(255,255,255,0.05) 70%
+  );
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity var(--transition);
+  pointer-events: none;
 }
 
 .btn-bright:hover {
-  background-position: 100% 0%;
-  transform: translateY(-2px);
+  background-position: center, 100% 50%;
+  border-color: rgba(255, 255, 255, 0.45);
+  transform: translateY(-3px) scale(1.02);
+  box-shadow:
+    0 18px 48px rgba(43, 33, 102, 0.6),
+    0 4px 16px rgba(122, 31, 82, 0.4),
+    inset 0 1px 1px rgba(255, 255, 255, 0.45),
+    inset 0 -2px 2px rgba(0, 0, 0, 0.35);
+}
+
+.btn-bright:hover::before,
+.btn-bright:hover::after {
+  opacity: 1;
+}
+
+.btn-bright:active {
+  transform: translateY(-1px) scale(0.97);
+  transition-duration: 0.12s;
 }
 
 .card-bright {
